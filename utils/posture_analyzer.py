@@ -52,6 +52,9 @@ class PostureAnalyzer:
             is_present = nose_visible and (left_shoulder_visible or right_shoulder_visible)
             posture_data['is_present'] = is_present
             
+            # Include pose landmarks in the result for activity analysis
+            posture_data['pose_landmarks'] = landmarks
+            
             if not is_present:
                 self.logger.debug("Person not clearly visible")
                 return posture_data

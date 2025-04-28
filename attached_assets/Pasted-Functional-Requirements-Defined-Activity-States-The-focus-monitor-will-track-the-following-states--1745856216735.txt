@@ -1,0 +1,78 @@
+Functional Requirements
+Defined Activity States
+The focus monitor will track the following states to capture a wide range of user behaviors:  
+Working: The user is actively engaged in a productive task (e.g., typing, writing, reading).  
+
+Not Working: The user is present but not engaged in productive activity (e.g., sitting still, staring off).  
+
+Distracted by Others: The user is interacting with another person (e.g., talking, turning toward someone).  
+
+On Break: The user is temporarily away from the workspace (e.g., getting coffee, stretching).  
+
+Idle: The user is present but completely inactive for an extended period (e.g., resting, dozing off).
+Detection Logic
+The system uses a low-resolution camera and lightweight AI (e.g., TinyML models like MediaPipe Pose) to detect these states based on visual cues:  
+Working:  
+Cues: User faces the workstation (head aligned with desk/screen), hands move periodically (e.g., typing, writing).  
+
+Logic: Detect hand motion every 10 seconds and head orientation within 15° of center.
+Not Working:  
+Cues: User is present but shows no hand movement or looks away from the workstation.  
+
+Logic: No hand motion for >30 seconds or head turned >45° from center for >10 seconds.
+Distracted by Others:  
+Cues: Multiple people in the frame or user turns head to the side (e.g., talking).  
+
+Logic: Detect two or more faces/bodies (using lightweight face detection) or head turned >60° for >5 seconds.
+On Break:  
+Cues: User is absent from the camera frame for a short period.  
+
+Logic: No person detected for >1 minute, with return within 15 minutes.
+Idle:  
+Cues: User is present but shows no movement (e.g., head on desk, leaning back).  
+
+Logic: Minimal posture change (<2% keypoint shift) for >2 minutes.
+State Transition Logic
+The system uses a state machine to smoothly transition between states based on the following rules:  
+Working → Not Working: Hand movement stops for >30 seconds or head turns >45° for >10 seconds.  
+
+Working → Distracted by Others: Multiple people detected or head turns >60° for >5 seconds.  
+
+Not Working → Working: Hand movement resumes and head realigns with the workstation.  
+
+Any State → On Break: User leaves the frame for >1 minute.  
+
+On Break → Working/Not Working: Upon return, classify based on initial activity (e.g., hand motion = Working).  
+
+Not Working → Idle: Inactivity persists for >2 minutes.  
+
+Idle → Working: Significant movement resumes (e.g., sitting up, typing).
+Enhanced Focus Monitor: Specific Activity Tracking
+Beyond broad states, the system will identify what exactly the person is doing within the "Working" state, providing deeper insight:  
+Sub-States within Working:  
+Typing: Rapid hand movements near a keyboard or laptop.  
+
+Writing: Hand moves in a pattern consistent with pen/pencil use (e.g., small, repetitive motions).  
+
+Reading: Head facing screen/paper with minimal hand movement but eyes focused (detected via head stillness).
+Detection Logic:  
+Typing: High-frequency hand motion (e.g., >5 movements in 10 seconds) near desk level.  
+
+Writing: Slower, rhythmic hand motion (e.g., 1–3 movements in 10 seconds) with arm extended.  
+
+Reading: No hand motion for >10 seconds, head steady within 10° of center.
+Transition Logic:  
+Typing → Writing: Hand motion slows and shifts to rhythmic patterns.  
+
+Writing → Reading: Hand motion stops, head remains fixed.  
+
+Reading → Typing: Hand motion resumes rapidly.
+Real-Time Display
+The touchscreen interface will show the user’s current state and specific activity in real-time:  
+Main Status:  
+Large, color-coded label (e.g., "Working" in green, "Not Working" in yellow, "Distracted by Others" in orange, "On Break" in blue, "Idle" in gray).  
+
+Icon next to the label (e.g., keyboard for Working, coffee cup for On Break).  
+
+Timer showing duration in the current state (e.g., "Working for 8 minutes").
+

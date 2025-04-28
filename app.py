@@ -33,11 +33,13 @@ db.init_app(app)
 from utils.camera_processor import CameraProcessor
 from utils.posture_analyzer import PostureAnalyzer
 from utils.focus_calculator import FocusCalculator
+from utils.activity_analyzer import ActivityAnalyzer
 
 # Initialize the processors
 camera_processor = CameraProcessor()
 posture_analyzer = PostureAnalyzer()
 focus_calculator = FocusCalculator()
+activity_analyzer = ActivityAnalyzer()
 
 with app.app_context():
     # Import models here
@@ -108,6 +110,30 @@ def add_water():
     
     return jsonify({'success': True})
 
+@app.route('/api/activity_status')
+def get_activity_status():
+    """Get the current activity status of the user"""
+    activity_status = models.ActivityStatus.query.order_by(models.ActivityStatus.timestamp.desc()).first()
+    
+    if not activity_status:
+        return jsonify({
+            'activity_state': 'unknown',
+            'working_substate': None,
+            'head_angle': 0,
+            'movement_level': 0,
+            'people_detected': 0,
+            'time_in_state': 0
+        })
+    
+    return jsonify({
+        'activity_state': activity_status.activity_state,
+        'working_substate': activity_status.working_substate,
+        'head_angle': activity_status.head_angle,
+        'movement_level': activity_status.movement_level,
+        'people_detected': activity_status.people_detected,
+        'time_in_state': activity_status.time_in_state
+    })
+
 @app.route('/api/process_frame', methods=['POST'])
 def process_frame():
     if 'frame' not in request.files:
@@ -144,14 +170,55 @@ def process_frame():
         timestamp=datetime.now()
     )
     db.session.add(new_focus)
+    
+    # Analyze activity if user is present
+    activity_data = None
+    if is_present and posture_results.get('pose_landmarks'):
+        # Get the MediaPipe pose landmarks from posture analyzer's results
+        pose_landmarks = posture_results.get('pose_landmarks')
+        
+        # Analyze activity
+        activity_data = activity_analyzer.analyze(
+            image=frame, 
+            pose_landmarks=pose_landmarks,
+            face_detections=None  # Currently not implementing face detection
+        )
+        
+        # Save activity status
+        new_activity = models.ActivityStatus(
+            activity_state=activity_data['activity_state'],
+            working_substate=activity_data['working_substate'],
+            head_angle=activity_data['head_angle'],
+            movement_level=activity_data['movement_level'],
+            people_detected=activity_data['people_detected'],
+            time_in_state=activity_data['time_in_state'],
+            date=datetime.now().date(),
+            timestamp=datetime.now()
+        )
+        db.session.add(new_activity)
+    
     db.session.commit()
     
-    return jsonify({
+    # Prepare response
+    response_data = {
         'posture': posture,
         'is_focused': is_focused,
         'angle': angle,
         'is_present': is_present
-    })
+    }
+    
+    # Add activity data if available
+    if activity_data:
+        response_data['activity'] = {
+            'activity_state': activity_data['activity_state'],
+            'working_substate': activity_data['working_substate'],
+            'head_angle': activity_data['head_angle'],
+            'movement_level': activity_data['movement_level'],
+            'people_detected': activity_data['people_detected'],
+            'time_in_state': activity_data['time_in_state']
+        }
+    
+    return jsonify(response_data)
 
 # Error handlers
 @app.errorhandler(404)

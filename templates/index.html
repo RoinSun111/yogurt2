@@ -2,6 +2,41 @@
 
 {% block content %}
 <div class="row">
+    <!-- Activity Monitor Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i data-feather="eye" class="feather-icon"></i>
+                    Activity Monitor
+                </h5>
+                <span class="badge bg-secondary" id="activity-state">Unknown</span>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div id="activity-icon" class="activity-icon-container me-3">
+                        <i data-feather="help-circle"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 id="activity-description" class="mb-1">Monitoring your activity...</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Time in current state: <span id="activity-timer">0m 0s</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="progress mb-3">
+                    <div id="activity-progress" class="progress-bar" role="progressbar" style="width: 0%" 
+                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                
+                <div id="activity-metrics" class="d-flex flex-wrap gap-3">
+                    <!-- Metrics will be populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Focus Score Card -->
     <div class="col-md-6 mb-4">
         <div class="card h-100">
