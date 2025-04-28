@@ -1,0 +1,43 @@
+Project Title: Smart Work Focus Score Web App for Sit/Stand Desk
+Objective:
+Develop a web-based interface that leverages TinyML for real-time, privacy-preserving AI recognition to automatically track a user’s work focus, working posture, and water intake. The app will run on a low-cost single-board computer (e.g., Raspberry Pi 4 or Libre Computer Le Potato) integrated into a custom sit/stand desk, using a low-resolution video feed from a front-facing camera (e.g., USB webcam or phone camera). The system will compute a daily focus score, display it on a touchscreen interface, and integrate with a calendar management tool to correlate focus with scheduled tasks. The app will also interface with the desk’s linear actuator for height adjustments, enhancing the smart workstation experience.
+Target Users:  
+Professionals, students, or remote workers using the sit/stand desk for productivity.
+
+Users seeking data-driven insights into their work habits without compromising privacy.
+Hardware Specifications:  
+Compute Unit: Low-cost single-board computer (e.g., Raspberry Pi 4 with 4GB RAM, ~$55–$80, or Libre Computer Le Potato, ~$35–$45) running Linux (e.g., Raspberry Pi OS or Armbian).
+
+Camera: Low-resolution USB webcam (480p, ~$10–$20) or Android phone’s front-facing camera (640x480, accessed via WebRTC).
+
+Display: 7-inch HDMI touchscreen (~$30–$50) for showing focus score, posture feedback, water intake, and calendar events.
+
+Actuator: Quiet linear actuator (e.g., TiMOTION TA38, 2000 N, ~$80–$120) controlled via a microcontroller (e.g., Arduino Uno, ~$20–$25).
+
+Optional: Water bottle sensor (e.g., capacitive touch or weight sensor, ~$5–$10) for intake tracking.
+Functional Requirements:
+Work Focus Tracking:
+Goal: Determine if the user is actively working based on presence and posture.
+
+Method: Use TinyML (e.g., MediaPipe Pose or a lightweight CNN) to detect user presence in the camera feed (10 images/minute, 1 every 6 seconds).
+
+Logic: Presence + focused posture (e.g., upright, facing forward) = working. Absence or non-working posture (e.g., slouched, looking away) = not working.
+
+Output: Log focus state per image, compute daily focus score (% of time working).
+Working Posture Analysis:
+Goal: Monitor posture to encourage ergonomic habits and contribute to focus score.
+
+Method: TinyML model (e.g., MediaPipe Pose, ~2M parameters) to detect keypoints (shoulders, head, spine) from low-res video (480p).
+
+Logic: Classify posture as “upright” (focused, score +1) or “slouched” (unfocused, score 0) based on shoulder-hip angles (e.g., <15° deviation = upright).
+
+Output: Display real-time posture feedback (e.g., “Sit up straight!”) and include in focus score.
+Water Intake Tracking:
+Goal: Estimate water consumption to promote hydration.
+
+Method: TinyML vision model to detect water bottle interactions (e.g., lifting to mouth) in the camera feed, or use a hardware sensor (e.g., capacitive touch on bottle).
+
+Logic: Count drinking events (~0.2–0.5 L per event, user-configurable). Fallback to manual input if vision fails.
+
+Output: Display daily intake (e.g., “1.2 L consumed”) and remind user to drink every ~2 hours.
+
