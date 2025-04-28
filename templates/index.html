@@ -1,0 +1,151 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row">
+    <!-- Focus Score Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i data-feather="activity" class="feather-icon"></i>
+                    Focus Score
+                </h5>
+                <span class="badge bg-primary" id="focus-state">Calculating...</span>
+            </div>
+            <div class="card-body text-center">
+                <div class="score-display mb-3">
+                    <div class="progress-ring">
+                        <div class="ring-container">
+                            <canvas id="focus-chart" width="150" height="150"></canvas>
+                            <div class="ring-center">
+                                <span id="focus-score">--</span>
+                                <span class="small">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <p class="mb-1">Working Time Today</p>
+                    <h3 id="working-time">0m</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Posture Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i data-feather="user" class="feather-icon"></i>
+                    Posture Monitor
+                </h5>
+                <span class="badge bg-secondary" id="posture-state">Unknown</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="camera-container mb-3">
+                            <video id="webcam" autoplay playsinline></video>
+                            <canvas id="output-canvas" class="d-none"></canvas>
+                            <div id="camera-placeholder" class="placeholder-container text-center py-4">
+                                <i data-feather="camera-off" class="feather-icon-lg mb-2"></i>
+                                <p>Camera feed not available</p>
+                                <button id="start-camera" class="btn btn-sm btn-primary">Start Camera</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="posture-feedback mt-2">
+                            <h5 id="posture-feedback">Checking posture...</h5>
+                            <p id="posture-advice" class="text-muted">Please sit upright for optimal focus.</p>
+                            <div class="posture-angle mt-3">
+                                <p class="mb-1">Spine Angle</p>
+                                <div class="progress">
+                                    <div id="angle-indicator" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="30">0°</div>
+                                </div>
+                                <small class="text-muted">Target: Less than 15°</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Water Intake Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="droplet" class="feather-icon"></i>
+                    Water Intake
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center">
+                        <div class="water-container mb-3">
+                            <div class="water-bottle">
+                                <div id="water-level" class="water-level" style="height: 0%"></div>
+                            </div>
+                            <p id="water-amount" class="mt-2">0 / 2000 ml</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2">Add water intake:</p>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary water-btn" data-amount="250">
+                                <i data-feather="plus-circle" class="feather-icon-sm"></i> 250ml
+                            </button>
+                            <button class="btn btn-outline-primary water-btn" data-amount="500">
+                                <i data-feather="plus-circle" class="feather-icon-sm"></i> 500ml
+                            </button>
+                        </div>
+                        <p class="mt-3 mb-1">Last drink:</p>
+                        <p id="last-drink-time" class="text-muted">No drinks today</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Stats Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="bar-chart-2" class="feather-icon"></i>
+                    Daily Stats
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="daily-stats-chart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="notification-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i data-feather="bell" class="feather-icon-sm me-2"></i>
+            <strong class="me-auto" id="toast-title">Notification</strong>
+            <small id="toast-time">now</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toast-message">
+            Hello, world! This is a notification message.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Load application scripts -->
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+<script src="{{ url_for('static', filename='js/posture.js') }}"></script>
+<script src="{{ url_for('static', filename='js/water_intake.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
