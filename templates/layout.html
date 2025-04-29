@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Desk Focus Tracker</title>
+    <title>FOCUS TRACK</title>
     
     <!-- Bootstrap CSS (Replit themed) -->
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
@@ -19,26 +19,45 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    {% block styles %}{% endblock %}
 </head>
 <body>
-    <header class="bg-dark text-white py-3">
+    <header class="py-4">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
-                <h1 class="h4 mb-0">Smart Desk Focus Tracker</h1>
+                <div class="brand d-flex align-items-center">
+                    <div class="logo me-2">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                        </svg>
+                    </div>
+                    <h1 class="h3 mb-0 fw-bold">FOCUS<span class="text-white-50">TRACK</span></h1>
+                </div>
                 <div class="d-flex align-items-center">
-                    <nav class="me-3">
+                    <nav class="me-4">
                         <ul class="nav">
                             <li class="nav-item">
-                                <a class="nav-link" href="/">Dashboard</a>
+                                <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
+                                    <i data-feather="grid" class="me-1"></i> Dashboard
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/monitor">Monitor</a>
+                                <a class="nav-link {% if request.path == '/monitor' %}active{% endif %}" href="/monitor">
+                                    <i data-feather="camera" class="me-1"></i> Monitor
+                                </a>
                             </li>
                         </ul>
                     </nav>
                     <div class="time-display">
+                        <i data-feather="clock" class="feather-icon-sm me-1"></i>
                         <span id="current-time">00:00</span>
                     </div>
                 </div>
@@ -51,10 +70,22 @@
         {% endblock %}
     </main>
 
-    <footer class="bg-dark text-white py-2 mt-auto">
+    <footer class="py-4 mt-auto">
         <div class="container">
-            <div class="small text-center">
-                <p class="mb-0">Smart Desk Focus Tracker &copy; 2023 | Privacy-First TinyML Analytics</p>
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <div class="me-2">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                            </svg>
+                        </div>
+                        <p class="mb-0">FOCUS<span class="opacity-50">TRACK</span> &copy; 2025</p>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 text-white-50">Privacy-First TinyML Analytics</p>
+                </div>
             </div>
         </div>
     </footer>
@@ -76,6 +107,14 @@
             
             updateTime();
             setInterval(updateTime, 1000);
+            
+            // Add active class to the current nav link
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
         });
     </script>
     

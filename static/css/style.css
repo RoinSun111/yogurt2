@@ -1,48 +1,183 @@
+/* Nike-inspired styling - sleek, clean, cool */
+:root {
+    --nike-black: #111111;
+    --nike-white: #f5f5f5;
+    --nike-accent: #fa5400;
+    --nike-gray-dark: #222222;
+    --nike-gray: #333333;
+    --nike-gray-light: #4d4d4d;
+    --nike-success: #52c41a;
+    --nike-warning: #faad14;
+    --nike-info: #13c2c2;
+    --card-radius: 16px;
+    --button-radius: 24px;
+}
+
 /* Main layout styles */
 body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background-color: var(--nike-black);
+    color: var(--nike-white);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: -0.02em;
 }
 
 main {
     flex: 1;
+    padding: 1.5rem 0;
+}
+
+/* Override Bootstrap theme */
+.card {
+    background-color: var(--nike-gray-dark);
+    border: none;
+    border-radius: var(--card-radius);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.25);
+}
+
+.card-header {
+    background-color: var(--nike-gray);
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Buttons and badges */
+.btn {
+    border-radius: var(--button-radius);
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: var(--nike-accent);
+    border-color: var(--nike-accent);
+}
+
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus {
+    background-color: #ff6a1f !important;
+    border-color: #ff6a1f !important;
+}
+
+.btn-outline-primary {
+    border-color: var(--nike-accent);
+    color: var(--nike-accent);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--nike-accent);
+    border-color: var(--nike-accent);
+}
+
+.badge {
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badge.bg-primary {
+    background-color: var(--nike-accent) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--nike-success) !important;
+}
+
+.badge.bg-warning {
+    background-color: var(--nike-warning) !important;
+}
+
+.badge.bg-info {
+    background-color: var(--nike-info) !important;
+}
+
+.badge.bg-secondary {
+    background-color: var(--nike-gray-light) !important;
+}
+
+/* Progress bars */
+.progress {
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background-color: var(--nike-accent);
+}
+
+.progress-bar.bg-success {
+    background-color: var(--nike-success) !important;
+}
+
+.progress-bar.bg-warning {
+    background-color: var(--nike-warning) !important;
+}
+
+.progress-bar.bg-info {
+    background-color: var(--nike-info) !important;
 }
 
 /* Activity monitor styles */
 .activity-icon-container {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     display: flex;
     justify-content: center;
     align-items: center;
     border-radius: 50%;
-    background-color: rgba(13, 110, 253, 0.1);
-    color: var(--bs-primary);
+    background-color: var(--nike-gray);
+    color: var(--nike-accent);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .activity-icon-container i {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
 }
 
 .metric {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
-    padding: 0.5rem 0.75rem;
+    background-color: var(--nike-gray);
+    border-radius: 12px;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     min-width: 80px;
+    transition: transform 0.2s ease;
+}
+
+.metric:hover {
+    transform: translateY(-4px);
 }
 
 .metric-label {
     font-size: 0.8rem;
     opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .metric-value {
     font-weight: bold;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
 }
 
 /* Focus score display */
@@ -52,8 +187,8 @@ main {
 
 .progress-ring {
     position: relative;
-    width: 150px;
-    height: 150px;
+    width: 180px;
+    height: 180px;
     margin: 0 auto;
 }
 
@@ -72,8 +207,10 @@ main {
 }
 
 #focus-score {
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: bold;
+    line-height: 1;
+    color: var(--nike-white);
 }
 
 /* Camera and video styles */
@@ -81,9 +218,10 @@ main {
     position: relative;
     width: 100%;
     aspect-ratio: 4/3;
-    background-color: var(--bs-dark);
-    border-radius: 5px;
+    background-color: #000;
+    border-radius: 16px;
     overflow: hidden;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
 #webcam {
@@ -92,7 +230,7 @@ main {
     object-fit: cover;
 }
 
-#output-canvas {
+#output-canvas, #annotation-canvas {
     position: absolute;
     top: 0;
     left: 0;
@@ -111,7 +249,7 @@ main {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.85);
 }
 
 /* Water intake visualization */
@@ -123,12 +261,12 @@ main {
 
 .water-bottle {
     position: relative;
-    width: 60px;
-    height: 150px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
+    width: 70px;
+    height: 160px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 35px;
     overflow: hidden;
-    border: 2px solid var(--bs-primary);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .water-level {
@@ -136,40 +274,179 @@ main {
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: rgba(13, 110, 253, 0.7);
-    transition: height 0.5s ease-in-out;
+    background: linear-gradient(135deg, #0396FF 0%, #0096FF 100%);
+    border-radius: 0;
+    box-shadow: 0 -5px 15px rgba(3, 150, 255, 0.3);
+    transition: height 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* Header and footer */
+header {
+    border-bottom: 1px solid var(--nike-gray);
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 1.5rem;
+    margin: 0 0.3rem;
+    border-radius: 24px;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover, .nav-link:focus {
+    color: var(--nike-white);
+    background-color: var(--nike-gray);
+}
+
+.time-display {
+    background-color: var(--nike-gray);
+    padding: 0.4rem 1rem;
+    border-radius: 24px;
+    font-weight: bold;
+}
+
+footer {
+    border-top: 1px solid var(--nike-gray);
 }
 
 /* Icon sizes */
 .feather-icon {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     vertical-align: text-bottom;
+    stroke-width: a,5;
 }
 
 .feather-icon-sm {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
 }
 
 .feather-icon-lg {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
 }
 
 /* Toast styling */
 .toast {
     opacity: 1;
+    background-color: var(--nike-gray-dark);
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+}
+
+.toast-header {
+    background-color: var(--nike-gray);
+    color: var(--nike-white);
+    border-bottom: none;
+}
+
+/* Metric cards */
+.metric-card {
+    background-color: var(--nike-gray);
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-4px);
+}
+
+.metric-card .metric-label {
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.85rem;
+}
+
+.metric-card .metric-value {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* Timeline */
+.timeline-container {
+    position: relative;
+    padding: 1rem 0;
+    margin-left: 50px;
+}
+
+.timeline-container::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background-color: var(--nike-gray);
+    border-radius: 3px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 8px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: var(--nike-accent);
+    box-shadow: 0 0 0 4px rgba(250, 84, 0, 0.3);
+    z-index: 1;
+}
+
+.timeline-item-content {
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    background-color: var(--nike-gray);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-item.focus::before {
+    background-color: var(--nike-success);
+    box-shadow: 0 0 0 4px rgba(82, 196, 26, 0.3);
+}
+
+.timeline-item.posture::before {
+    background-color: var(--nike-warning);
+    box-shadow: 0 0 0 4px rgba(250, 173, 20, 0.3);
+}
+
+.timeline-item.activity::before {
+    background-color: var(--nike-info);
+    box-shadow: 0 0 0 4px rgba(19, 194, 194, 0.3);
 }
 
 /* Responsive adjustments for small screens */
 @media (max-width: 768px) {
     #focus-score {
-        font-size: 2rem;
+        font-size: 2.5rem;
     }
     
     .water-bottle {
-        height: 120px;
-        width: 50px;
+        height: 130px;
+        width: 60px;
+    }
+    
+    .card-header, .card-body {
+        padding: 1rem;
+    }
+    
+    .progress-ring {
+        width: 150px;
+        height: 150px;
     }
 }
