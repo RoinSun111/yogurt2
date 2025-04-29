@@ -88,17 +88,73 @@ class ActivityAnalyzer:
     def _initialize_ml_model(self):
         """Initialize TensorFlow Lite model for activity recognition"""
         try:
-            # In a real implementation, we would load an actual TinyML model here
-            # But for this demo, we'll use heuristic detection
+            # Set base variables
             self.model_loaded = False
             self.use_tf = False
+            self.activity_interpreter = None
+            self.substate_interpreter = None
             
-            # Set up thresholds for activity detection
+            # Model file paths
+            self.activity_model_path = os.path.join("models", "activity_recognition.tflite")
+            self.substate_model_path = os.path.join("models", "working_substate.tflite")
+            
+            # Try to load TensorFlow Lite models if they exist
+            if os.path.exists(self.activity_model_path) and os.path.getsize(self.activity_model_path) > 100:
+                try:
+                    if USING_TFLITE_RUNTIME:
+                        self.activity_interpreter = tflite.Interpreter(model_path=self.activity_model_path)
+                    else:
+                        self.activity_interpreter = tf.lite.Interpreter(model_path=self.activity_model_path)
+                    
+                    self.activity_interpreter.allocate_tensors()
+                    self.logger.info(f"Successfully loaded activity model from {self.activity_model_path}")
+                    
+                    # Get input and output details
+                    self.activity_input_details = self.activity_interpreter.get_input_details()
+                    self.activity_output_details = self.activity_interpreter.get_output_details()
+                    self.model_loaded = True
+                    self.use_tf = True
+                except Exception as e:
+                    self.logger.error(f"Failed to load activity model: {str(e)}")
+            
+            # Try to load working substate model if it exists
+            if os.path.exists(self.substate_model_path) and os.path.getsize(self.substate_model_path) > 100:
+                try:
+                    if USING_TFLITE_RUNTIME:
+                        self.substate_interpreter = tflite.Interpreter(model_path=self.substate_model_path)
+                    else:
+                        self.substate_interpreter = tf.lite.Interpreter(model_path=self.substate_model_path)
+                    
+                    self.substate_interpreter.allocate_tensors()
+                    self.logger.info(f"Successfully loaded substate model from {self.substate_model_path}")
+                    
+                    # Get input and output details
+                    self.substate_input_details = self.substate_interpreter.get_input_details()
+                    self.substate_output_details = self.substate_interpreter.get_output_details()
+                except Exception as e:
+                    self.logger.error(f"Failed to load substate model: {str(e)}")
+            
+            # Check if we should create empty models
+            if not self.model_loaded:
+                # Create models directory if it doesn't exist
+                if not os.path.exists("models"):
+                    os.makedirs("models")
+                    
+                # Check if we have model trainer module
+                try:
+                    from utils.model_trainer import ActivityModelTrainer
+                    trainer = ActivityModelTrainer()
+                    trainer.save_empty_tflite_files()
+                    self.logger.info("Created placeholder TFLite model files")
+                except ImportError:
+                    self.logger.warning("Model trainer not available")
+            
+            # Set up threshold values even if model loaded - some still used for heuristics
             self.gaze_focus_threshold = 15.0  # Head angle threshold for focus detection
             self.typing_threshold = 5  # Number of movements per 10 seconds for typing
             self.writing_threshold = 3  # Number of movements per 10 seconds for writing
             
-            # Additional counters for new requirements
+            # Additional counters for requirement tracking
             self.distraction_count = 0
             self.last_distraction_time = 0
             self.distraction_events = []
@@ -111,10 +167,34 @@ class ActivityAnalyzer:
             self.focus_time_total = 0
             self.active_work_time_total = 0
             
-            self.logger.info("Activity analyzer initialized with enhanced focus tracking")
+            # Load metadata if available
+            self._load_model_metadata()
+            
+            if self.model_loaded:
+                self.logger.info("Activity analyzer initialized with TensorFlow Lite models")
+            else:
+                self.logger.info("Activity analyzer initialized with enhanced focus tracking (heuristic mode)")
             
         except Exception as e:
             self.logger.error(f"Error initializing activity analyzer: {str(e)}")
+            
+    def _load_model_metadata(self):
+        """Load metadata for models if available"""
+        try:
+            activity_metadata_path = os.path.join("models", "activity_metadata.json")
+            substate_metadata_path = os.path.join("models", "substate_metadata.json")
+            
+            if os.path.exists(activity_metadata_path):
+                with open(activity_metadata_path, 'r') as f:
+                    self.activity_metadata = json.load(f)
+                    self.logger.debug(f"Loaded activity metadata: {self.activity_metadata}")
+            
+            if os.path.exists(substate_metadata_path):
+                with open(substate_metadata_path, 'r') as f:
+                    self.substate_metadata = json.load(f)
+                    self.logger.debug(f"Loaded substate metadata: {self.substate_metadata}")
+        except Exception as e:
+            self.logger.error(f"Error loading model metadata: {str(e)}")
     
     def analyze(self, image, pose_landmarks, face_detections=None):
         """
@@ -197,14 +277,40 @@ class ActivityAnalyzer:
         # Check for phone use (another distraction type)
         is_phone_use = self._detect_phone_use(pose_landmarks)
         
-        # Use heuristic detection for activity states
-        self._update_state(head_angle, movement_level, result['people_detected'])
-        
-        # If in working state, detect the specific working activity
-        # Only detect specific activities if not using phone
-        if self.current_state == "working" and not is_phone_use:
-            self._detect_working_activity(movement_level, head_angle)
-        elif is_phone_use and self.current_state == "working":
+        # Use TensorFlow model if available
+        if self.model_loaded and self.use_tf:
+            # Prepare input data for model inference
+            input_data = self._prepare_input_features(pose_landmarks, head_angle, movement_level)
+            
+            # Use model for activity state prediction
+            predicted_state, confidence = self._predict_activity_state(input_data)
+            
+            # Only update if confidence is high enough
+            if confidence > 0.65:  # 65% confidence threshold
+                if predicted_state != self.current_state:
+                    self._transition_state(predicted_state)
+                    self.logger.info(f"ML model predicted state: {predicted_state} (confidence: {confidence:.2f})")
+            
+            # If in working state, use model for working substate prediction
+            if self.current_state == "working" and not is_phone_use:
+                predicted_substate, substate_confidence = self._predict_working_substate(input_data)
+                
+                # Only update if confidence is high enough
+                if substate_confidence > 0.65:  # 65% confidence threshold
+                    if predicted_substate != self.current_substate:
+                        self.current_substate = predicted_substate
+                        self.logger.debug(f"ML model predicted substate: {predicted_substate} (confidence: {substate_confidence:.2f})")
+            
+        else:
+            # Use heuristic detection when model not available
+            self._update_state(head_angle, movement_level, result['people_detected'])
+            
+            # If in working state, detect the specific working activity using heuristics
+            if self.current_state == "working" and not is_phone_use:
+                self._detect_working_activity(movement_level, head_angle)
+                
+        # Always handle phone use since it's a special case
+        if is_phone_use and self.current_state == "working":
             if self.current_substate != "phone_use":
                 self.current_substate = "phone_use"
                 self.logger.debug("Working substate changed to phone_use")
@@ -449,6 +555,135 @@ class ActivityAnalyzer:
             self.logger.error(f"Error calculating movement: {str(e)}")
             return 0.0
     
+    def _prepare_input_features(self, pose_landmarks, head_angle, movement_level):
+        """
+        Prepare input features for ML model inference
+        
+        Args:
+            pose_landmarks: MediaPipe pose landmarks
+            head_angle: Calculated head angle
+            movement_level: Calculated movement level
+            
+        Returns:
+            numpy array: Input features for the model
+        """
+        try:
+            # Extract features from landmarks
+            features = []
+            
+            # Add landmark coordinates (x, y, z if available)
+            for lm in pose_landmarks:
+                features.extend([lm.x, lm.y, lm.z if hasattr(lm, 'z') else 0.0])
+                
+            # Add additional features
+            features.append(head_angle)
+            features.append(movement_level)
+            
+            # Convert to numpy array and reshape for model input
+            input_data = np.array(features, dtype=np.float32)
+            
+            # Reshape based on the model's expected input shape
+            if self.model_loaded and hasattr(self, 'activity_input_details'):
+                input_shape = self.activity_input_details[0]['shape']
+                input_data = np.reshape(input_data, input_shape)
+            else:
+                # Default shape if model details not available
+                input_data = np.expand_dims(input_data, axis=0)
+                
+            return input_data
+            
+        except Exception as e:
+            self.logger.error(f"Error preparing input features: {str(e)}")
+            return np.zeros((1, 100), dtype=np.float32)  # Return empty array on error
+    
+    def _predict_activity_state(self, input_data):
+        """
+        Predict activity state using the TFLite model
+        
+        Args:
+            input_data: Prepared input features
+            
+        Returns:
+            tuple: (predicted_state, confidence)
+        """
+        try:
+            if not self.model_loaded or not hasattr(self, 'activity_interpreter'):
+                return self.current_state, 0.0
+                
+            # Set input tensor
+            self.activity_interpreter.set_tensor(
+                self.activity_input_details[0]['index'], 
+                input_data
+            )
+            
+            # Run inference
+            self.activity_interpreter.invoke()
+            
+            # Get output
+            output = self.activity_interpreter.get_tensor(
+                self.activity_output_details[0]['index']
+            )
+            
+            # Get prediction
+            prediction_idx = np.argmax(output[0])
+            confidence = float(output[0][prediction_idx])
+            
+            # Map to activity state
+            if hasattr(self, 'activity_metadata') and 'classes' in self.activity_metadata:
+                predicted_state = self.activity_metadata['classes'].get(str(prediction_idx), 'unknown')
+            else:
+                predicted_state = ACTIVITY_STATES.get(prediction_idx, 'unknown')
+                
+            return predicted_state, confidence
+            
+        except Exception as e:
+            self.logger.error(f"Error predicting activity state: {str(e)}")
+            return self.current_state, 0.0
+    
+    def _predict_working_substate(self, input_data):
+        """
+        Predict working substate using the TFLite model
+        
+        Args:
+            input_data: Prepared input features
+            
+        Returns:
+            tuple: (predicted_substate, confidence)
+        """
+        try:
+            if not self.model_loaded or not hasattr(self, 'substate_interpreter'):
+                return self.current_substate, 0.0
+                
+            # Set input tensor
+            self.substate_interpreter.set_tensor(
+                self.substate_input_details[0]['index'], 
+                input_data
+            )
+            
+            # Run inference
+            self.substate_interpreter.invoke()
+            
+            # Get output
+            output = self.substate_interpreter.get_tensor(
+                self.substate_output_details[0]['index']
+            )
+            
+            # Get prediction
+            prediction_idx = np.argmax(output[0])
+            confidence = float(output[0][prediction_idx])
+            
+            # Map to working substate
+            if hasattr(self, 'substate_metadata') and 'classes' in self.substate_metadata:
+                predicted_substate = self.substate_metadata['classes'].get(str(prediction_idx))
+            else:
+                predicted_substate = WORKING_SUBSTATES.get(prediction_idx)
+                
+            return predicted_substate, confidence
+            
+        except Exception as e:
+            self.logger.error(f"Error predicting working substate: {str(e)}")
+            return self.current_substate, 0.0
+            
     def _update_state(self, head_angle, movement_level, people_detected):
         """
         Update the current activity state based on metrics

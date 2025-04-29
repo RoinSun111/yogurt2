@@ -1,0 +1,1 @@
+{"name": "Activity Recognition Model", "description": "Classifies user activity based on pose landmarks", "version": "1.0", "author": "Smart Work Focus App", "classes": {"0": "working", "1": "not_working", "2": "distracted_by_others", "3": "on_break", "4": "idle"}}
