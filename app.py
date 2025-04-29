@@ -51,6 +51,10 @@ with app.app_context():
 def index():
     return render_template('index.html')
 
+@app.route('/monitor')
+def monitor():
+    return render_template('monitor.html')
+
 @app.route('/api/focus_score')
 def get_focus_score():
     today = datetime.now().date()

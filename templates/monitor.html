@@ -1,0 +1,269 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Focus & Posture Monitoring System</h1>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Camera Feed with Analysis Overlay -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i data-feather="camera" class="feather-icon"></i>
+                    Live Analysis
+                </h5>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="toggle-annotations" checked>
+                    <label class="form-check-label" for="toggle-annotations">Show Annotations</label>
+                </div>
+            </div>
+            <div class="card-body p-0 position-relative">
+                <div class="camera-container mb-0">
+                    <video id="webcam" autoplay playsinline></video>
+                    <canvas id="annotation-canvas" width="640" height="480" class="position-absolute top-0 left-0 w-100 h-100"></canvas>
+                    <div id="camera-placeholder" class="placeholder-container text-center py-4">
+                        <i data-feather="camera-off" class="feather-icon-lg mb-2"></i>
+                        <p>Camera feed not available</p>
+                        <button id="start-camera" class="btn btn-sm btn-primary">Start Camera</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Metrics -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="bar-chart-2" class="feather-icon"></i>
+                    Real-time Metrics
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <h6 class="fw-bold">Status</h6>
+                    <div>
+                        <span class="badge bg-success me-1" id="focused-badge">Focused</span>
+                        <span class="badge bg-secondary" id="posture-badge">Posture</span>
+                    </div>
+                </div>
+
+                <div class="metrics-container">
+                    <!-- Activity State -->
+                    <div class="metric-card mb-3">
+                        <div class="d-flex justify-content-between">
+                            <div class="metric-label">Activity State</div>
+                            <div class="metric-value" id="activity-state-value">Unknown</div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div class="metric-sublabel">Substate</div>
+                            <div class="metric-subvalue" id="activity-substate-value">-</div>
+                        </div>
+                        <div class="progress mt-2">
+                            <div id="activity-progress" class="progress-bar bg-primary" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <small>Time in state:</small>
+                            <small id="time-in-state-value">0s</small>
+                        </div>
+                    </div>
+
+                    <!-- Posture Measurements -->
+                    <div class="metric-card mb-3">
+                        <div class="d-flex justify-content-between">
+                            <div class="metric-label">Posture Angle</div>
+                            <div class="metric-value" id="posture-angle-value">0°</div>
+                        </div>
+                        <div class="progress mt-2">
+                            <div id="posture-progress" class="progress-bar bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="30"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <small>Target: < 15°</small>
+                            <small id="posture-status">Good</small>
+                        </div>
+                    </div>
+
+                    <!-- Head Movement -->
+                    <div class="metric-card mb-3">
+                        <div class="d-flex justify-content-between">
+                            <div class="metric-label">Head Angle</div>
+                            <div class="metric-value" id="head-angle-value">0°</div>
+                        </div>
+                        <div class="progress mt-2">
+                            <div id="head-progress" class="progress-bar bg-info" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="90"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <small>From center</small>
+                            <small id="head-position">Centered</small>
+                        </div>
+                    </div>
+
+                    <!-- Movement Level -->
+                    <div class="metric-card">
+                        <div class="d-flex justify-content-between">
+                            <div class="metric-label">Movement Level</div>
+                            <div class="metric-value" id="movement-level-value">0%</div>
+                        </div>
+                        <div class="progress mt-2">
+                            <div id="movement-progress" class="progress-bar bg-warning" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <small>Activity intensity</small>
+                            <small id="movement-status">Low</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Detection Timeline -->
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="clock" class="feather-icon"></i>
+                    Detection Timeline
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline-container" id="detection-timeline">
+                    <!-- Timeline will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alerts for detection events -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="detection-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i data-feather="alert-circle" class="feather-icon-sm me-2"></i>
+            <strong class="me-auto" id="detection-title">Detection</strong>
+            <small id="detection-time">now</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="detection-message">
+            Detection event message.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .camera-container {
+        width: 100%;
+        aspect-ratio: 4/3;
+        background-color: #000;
+        position: relative;
+        overflow: hidden;
+        border-radius: 0.25rem;
+    }
+
+    #webcam, #annotation-canvas {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    #annotation-canvas {
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    .metric-card {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 0.5rem;
+        padding: 1rem;
+    }
+
+    .metric-label {
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .metric-value {
+        font-weight: bold;
+        font-size: 1.25rem;
+    }
+
+    .metric-sublabel {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .timeline-container {
+        position: relative;
+        padding: 1rem 0;
+        margin-left: 50px;
+    }
+
+    .timeline-container::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 2px;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -8px;
+        top: 8px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: var(--bs-primary);
+    }
+
+    .timeline-item-content {
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .timeline-item-time {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .timeline-item.focus::before {
+        background-color: var(--bs-success);
+    }
+
+    .timeline-item.posture::before {
+        background-color: var(--bs-warning);
+    }
+
+    .timeline-item.activity::before {
+        background-color: var(--bs-info);
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<!-- Load Monitor scripts -->
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+<script src="{{ url_for('static', filename='js/monitor.js') }}"></script>
+{% endblock %}

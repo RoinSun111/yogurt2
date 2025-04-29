@@ -4,6 +4,7 @@ import cv2
 import time
 import math
 from datetime import datetime
+from utils.eye_tracker import EyeTracker
 
 class ActivityAnalyzer:
     def __init__(self):

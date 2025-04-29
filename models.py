@@ -36,6 +36,11 @@ class ActivityStatus(db.Model):
     movement_level = db.Column(db.Float, default=0.0)  # Movement intensity (0-100)
     people_detected = db.Column(db.Integer, default=0)  # Number of people in frame
     
+    # Eye tracking metrics
+    gaze_direction = db.Column(db.String(20), default="center")  # Direction of gaze: center, left, right, up, down, etc.
+    eye_focus_score = db.Column(db.Float, default=1.0)  # Eye focus score (0-1)
+    blink_rate = db.Column(db.Float, default=0.0)  # Blinks per minute
+    
     # Time in current state (seconds)
     time_in_state = db.Column(db.Integer, default=0)
     
