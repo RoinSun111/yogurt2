@@ -1,0 +1,12 @@
+Focus Time Tracking: Continuously detect when the user is looking at the screen (using head/facial orientation) and accumulate the cumulative daily focus time. Display this in minutes/hours on the dashboard.
+Focus Score: Compute and display a “Focus Rate” (%) = (Focus Time) / (Active Work Time) × 100%. For example, showing “Focus Time Today: 70 min” and “Focus Rate: 94%”. (Rename “Focus Score” from mockup to emphasize it’s a percentage of active work.)
+Distraction Event Detection: Count each distraction as when the user’s gaze turns away from the screen (beyond a yaw/pitch threshold) or when a phone is detected in the user’s hand. Increment a Distraction Counter (daily total) and log timestamps.
+Away Time Monitoring: Detect when the user leaves the desk (no face detected for >30–60 seconds). Report total time away and number of break events per day.
+Posture Monitoring: Use the camera to estimate the user’s upper-body pose/spine angle. Classify posture as Upright vs Slouching (e.g. spine angle <15° vs >15°)​
+ijritcc.org
+. Provide posture feedback (e.g. “Great upright posture!” or warnings).
+Movement Detection: Quantify body movement (e.g. shifting or fidgeting) as a simple percentage or activity score. Provide this as a minor metric in the UI (e.g. “Movement Level: Low/Medium/High”).
+On-Device Inference: All computer vision models (head pose, posture, object detection) must run locally on the desk’s edge device using TinyML (TensorFlow Lite or similar)​
+ijritcc.org
+. No video is streamed off-device; only aggregated metrics are stored/logged.
+Real-Time Dashboard (UI): A live display (on the desk’s attached screen or via an app) showing current state (e.g. “Working”, “Away”), real-time focus percentage, current activity (e.g. Typing), head/gaze angle, posture status, and cumulative metrics (focus time, breaks, distractions). The dashboard uses intuitive visualizations (e.g. progress rings, status badges) and is color-coded (green for good focus/upright, red/orange for poor) as in the mockup.

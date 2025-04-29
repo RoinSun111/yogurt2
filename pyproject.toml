@@ -11,4 +11,5 @@ dependencies = [
     "mediapipe>=0.10.21",
     "opencv-python>=4.11.0.86",
     "psycopg2-binary>=2.9.10",
+    "tflite-runtime>=2.14.0",
 ]
