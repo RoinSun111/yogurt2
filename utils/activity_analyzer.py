@@ -178,15 +178,22 @@ class ActivityAnalyzer:
         
         # Check for phone use (another distraction type)
         is_phone_use = self._detect_phone_use(pose_landmarks)
-        if is_phone_use and self.current_state == "working":
-            self.current_substate = "phone_use"
         
         # Use heuristic detection for activity states
         self._update_state(head_angle, movement_level, result['people_detected'])
         
         # If in working state, detect the specific working activity
+        # Only detect specific activities if not using phone
         if self.current_state == "working" and not is_phone_use:
             self._detect_working_activity(movement_level, head_angle)
+        elif is_phone_use and self.current_state == "working":
+            if self.current_substate != "phone_use":
+                self.current_substate = "phone_use"
+                self.logger.debug("Working substate changed to phone_use")
+        elif self.current_substate == "phone_use" and not is_phone_use:
+            # Reset substate if phone use is no longer detected
+            self.current_substate = None
+            self.logger.debug("Phone use ended, resetting substate")
         
         # Update result with current state and substate
         result['working_substate'] = self.current_substate
@@ -289,37 +296,60 @@ class ActivityAnalyzer:
         try:
             # Check if landmarks for hand and face are available
             if len(pose_landmarks) >= 20:
-                # Get wrist and ear positions
-                right_wrist = pose_landmarks[4]
-                left_wrist = pose_landmarks[7]
-                right_ear = pose_landmarks[8]
+                # Get wrist positions
+                right_wrist = pose_landmarks[16]  # Right wrist
+                left_wrist = pose_landmarks[15]   # Left wrist
+                
+                # Get face landmarks
+                nose = pose_landmarks[0]
                 left_ear = pose_landmarks[7]
+                right_ear = pose_landmarks[8]
                 
-                # Calculate distances from wrists to ears
-                right_distance = np.sqrt((right_wrist.x - right_ear.x)**2 + (right_wrist.y - right_ear.y)**2)
-                left_distance = np.sqrt((left_wrist.x - left_ear.x)**2 + (left_wrist.y - left_ear.y)**2)
+                # Calculate center of face
+                face_center_x = nose.x
+                face_center_y = (nose.y + (left_ear.y + right_ear.y) / 2) / 2
                 
-                # Check if either wrist is close to the ear (phone call position)
-                is_phone_near_ear = min(right_distance, left_distance) < 0.15
+                # Calculate distances from wrists to face center
+                right_dist = np.sqrt((right_wrist.x - face_center_x)**2 + (right_wrist.y - face_center_y)**2)
+                left_dist = np.sqrt((left_wrist.x - face_center_x)**2 + (left_wrist.y - face_center_y)**2)
                 
-                if is_phone_near_ear:
-                    # Count as a phone distraction event
-                    current_time = time.time()
-                    if current_time - self.last_distraction_time > 10:  # At least 10s between events
-                        self.distraction_count += 1
-                        self.last_distraction_time = current_time
-                        self.distraction_events.append({
-                            'timestamp': current_time,
-                            'type': 'phone_use'
-                        })
-                        self.logger.debug("Phone use detected")
-                        
-                        # Set working substate if we're in working state
-                        if self.current_state == "working":
-                            self.current_substate = "phone_use"
+                # Parameters for detection
+                distance_threshold = 0.07  # Must be very close to ear/face
+                persistence_count = getattr(self, '_phone_use_persistence', 0)
+                persistence_required = 5  # Need this many consecutive detections
                 
-                return is_phone_near_ear
+                # Check if either wrist is extremely close to the face
+                is_phone_near_face = min(right_dist, left_dist) < distance_threshold
+                
+                if is_phone_near_face:
+                    # Count consecutive frames with phone detected
+                    self._phone_use_persistence = persistence_count + 1
+                    if self._phone_use_persistence >= persistence_required:
+                        # Count as a phone distraction event after persistent detection
+                        current_time = time.time()
+                        if current_time - self.last_distraction_time > 10:  # At least 10s between events
+                            self.distraction_count += 1
+                            self.last_distraction_time = current_time
+                            self.distraction_events.append({
+                                'timestamp': current_time,
+                                'type': 'phone_use'
+                            })
+                            self.logger.debug("Phone use detected (persistent)")
+                            
+                            # Set working substate if we're in working state
+                            if self.current_state == "working":
+                                self.current_substate = "phone_use"
+                                
+                        return True  # Phone is being used
+                else:
+                    # Reset persistence counter when no phone is detected
+                    self._phone_use_persistence = max(0, persistence_count - 2)  # Decrease faster than increase
+                    
+                    # Clear phone_use substate if persistence is low
+                    if self.current_substate == "phone_use" and self._phone_use_persistence < 2:
+                        self.current_substate = None
             
+            # No phone detected or persistence too low
             return False
         except Exception as e:
             self.logger.error(f"Error detecting phone use: {str(e)}")
