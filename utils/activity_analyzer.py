@@ -6,7 +6,25 @@ import math
 from datetime import datetime
 import os
 import random
+import json
 from typing import Dict, List, Tuple, Optional
+
+# Activity state and working substate mappings
+ACTIVITY_STATES = {
+    0: "working",
+    1: "not_working",
+    2: "distracted_by_others",
+    3: "on_break",
+    4: "idle"
+}
+
+WORKING_SUBSTATES = {
+    0: None,  # Generic working
+    1: "typing",
+    2: "writing",
+    3: "reading",
+    4: "phone_use"
+}
 
 # Try to import tflite_runtime (our preferred small TFLite runtime)
 try:
