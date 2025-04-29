@@ -175,31 +175,52 @@ def process_frame():
     )
     db.session.add(new_focus)
     
-    # Analyze activity if user is present
-    activity_data = None
-    if is_present and posture_results.get('pose_landmarks'):
-        # Get the MediaPipe pose landmarks from posture analyzer's results
-        pose_landmarks = posture_results.get('pose_landmarks')
-        
-        # Analyze activity
-        activity_data = activity_analyzer.analyze(
-            image=frame, 
-            pose_landmarks=pose_landmarks,
-            face_detections=None  # Currently not implementing face detection
-        )
-        
-        # Save activity status
-        new_activity = models.ActivityStatus(
-            activity_state=activity_data['activity_state'],
-            working_substate=activity_data['working_substate'],
-            head_angle=activity_data['head_angle'],
-            movement_level=activity_data['movement_level'],
-            people_detected=activity_data['people_detected'],
-            time_in_state=activity_data['time_in_state'],
-            date=datetime.now().date(),
-            timestamp=datetime.now()
-        )
-        db.session.add(new_activity)
+    # Initialize default activity data based on presence status
+    if not is_present:
+        # User is not at the desk
+        activity_data = {
+            'activity_state': 'not_at_desk',
+            'working_substate': None,
+            'head_angle': 0.0,
+            'movement_level': 0.0,
+            'people_detected': 0,
+            'time_in_state': 0
+        }
+    else:
+        # User is present but analyze activity if pose landmarks are available
+        if posture_results.get('pose_landmarks'):
+            # Get the MediaPipe pose landmarks from posture analyzer's results
+            pose_landmarks = posture_results.get('pose_landmarks')
+            
+            # Analyze activity
+            activity_data = activity_analyzer.analyze(
+                image=frame, 
+                pose_landmarks=pose_landmarks,
+                face_detections=None  # Currently not implementing face detection
+            )
+        else:
+            # User is detected but no reliable pose landmarks
+            activity_data = {
+                'activity_state': 'unknown',
+                'working_substate': None,
+                'head_angle': 0.0,
+                'movement_level': 0.0,
+                'people_detected': 1,
+                'time_in_state': 0
+            }
+    
+    # Save activity status
+    new_activity = models.ActivityStatus(
+        activity_state=activity_data['activity_state'],
+        working_substate=activity_data['working_substate'],
+        head_angle=activity_data['head_angle'],
+        movement_level=activity_data['movement_level'],
+        people_detected=activity_data['people_detected'],
+        time_in_state=activity_data['time_in_state'],
+        date=datetime.now().date(),
+        timestamp=datetime.now()
+    )
+    db.session.add(new_activity)
     
     db.session.commit()
     
@@ -208,19 +229,9 @@ def process_frame():
         'posture': posture,
         'is_focused': is_focused,
         'angle': angle,
-        'is_present': is_present
+        'is_present': is_present,
+        'activity': activity_data
     }
-    
-    # Add activity data if available
-    if activity_data:
-        response_data['activity'] = {
-            'activity_state': activity_data['activity_state'],
-            'working_substate': activity_data['working_substate'],
-            'head_angle': activity_data['head_angle'],
-            'movement_level': activity_data['movement_level'],
-            'people_detected': activity_data['people_detected'],
-            'time_in_state': activity_data['time_in_state']
-        }
     
     return jsonify(response_data)
 
