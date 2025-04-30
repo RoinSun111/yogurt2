@@ -1,0 +1,236 @@
+{% extends "layout.html" %}
+
+{% block title %}Activity Records{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Activity Records</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-dark text-white border-secondary">
+                <div class="card-body">
+                    <h5 class="card-title">Today's Summary ({{ summary.date }})</h5>
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <div class="display-4 text-warning mb-2">{{ summary.distraction_count }}</div>
+                            <p>Distractions</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="display-4 text-primary mb-2">{{ summary.away_count }}</div>
+                            <p>Away from Desk</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="display-4 text-info mb-2">{{ summary.talking_count }}</div>
+                            <p>Talking to Others</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="display-4 text-danger mb-2">{{ summary.phone_use_count }}</div>
+                            <p>Phone Usage</p>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6>Total Distraction Time</h6>
+                            <div class="progress" style="height: 25px;">
+                                {% set total_minutes = (summary.total_distraction_time / 60)|int %}
+                                {% set percent = (total_minutes / 480 * 100)|int if total_minutes < 480 else 100 %}
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ percent }}%;" 
+                                    aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ total_minutes }} mins
+                                </div>
+                            </div>
+                            <small class="text-muted">Based on an 8-hour workday (480 minutes)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card bg-dark text-white border-secondary mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Phone Usage <span class="badge bg-danger">{{ summary.phone_use_count }}</span></h5>
+                </div>
+                <div class="card-body">
+                    {% if events_by_type.phone_use %}
+                        <ul class="list-group list-group-flush">
+                            {% for event in events_by_type.phone_use %}
+                                <li class="list-group-item bg-dark text-white border-secondary">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <i class="fas fa-mobile-alt me-2 text-danger"></i>
+                                            Phone check
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-secondary">
+                                                {{ event.start_time.strftime('%H:%M') }}
+                                            </span>
+                                            {% if event.duration %}
+                                                <span class="badge bg-danger">{{ (event.duration / 60)|round(1) }} mins</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">In progress</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <p>No phone usage detected today!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card bg-dark text-white border-secondary mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Away from Desk <span class="badge bg-primary">{{ summary.away_count }}</span></h5>
+                </div>
+                <div class="card-body">
+                    {% if events_by_type.away %}
+                        <ul class="list-group list-group-flush">
+                            {% for event in events_by_type.away %}
+                                <li class="list-group-item bg-dark text-white border-secondary">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <i class="fas fa-walking me-2 text-primary"></i>
+                                            Left desk
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-secondary">
+                                                {{ event.start_time.strftime('%H:%M') }}
+                                            </span>
+                                            {% if event.duration %}
+                                                <span class="badge bg-primary">{{ (event.duration / 60)|round(1) }} mins</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">In progress</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-chair fa-3x text-success mb-3"></i>
+                            <p>No away events recorded today!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card bg-dark text-white border-secondary mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Talking to Others <span class="badge bg-info">{{ summary.talking_count }}</span></h5>
+                </div>
+                <div class="card-body">
+                    {% if events_by_type.talking %}
+                        <ul class="list-group list-group-flush">
+                            {% for event in events_by_type.talking %}
+                                <li class="list-group-item bg-dark text-white border-secondary">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <i class="fas fa-comments me-2 text-info"></i>
+                                            Conversation
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-secondary">
+                                                {{ event.start_time.strftime('%H:%M') }}
+                                            </span>
+                                            {% if event.duration %}
+                                                <span class="badge bg-info">{{ (event.duration / 60)|round(1) }} mins</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">In progress</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-user-secret fa-3x text-success mb-3"></i>
+                            <p>No conversations detected today!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card bg-dark text-white border-secondary mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Other Distractions <span class="badge bg-warning">{{ summary.distraction_count }}</span></h5>
+                </div>
+                <div class="card-body">
+                    {% if events_by_type.distraction %}
+                        <ul class="list-group list-group-flush">
+                            {% for event in events_by_type.distraction %}
+                                <li class="list-group-item bg-dark text-white border-secondary">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                                            Distraction
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-secondary">
+                                                {{ event.start_time.strftime('%H:%M') }}
+                                            </span>
+                                            {% if event.duration %}
+                                                <span class="badge bg-warning">{{ (event.duration / 60)|round(1) }} mins</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">In progress</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-thumbs-up fa-3x text-success mb-3"></i>
+                            <p>No general distractions recorded!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add navigation highlighting
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.remove('active');
+        });
+        
+        // Add a link to this page in the navbar if not present
+        const navbar = document.querySelector('.navbar-nav');
+        if (navbar) {
+            let activityLink = document.querySelector('a[href="/activity-records"]');
+            if (!activityLink) {
+                const li = document.createElement('li');
+                li.className = 'nav-item';
+                li.innerHTML = '<a class="nav-link active" href="/activity-records">Activity Records</a>';
+                navbar.appendChild(li);
+            } else {
+                activityLink.classList.add('active');
+            }
+        }
+    });
+</script>
+{% endblock %}
