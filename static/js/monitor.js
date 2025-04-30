@@ -166,6 +166,115 @@ function updateMetrics(data) {
             }
         }
     }
+    
+    // Update advanced posture metrics
+    const postureQualityBadge = document.getElementById('posture-quality-badge');
+    const postureDetailedMetrics = document.getElementById('posture-detailed-metrics');
+    const postureFeedback = document.getElementById('posture-feedback');
+    
+    if (postureQualityBadge && data.posture_quality) {
+        // Set badge text and color based on quality
+        let qualityText, qualityClass;
+        switch(data.posture_quality) {
+            case 'excellent':
+                qualityText = 'Excellent';
+                qualityClass = 'bg-success';
+                break;
+            case 'good':
+                qualityText = 'Good';
+                qualityClass = 'bg-info';
+                break;
+            case 'fair':
+                qualityText = 'Fair';
+                qualityClass = 'bg-warning';
+                break;
+            case 'poor':
+                qualityText = 'Poor';
+                qualityClass = 'bg-danger';
+                break;
+            default:
+                qualityText = 'Unknown';
+                qualityClass = 'bg-secondary';
+        }
+        
+        postureQualityBadge.textContent = qualityText;
+        postureQualityBadge.className = `badge ${qualityClass}`;
+    }
+    
+    // Update detailed metrics if the container exists
+    if (postureDetailedMetrics) {
+        let metricsHTML = '';
+        
+        // Add neck angle metric if available
+        if (data.neck_angle !== undefined) {
+            const neckAngleClass = data.neck_angle > 20 ? 'text-danger' : 'text-success';
+            metricsHTML += `
+                <div class="d-flex justify-content-between mb-2">
+                    <div class="metric-sublabel">Neck Angle</div>
+                    <div class="${neckAngleClass}">${Math.round(data.neck_angle)}°</div>
+                </div>
+            `;
+        }
+        
+        // Add shoulder alignment metric if available
+        if (data.shoulder_alignment !== undefined) {
+            const alignmentPercent = Math.round(data.shoulder_alignment * 100);
+            let alignmentClass = 'text-success';
+            if (alignmentPercent < 80) alignmentClass = 'text-danger';
+            else if (alignmentPercent < 90) alignmentClass = 'text-warning';
+            
+            metricsHTML += `
+                <div class="d-flex justify-content-between mb-2">
+                    <div class="metric-sublabel">Shoulder Alignment</div>
+                    <div class="${alignmentClass}">${alignmentPercent}%</div>
+                </div>
+            `;
+        }
+        
+        // Add head position metric if available
+        if (data.head_forward_position !== undefined) {
+            const headPositionClass = data.head_forward_position > 0.1 ? 'text-warning' : 'text-success';
+            const headPositionValue = Math.round(data.head_forward_position * 100);
+            metricsHTML += `
+                <div class="d-flex justify-content-between mb-2">
+                    <div class="metric-sublabel">Head Position</div>
+                    <div class="${headPositionClass}">${headPositionValue > 0 ? headPositionValue : 'Good'}</div>
+                </div>
+            `;
+        }
+        
+        // Add symmetry score if available
+        if (data.symmetry_score !== undefined) {
+            const symmetryPercent = Math.round(data.symmetry_score * 100);
+            let symmetryClass = 'text-success';
+            if (symmetryPercent < 70) symmetryClass = 'text-danger';
+            else if (symmetryPercent < 85) symmetryClass = 'text-warning';
+            
+            metricsHTML += `
+                <div class="d-flex justify-content-between mb-2">
+                    <div class="metric-sublabel">Body Symmetry</div>
+                    <div class="${symmetryClass}">${symmetryPercent}%</div>
+                </div>
+            `;
+        }
+        
+        // Update the container content
+        postureDetailedMetrics.innerHTML = metricsHTML;
+    }
+    
+    // Update posture feedback if available
+    if (postureFeedback && data.feedback) {
+        postureFeedback.textContent = data.feedback;
+    } else if (postureFeedback) {
+        // Set basic feedback based on posture
+        if (data.posture === 'upright') {
+            postureFeedback.textContent = 'Your posture looks good!';
+        } else if (data.posture === 'slouched') {
+            postureFeedback.textContent = 'Try to sit up straight to improve your posture.';
+        } else {
+            postureFeedback.textContent = 'Analyzing your posture...';
+        }
+    }
 }
 
 // Update activity metrics specifically
