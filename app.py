@@ -254,7 +254,14 @@ def get_posture():
             'posture': 'unknown', 
             'angle': 0,
             'posture_quality': 'unknown',
-            'feedback': "Posture data is being updated. Please refresh in a moment."
+            'neck_angle': 0,
+            'shoulder_alignment': 0,
+            'head_forward_position': 0,
+            'spine_curvature': 0,
+            'symmetry_score': 0,
+            'feedback': "Posture data is being updated. Please refresh in a moment.",
+            'trend': 'neutral',
+            'recommendation': 'Please position yourself in front of the camera.'
         })
 
 @app.route('/api/water_intake')
@@ -472,6 +479,14 @@ def process_frame():
         'is_focused': bool(is_focused),
         'angle': float(angle),
         'is_present': bool(is_present),
+        # Include advanced posture metrics if available
+        'posture_quality': posture_results.get('posture_quality', 'unknown'),
+        'neck_angle': float(posture_results.get('neck_angle', 0.0)),
+        'shoulder_alignment': float(posture_results.get('shoulder_alignment', 0.0)),
+        'head_forward_position': float(posture_results.get('head_forward_position', 0.0)),
+        'spine_curvature': float(posture_results.get('spine_curvature', 0.0)),
+        'symmetry_score': float(posture_results.get('symmetry_score', 0.0)),
+        'feedback': posture_results.get('feedback', None),
         'activity': {
             'activity_state': str(activity_data['activity_state']),
             'working_substate': activity_data['working_substate'],
