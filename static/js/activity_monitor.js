@@ -65,6 +65,12 @@ function updateActivityStatus() {
 
 // Display the activity status in the UI
 function displayActivityStatus(data) {
+    // Get previous state and substate for transition tracking
+    const prevStateEl = document.getElementById('activity-state');
+    const prevState = prevStateEl ? prevStateEl.getAttribute('data-state') || 'unknown' : 'unknown';
+    const prevSubstateEl = document.getElementById('activity-substate');
+    const prevSubstate = prevSubstateEl ? prevSubstateEl.getAttribute('data-substate') || null : null;
+    
     // State badges and colors
     const stateBadges = {
         working: { text: 'Working', class: 'bg-success' },
@@ -120,6 +126,28 @@ function displayActivityStatus(data) {
     const badge = stateBadges[state] || stateBadges.unknown;
     activityStateBadge.textContent = badge.text;
     activityStateBadge.className = `badge ${badge.class}`;
+    
+    // Track state and substate for future reference
+    activityStateBadge.setAttribute('data-state', state);
+    if (document.getElementById('activity-substate')) {
+        document.getElementById('activity-substate').setAttribute('data-substate', substate || 'none');
+    }
+    
+    // Check for transitions and trigger alerts
+    if (prevState === 'working' && state !== 'working') {
+        if (state === 'not_working') {
+            showDistractionAlert('Distraction Detected', 'You appear to be distracted from your work.');
+        } else if (state === 'distracted_by_others') {
+            showDistractionAlert('Conversation Detected', 'You appear to be talking with someone.');
+        } else if (state === 'not_at_desk') {
+            showDistractionAlert('Away from Desk', 'You left your desk.');
+        }
+    }
+    
+    // Check for phone use
+    if (substate === 'phone_use' && prevSubstate !== 'phone_use') {
+        showDistractionAlert('Phone Use Detected', 'You appear to be using your phone. Try to minimize distractions.');
+    }
     
     // Update the icon
     activityIconContainer.innerHTML = '';
@@ -232,7 +260,8 @@ function getActivityContext(state, substate) {
             base: "You're being productive.",
             typing: "You're typing. Keep up the good work!",
             writing: "You're writing. Maintain your focus.",
-            reading: "You're reading. Take in the information."
+            reading: "You're reading. Take in the information.",
+            phone_use: "You're using your phone. Try to minimize phone distractions."
         },
         not_working: "Taking a short break. Remember to stay on task.",
         distracted_by_others: "You're interacting with someone. Try to return to your work soon.",
@@ -246,4 +275,93 @@ function getActivityContext(state, substate) {
     }
     
     return contexts[state] || contexts.unknown;
+}
+
+// Show a popup alert for distraction events
+function showDistractionAlert(title, message) {
+    // Don't show alerts if they're disabled
+    if (localStorage.getItem('disableDistractionAlerts') === 'true') {
+        return;
+    }
+    
+    // Create a toast container if it doesn't exist
+    let toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = 1050;
+        document.body.appendChild(toastContainer);
+    }
+    
+    // Create a unique ID for this toast
+    const toastId = 'toast-' + Date.now();
+    
+    // Create the toast element
+    const toastElement = document.createElement('div');
+    toastElement.className = 'toast show';
+    toastElement.id = toastId;
+    toastElement.setAttribute('role', 'alert');
+    toastElement.setAttribute('aria-live', 'assertive');
+    toastElement.setAttribute('aria-atomic', 'true');
+    
+    // Create toast content
+    toastElement.innerHTML = `
+        <div class="toast-header bg-warning text-dark">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong class="me-auto">${title}</strong>
+            <small>just now</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body bg-dark text-white">
+            <p>${message}</p>
+            <div class="mt-2 d-flex justify-content-between">
+                <button type="button" class="btn btn-sm btn-outline-light dismiss-toast">Dismiss</button>
+                <button type="button" class="btn btn-sm btn-outline-danger disable-alerts">Disable Alerts</button>
+            </div>
+        </div>
+    `;
+    
+    // Add the toast to the container
+    toastContainer.appendChild(toastElement);
+    
+    // Set up event listeners for buttons
+    const dismissBtn = toastElement.querySelector('.dismiss-toast');
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', function() {
+            const toast = document.getElementById(toastId);
+            if (toast) {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }
+        });
+    }
+    
+    const disableBtn = toastElement.querySelector('.disable-alerts');
+    if (disableBtn) {
+        disableBtn.addEventListener('click', function() {
+            localStorage.setItem('disableDistractionAlerts', 'true');
+            
+            // Clear all existing toasts
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(toast => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            });
+        });
+    }
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        const toast = document.getElementById(toastId);
+        if (toast) {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }
+    }, 5000);
 }
