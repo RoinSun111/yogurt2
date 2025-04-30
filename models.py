@@ -47,3 +47,12 @@ class ActivityStatus(db.Model):
     # Timestamps
     date = db.Column(db.Date, default=datetime.now().date)
     timestamp = db.Column(db.DateTime, default=datetime.now)
+
+class DistractionEvent(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    event_type = db.Column(db.String(50))  # distraction, away, talking, phone_use
+    duration = db.Column(db.Integer, default=0)  # Duration in seconds
+    start_time = db.Column(db.DateTime, default=datetime.now)
+    end_time = db.Column(db.DateTime, nullable=True)
+    date = db.Column(db.Date, default=datetime.now().date)
+    details = db.Column(db.String(255), nullable=True)  # Additional context about the event

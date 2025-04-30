@@ -55,6 +55,42 @@ def index():
 def monitor():
     return render_template('monitor.html')
 
+@app.route('/activity-records')
+def activity_records():
+    """Render the activity records page with distraction tracking"""
+    # Get distraction events from today
+    today = datetime.now().date()
+    distraction_events = models.DistractionEvent.query.filter_by(date=today).order_by(models.DistractionEvent.start_time.desc()).all()
+    
+    # Group events by type
+    events_by_type = {
+        'distraction': [],
+        'away': [],
+        'talking': [],
+        'phone_use': []
+    }
+    
+    for event in distraction_events:
+        if event.event_type in events_by_type:
+            events_by_type[event.event_type].append(event)
+        else:
+            events_by_type['distraction'].append(event)
+    
+    # Get activity summary
+    activity_summary = {
+        'distraction_count': len(events_by_type['distraction']),
+        'away_count': len(events_by_type['away']),
+        'talking_count': len(events_by_type['talking']),
+        'phone_use_count': len(events_by_type['phone_use']),
+        'total_distraction_time': sum([e.duration or 0 for e in distraction_events]),
+        'date': today.strftime('%Y-%m-%d')
+    }
+    
+    return render_template('activity_records.html', 
+                          events=distraction_events, 
+                          events_by_type=events_by_type,
+                          summary=activity_summary)
+
 @app.route('/api/focus_score')
 def get_focus_score():
     today = datetime.now().date()
@@ -221,6 +257,48 @@ def process_frame():
         timestamp=datetime.now()
     )
     db.session.add(new_activity)
+    
+    # Track distraction events
+    previous_activity = db.session.query(models.ActivityStatus).order_by(
+        models.ActivityStatus.id.desc()).offset(1).limit(1).first()
+    
+    if previous_activity:
+        # Handle transition: working → distracted_by_others (talking to someone)
+        if previous_activity.activity_state == "working" and activity_data['activity_state'] == "distracted_by_others":
+            new_event = models.DistractionEvent(
+                event_type="talking",
+                start_time=datetime.now(),
+                details="User talking to others"
+            )
+            db.session.add(new_event)
+            
+        # Handle transition: any state → phone_use (detected phone usage)
+        if activity_data['working_substate'] == "phone_use" and previous_activity.working_substate != "phone_use":
+            new_event = models.DistractionEvent(
+                event_type="phone_use",
+                start_time=datetime.now(),
+                details="User checking phone"
+            )
+            db.session.add(new_event)
+            
+        # Handle transition: any state → not_at_desk (user left)
+        if activity_data['activity_state'] == "not_at_desk" and previous_activity.activity_state != "not_at_desk":
+            new_event = models.DistractionEvent(
+                event_type="away",
+                start_time=datetime.now(),
+                details="User left desk"
+            )
+            db.session.add(new_event)
+        
+        # Close open events when the user returns to working
+        if activity_data['activity_state'] == "working" and previous_activity.activity_state != "working":
+            open_events = db.session.query(models.DistractionEvent).filter(
+                models.DistractionEvent.end_time == None
+            ).all()
+            
+            for event in open_events:
+                event.end_time = datetime.now()
+                event.duration = int((event.end_time - event.start_time).total_seconds())
     
     db.session.commit()
     
