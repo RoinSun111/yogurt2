@@ -215,14 +215,47 @@ def get_focus_score():
 
 @app.route('/api/posture')
 def get_posture():
-    posture_status = models.PostureStatus.query.order_by(models.PostureStatus.timestamp.desc()).first()
-    if not posture_status:
-        return jsonify({'posture': 'unknown', 'angle': 0})
-    
-    return jsonify({
-        'posture': posture_status.posture,
-        'angle': posture_status.angle
-    })
+    # Use try/except to handle potential missing columns during migration
+    try:
+        posture_status = models.PostureStatus.query.order_by(models.PostureStatus.timestamp.desc()).first()
+        if not posture_status:
+            return jsonify({
+                'posture': 'unknown', 
+                'angle': 0,
+                'posture_quality': 'unknown',
+                'neck_angle': 0,
+                'shoulder_alignment': 0,
+                'head_forward_position': 0,
+                'spine_curvature': 0,
+                'symmetry_score': 0,
+                'feedback': None
+            })
+        
+        # Get posture trend data for the last hour
+        posture_trend = posture_analyzer.get_posture_trend(minutes=60)
+        
+        return jsonify({
+            'posture': posture_status.posture,
+            'posture_quality': getattr(posture_status, 'posture_quality', 'unknown'),
+            'angle': posture_status.angle,
+            'neck_angle': getattr(posture_status, 'neck_angle', 0),
+            'shoulder_alignment': getattr(posture_status, 'shoulder_alignment', 0),
+            'head_forward_position': getattr(posture_status, 'head_forward_position', 0),
+            'spine_curvature': getattr(posture_status, 'spine_curvature', 0),
+            'symmetry_score': getattr(posture_status, 'symmetry_score', 0),
+            'feedback': getattr(posture_status, 'feedback', None),
+            'trend': posture_trend.get('trend', 'neutral'),
+            'recommendation': posture_trend.get('recommendation', '')
+        })
+    except Exception as e:
+        logging.error(f"Error retrieving posture data: {str(e)}")
+        # Fallback to basic data if columns don't exist yet
+        return jsonify({
+            'posture': 'unknown', 
+            'angle': 0,
+            'posture_quality': 'unknown',
+            'feedback': "Posture data is being updated. Please refresh in a moment."
+        })
 
 @app.route('/api/water_intake')
 def get_water_intake():
@@ -296,12 +329,42 @@ def process_frame():
     is_focused = focus_calculator.is_focused(is_present, posture)
     
     # Save posture status
-    new_posture = models.PostureStatus(
-        posture=posture,
-        angle=angle,
-        timestamp=datetime.now()
-    )
-    db.session.add(new_posture)
+    try:
+        # Try to save with all new attributes (in case migration has been done)
+        if isinstance(posture_results, dict) and posture_results.get('posture_quality'):
+            new_posture = models.PostureStatus(
+                posture=posture,
+                posture_quality=posture_results.get('posture_quality', 'unknown'),
+                angle=angle,
+                neck_angle=posture_results.get('neck_angle', 0.0),
+                shoulder_alignment=posture_results.get('shoulder_alignment', 0.0),
+                head_forward_position=posture_results.get('head_forward_position', 0.0),
+                spine_curvature=posture_results.get('spine_curvature', 0.0),
+                symmetry_score=posture_results.get('symmetry_score', 0.0),
+                feedback=posture_results.get('feedback', None),
+                timestamp=datetime.now()
+            )
+        else:
+            # Fallback to basic attributes if migration is not complete
+            new_posture = models.PostureStatus(
+                posture=posture,
+                angle=angle,
+                timestamp=datetime.now()
+            )
+        db.session.add(new_posture)
+    except Exception as e:
+        # If there's a database error, log it and continue with basic data
+        logging.error(f"Error saving posture data: {str(e)}")
+        # Save only the basic posture data
+        try:
+            new_posture = models.PostureStatus(
+                posture=posture,
+                angle=angle,
+                timestamp=datetime.now()
+            )
+            db.session.add(new_posture)
+        except:
+            logging.error("Failed to save even basic posture data")
     
     # Save focus score
     new_focus = models.FocusScore(

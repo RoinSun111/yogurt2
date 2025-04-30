@@ -11,7 +11,14 @@ class FocusScore(db.Model):
 class PostureStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     posture = db.Column(db.String(50), default="unknown")  # "upright", "slouched", "unknown"
+    posture_quality = db.Column(db.String(50), default="unknown")  # "excellent", "good", "fair", "poor", "unknown"
     angle = db.Column(db.Float, default=0.0)  # Shoulder-hip angle in degrees
+    neck_angle = db.Column(db.Float, default=0.0)  # Neck angle (head tilt) in degrees
+    shoulder_alignment = db.Column(db.Float, default=0.0)  # Shoulder alignment score (0-1)
+    head_forward_position = db.Column(db.Float, default=0.0)  # Head forward position in normalized units
+    spine_curvature = db.Column(db.Float, default=0.0)  # Estimated spine curvature angle
+    symmetry_score = db.Column(db.Float, default=0.0)  # Body symmetry score (0-1)
+    feedback = db.Column(db.String(255), nullable=True)  # Specific feedback about posture issues
     timestamp = db.Column(db.DateTime, default=datetime.now)
 
 class WaterIntake(db.Model):
