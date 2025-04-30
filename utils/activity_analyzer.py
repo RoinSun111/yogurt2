@@ -758,14 +758,18 @@ class ActivityAnalyzer:
         # Count hand movements in last 10 seconds
         hand_movement_count = len(self.hand_positions)
         
+        # Higher thresholds to prevent false positives
+        typing_threshold = 12
+        writing_threshold = 7
+        
         # Detect typing (many hand movements)
-        if hand_movement_count >= self.typing_threshold:
+        if hand_movement_count >= typing_threshold:
             if self.current_substate != "typing":
                 self.current_substate = "typing"
                 self.logger.debug(f"Working substate: typing (movements: {hand_movement_count})")
         
         # Detect writing (medium hand movements)
-        elif hand_movement_count >= self.writing_threshold:
+        elif hand_movement_count >= writing_threshold:
             if self.current_substate != "writing":
                 self.current_substate = "writing"
                 self.logger.debug(f"Working substate: writing (movements: {hand_movement_count})")

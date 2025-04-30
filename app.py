@@ -227,10 +227,17 @@ def process_frame():
     # Prepare response
     response_data = {
         'posture': posture,
-        'is_focused': is_focused,
-        'angle': angle,
-        'is_present': is_present,
-        'activity': activity_data
+        'is_focused': bool(is_focused),
+        'angle': float(angle),
+        'is_present': bool(is_present),
+        'activity': {
+            'activity_state': str(activity_data['activity_state']),
+            'working_substate': activity_data['working_substate'],
+            'head_angle': float(activity_data['head_angle']),
+            'movement_level': float(activity_data['movement_level']),
+            'people_detected': int(activity_data['people_detected']),
+            'time_in_state': int(activity_data['time_in_state'])
+        }
     }
     
     return jsonify(response_data)
