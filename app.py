@@ -1,6 +1,6 @@
 import os
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, render_template, jsonify, request, Response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
@@ -90,6 +90,107 @@ def activity_records():
                           events=distraction_events, 
                           events_by_type=events_by_type,
                           summary=activity_summary)
+                          
+@app.route('/api/demo-distractions', methods=['POST'])
+def demo_distractions():
+    """Generate demo distraction data for testing the UI"""
+    # Clear any existing data
+    models.DistractionEvent.query.delete()
+    db.session.commit()
+    
+    # Current time for realistic timestamps
+    now = datetime.now()
+    today = now.date()
+    
+    # Demo events with realistic timings and durations
+    demo_events = [
+        # Phone usage events
+        {
+            'event_type': 'phone_use',
+            'start_time': now - timedelta(minutes=30),
+            'end_time': now - timedelta(minutes=28),
+            'details': 'User checking phone',
+            'date': today
+        },
+        {
+            'event_type': 'phone_use',
+            'start_time': now - timedelta(hours=2, minutes=15),
+            'end_time': now - timedelta(hours=2, minutes=13),
+            'details': 'User checking phone',
+            'date': today
+        },
+        {
+            'event_type': 'phone_use',
+            'start_time': now - timedelta(hours=4, minutes=5),
+            'end_time': now - timedelta(hours=4),
+            'details': 'User checking phone',
+            'date': today
+        },
+        
+        # Away from desk events
+        {
+            'event_type': 'away',
+            'start_time': now - timedelta(hours=1),
+            'end_time': now - timedelta(minutes=50),
+            'details': 'User left desk',
+            'date': today
+        },
+        {
+            'event_type': 'away',
+            'start_time': now - timedelta(hours=3, minutes=30),
+            'end_time': now - timedelta(hours=3, minutes=20),
+            'details': 'User left desk',
+            'date': today
+        },
+        
+        # Talking to others
+        {
+            'event_type': 'talking',
+            'start_time': now - timedelta(minutes=45),
+            'end_time': now - timedelta(minutes=40),
+            'details': 'User talking to others',
+            'date': today
+        },
+        {
+            'event_type': 'talking',
+            'start_time': now - timedelta(hours=2, minutes=45),
+            'end_time': now - timedelta(hours=2, minutes=40),
+            'details': 'User talking to others',
+            'date': today
+        },
+        
+        # General distractions
+        {
+            'event_type': 'distraction',
+            'start_time': now - timedelta(hours=1, minutes=15),
+            'end_time': now - timedelta(hours=1, minutes=13),
+            'details': 'User became distracted',
+            'date': today
+        },
+        {
+            'event_type': 'distraction',
+            'start_time': now - timedelta(hours=3),
+            'end_time': now - timedelta(hours=2, minutes=57),
+            'details': 'User became distracted',
+            'date': today
+        }
+    ]
+    
+    # Add events to database
+    for event_data in demo_events:
+        event = models.DistractionEvent(**event_data)
+        # Calculate duration
+        if event.end_time and event.start_time:
+            event.duration = int((event.end_time - event.start_time).total_seconds())
+        db.session.add(event)
+    
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': 'Demo distraction data created successfully',
+        'event_count': len(demo_events)
+    })
 
 @app.route('/api/focus_score')
 def get_focus_score():

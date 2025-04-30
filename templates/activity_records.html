@@ -4,7 +4,12 @@
 
 {% block content %}
 <div class="container py-4">
-    <h1 class="mb-4">Activity Records</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Activity Records</h1>
+        <button id="load-demo-data" class="btn btn-outline-warning">
+            <i class="fas fa-database me-2"></i> Load Demo Data
+        </button>
+    </div>
     
     <div class="row mb-4">
         <div class="col-md-12">
@@ -213,24 +218,88 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Add navigation highlighting
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.classList.remove('active');
-        });
-        
-        // Add a link to this page in the navbar if not present
-        const navbar = document.querySelector('.navbar-nav');
-        if (navbar) {
-            let activityLink = document.querySelector('a[href="/activity-records"]');
-            if (!activityLink) {
-                const li = document.createElement('li');
-                li.className = 'nav-item';
-                li.innerHTML = '<a class="nav-link active" href="/activity-records">Activity Records</a>';
-                navbar.appendChild(li);
-            } else {
-                activityLink.classList.add('active');
-            }
+        // Initialize the demo data button
+        const demoButton = document.getElementById('load-demo-data');
+        if (demoButton) {
+            demoButton.addEventListener('click', function() {
+                // Show loading state
+                const originalText = demoButton.innerHTML;
+                demoButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Loading Demo Data...';
+                demoButton.disabled = true;
+                
+                // Call the API to generate demo data
+                fetch('/api/demo-distractions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success notification
+                        const toast = document.createElement('div');
+                        toast.className = 'position-fixed top-0 end-0 p-3';
+                        toast.style.zIndex = '1050';
+                        toast.innerHTML = `
+                            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="toast-header bg-success text-white">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <strong class="me-auto">Success</strong>
+                                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                                <div class="toast-body bg-dark text-white">
+                                    <p>${data.message}</p>
+                                    <p>Created ${data.event_count} demo events for today.</p>
+                                    <div class="mt-2 pt-2 border-top">
+                                        <button type="button" class="btn btn-outline-light btn-sm" id="reload-page">
+                                            Reload Page
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(toast);
+                        
+                        // Add reload button functionality
+                        document.getElementById('reload-page').addEventListener('click', function() {
+                            window.location.reload();
+                        });
+                        
+                        // Auto reload after 3 seconds
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 3000);
+                    } else {
+                        // Reset button
+                        demoButton.innerHTML = originalText;
+                        demoButton.disabled = false;
+                        
+                        // Show error notification
+                        alert('Failed to load demo data. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    demoButton.innerHTML = originalText;
+                    demoButton.disabled = false;
+                    alert('Failed to load demo data. Please try again.');
+                });
+            });
         }
+        
+        // Initialize toast close buttons
+        document.querySelectorAll('.toast .btn-close').forEach(button => {
+            button.addEventListener('click', function() {
+                const toast = this.closest('.toast');
+                if (toast) {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        toast.parentNode.remove();
+                    }, 300);
+                }
+            });
+        });
     });
 </script>
 {% endblock %}
