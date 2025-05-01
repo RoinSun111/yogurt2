@@ -3,33 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FOCUS TRACK</title>
-    
+    <title>FLOW STATE</title>
+
     <!-- Bootstrap CSS (Replit themed) -->
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
-    
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <!-- Feather Icons -->
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous">
-    
+
     <!-- MediaPipe for pose detection -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    
+
     {% block styles %}{% endblock %}
 </head>
 <body>
@@ -42,7 +42,7 @@
                             <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                         </svg>
                     </div>
-                    <h1 class="h3 mb-0 fw-bold">FOCUS<span class="text-white-50">TRACK</span></h1>
+                    <h1 class="h3 mb-0 fw-bold">FLOW<span class="text-white-50">STATE</span></h1>
                 </div>
                 <div class="d-flex align-items-center">
                     <nav class="me-4">
@@ -88,7 +88,7 @@
                                 <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                             </svg>
                         </div>
-                        <p class="mb-0">FOCUS<span class="opacity-50">TRACK</span> &copy; 2025</p>
+                        <p class="mb-0">FLOW<span class="opacity-50">STATE</span> &copy; 2025</p>
                     </div>
                 </div>
                 <div class="col-md-6 text-md-end">
@@ -100,22 +100,22 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- Initialize Feather icons -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             feather.replace();
-            
+
             // Update current time
             function updateTime() {
                 const now = new Date();
                 const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 document.getElementById('current-time').textContent = timeString;
             }
-            
+
             updateTime();
             setInterval(updateTime, 1000);
-            
+
             // Add active class to the current nav link
             const currentPath = window.location.pathname;
             document.querySelectorAll('.nav-link').forEach(link => {
@@ -125,7 +125,7 @@
             });
         });
     </script>
-    
+
     {% block scripts %}
     {% endblock %}
 </body>
