@@ -142,75 +142,80 @@ main {
     background-color: var(--te-light-gray) !important;
 }
 
-/* Progress bars */
+/* Progress bars - TE style */
 .progress {
-    height: 8px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+    height: 6px;
+    background-color: var(--te-dark-gray);
+    border: 1px solid var(--te-gray);
+    border-radius: 0;
     overflow: hidden;
 }
 
 .progress-bar {
-    background-color: var(--nike-accent);
+    background-color: var(--te-accent);
 }
 
 .progress-bar.bg-success {
-    background-color: var(--nike-success) !important;
+    background-color: var(--te-success) !important;
 }
 
 .progress-bar.bg-warning {
-    background-color: var(--nike-warning) !important;
+    background-color: var(--te-warning) !important;
 }
 
 .progress-bar.bg-info {
-    background-color: var(--nike-info) !important;
+    background-color: var(--te-info) !important;
 }
 
-/* Activity monitor styles */
+/* Activity monitor styles - TE style */
 .activity-icon-container {
-    width: 56px;
-    height: 56px;
+    width: 50px;
+    height: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 50%;
-    background-color: var(--nike-gray);
-    color: var(--nike-accent);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--te-gray);
+    background-color: var(--te-dark-gray);
+    color: var(--te-accent);
+    border-radius: var(--card-radius);
 }
 
 .activity-icon-container i {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
 }
 
 .metric {
-    background-color: var(--nike-gray);
-    border-radius: 12px;
-    padding: 1rem;
+    background-color: var(--te-dark-gray);
+    border: 1px solid var(--te-gray);
+    border-radius: var(--card-radius);
+    padding: 0.75rem;
     display: flex;
     flex-direction: column;
     min-width: 80px;
-    transition: transform 0.2s ease;
+    transition: box-shadow 0.2s ease;
 }
 
 .metric:hover {
-    transform: translateY(-4px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .metric-label {
-    font-size: 0.8rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
     opacity: 0.7;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
 }
 
 .metric-value {
-    font-weight: bold;
-    font-size: 1.3rem;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 1.2rem;
 }
 
-/* Focus score display */
+/* Focus score display - TE style */
 .score-display {
     position: relative;
 }
@@ -220,6 +225,10 @@ main {
     width: 180px;
     height: 180px;
     margin: 0 auto;
+    padding: 10px;
+    border: 1px solid var(--te-gray);
+    border-radius: 4px;
+    background-color: var(--te-dark-gray);
 }
 
 .ring-container {
@@ -236,22 +245,39 @@ main {
     text-align: center;
 }
 
-#focus-score {
-    font-size: 3rem;
-    font-weight: bold;
-    line-height: 1;
-    color: var(--nike-white);
+.ring-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+    margin-bottom: 0.25rem;
 }
 
-/* Camera and video styles */
+#focus-score {
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1;
+    font-family: 'Space Mono', monospace;
+    color: var(--te-accent);
+}
+
+.focus-percentage {
+    font-size: 1rem;
+    opacity: 0.7;
+    margin-top: 0.25rem;
+    font-family: 'Space Mono', monospace;
+}
+
+/* Camera and video styles - TE style */
 .camera-container {
     position: relative;
     width: 100%;
     aspect-ratio: 4/3;
     background-color: #000;
-    border-radius: 16px;
+    border-radius: var(--card-radius);
     overflow: hidden;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--te-gray);
 }
 
 #webcam {
@@ -280,9 +306,38 @@ main {
     justify-content: center;
     align-items: center;
     background-color: rgba(0, 0, 0, 0.85);
+    font-family: 'Space Mono', monospace;
 }
 
-/* Water intake visualization */
+.camera-border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--te-accent);
+    border-radius: var(--card-radius);
+    pointer-events: none;
+    opacity: 0.6;
+    box-sizing: border-box;
+}
+
+.camera-label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: var(--te-dark-gray);
+    color: var(--te-accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 2px;
+    border: 1px solid var(--te-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Water intake visualization - TE style */
 .water-container {
     display: flex;
     flex-direction: column;
@@ -291,12 +346,12 @@ main {
 
 .water-bottle {
     position: relative;
-    width: 70px;
-    height: 160px;
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 35px;
+    width: 60px;
+    height: 150px;
+    background-color: var(--te-dark-gray);
+    border: 1px solid var(--te-gray);
+    border-radius: 2px;
     overflow: hidden;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .water-level {
@@ -304,10 +359,58 @@ main {
     bottom: 0;
     left: 0;
     width: 100%;
-    background: linear-gradient(135deg, #0396FF 0%, #0096FF 100%);
+    background-color: var(--te-info);
     border-radius: 0;
-    box-shadow: 0 -5px 15px rgba(3, 150, 255, 0.3);
-    transition: height 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+    transition: height 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.water-marks {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 5px 0;
+    box-sizing: border-box;
+}
+
+.water-mark {
+    width: 100%;
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.water-labels {
+    position: absolute;
+    top: 0;
+    right: -25px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 5px 0;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.water-amount {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--te-info);
+    margin-top: 10px;
+}
+
+.water-unit {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 5px;
 }
 
 /* Header and footer - TE style */
@@ -370,52 +473,63 @@ footer {
     height: 56px;
 }
 
-/* Toast styling */
+/* Toast styling - TE style */
 .toast {
     opacity: 1;
-    background-color: var(--nike-gray-dark);
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    background-color: var(--te-dark-gray);
+    border: 1px solid var(--te-gray);
+    border-radius: var(--card-radius);
 }
 
 .toast-header {
-    background-color: var(--nike-gray);
-    color: var(--nike-white);
-    border-bottom: none;
+    background-color: var(--te-dark-gray);
+    color: var(--te-white);
+    border-bottom: 1px solid var(--te-gray);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-/* Metric cards */
+.toast-body {
+    font-family: 'Work Sans', sans-serif;
+}
+
+/* Metric cards - TE style */
 .metric-card {
-    background-color: var(--nike-gray);
-    border-radius: 16px;
-    padding: 1.25rem;
+    background-color: var(--te-dark-gray);
+    border: 1px solid var(--te-gray);
+    border-radius: var(--card-radius);
+    padding: 1rem;
     margin-bottom: 1rem;
-    transition: transform 0.2s ease;
+    transition: box-shadow 0.2s ease;
 }
 
 .metric-card:hover {
-    transform: translateY(-4px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .metric-card .metric-label {
-    font-weight: 500;
+    font-family: 'Space Mono', monospace;
+    font-weight: 400;
     color: rgba(255, 255, 255, 0.8);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
 .metric-card .metric-value {
-    font-weight: bold;
-    font-size: 1.5rem;
+    font-weight: 700;
+    font-size: 1.25rem;
+    font-family: 'Space Mono', monospace;
 }
 
-/* Timeline */
+/* Timeline - TE style */
 .timeline-container {
     position: relative;
     padding: 1rem 0;
-    margin-left: 50px;
+    margin-left: 35px;
 }
 
 .timeline-container::before {
@@ -423,51 +537,58 @@ footer {
     position: absolute;
     left: 0;
     top: 0;
-    width: 3px;
+    width: 1px;
     height: 100%;
-    background-color: var(--nike-gray);
-    border-radius: 3px;
+    background-color: var(--te-gray);
 }
 
 .timeline-item {
     position: relative;
-    padding-left: 2rem;
+    padding-left: 1.75rem;
     margin-bottom: 1.5rem;
 }
 
 .timeline-item::before {
     content: '';
     position: absolute;
-    left: -8px;
+    left: -4px;
     top: 8px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background-color: var(--nike-accent);
-    box-shadow: 0 0 0 4px rgba(250, 84, 0, 0.3);
+    width: 8px;
+    height: 8px;
+    background-color: var(--te-accent);
     z-index: 1;
 }
 
 .timeline-item-content {
-    padding: 1rem 1.5rem;
-    border-radius: 16px;
-    background-color: var(--nike-gray);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 0.75rem 1rem;
+    background-color: var(--te-dark-gray);
+    border: 1px solid var(--te-gray);
+    border-radius: var(--card-radius);
+    font-family: 'Space Mono', monospace;
+}
+
+.timeline-item-content .time {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-item-content .event {
+    font-size: 0.85rem;
 }
 
 .timeline-item.focus::before {
-    background-color: var(--nike-success);
-    box-shadow: 0 0 0 4px rgba(82, 196, 26, 0.3);
+    background-color: var(--te-success);
 }
 
 .timeline-item.posture::before {
-    background-color: var(--nike-warning);
-    box-shadow: 0 0 0 4px rgba(250, 173, 20, 0.3);
+    background-color: var(--te-warning);
 }
 
 .timeline-item.activity::before {
-    background-color: var(--nike-info);
-    box-shadow: 0 0 0 4px rgba(19, 194, 194, 0.3);
+    background-color: var(--te-info);
 }
 
 /* Responsive adjustments for small screens */
