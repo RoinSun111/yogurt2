@@ -1,16 +1,17 @@
-/* Nike-inspired styling - sleek, clean, cool */
+/* Teenage Engineering inspired styling - minimal, functional, slightly retro */
 :root {
-    --nike-black: #111111;
-    --nike-white: #f5f5f5;
-    --nike-accent: #fa5400;
-    --nike-gray-dark: #222222;
-    --nike-gray: #333333;
-    --nike-gray-light: #4d4d4d;
-    --nike-success: #52c41a;
-    --nike-warning: #faad14;
-    --nike-info: #13c2c2;
-    --card-radius: 16px;
-    --button-radius: 24px;
+    --te-black: #151515;
+    --te-dark-gray: #202020;
+    --te-gray: #333333;
+    --te-light-gray: #555555;
+    --te-white: #f5f5f5;
+    --te-yellow: #F7DF1E;
+    --te-accent: #F7DF1E;
+    --te-success: #00E461;
+    --te-warning: #FF6B35;
+    --te-info: #00B2CA;
+    --card-radius: 4px;
+    --button-radius: 4px;
 }
 
 /* Main layout styles */
@@ -18,60 +19,164 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background-color: var(--nike-black);
-    color: var(--nike-white);
-    font-family: 'Roboto', Arial, sans-serif;
-    letter-spacing: -0.02em;
-    line-height: 1.6;
+    background-color: var(--te-black);
+    color: var(--te-white);
+    font-family: 'Work Sans', sans-serif;
+    letter-spacing: -0.01em;
 }
 
 main {
     flex: 1;
-    padding: 2rem 0;
+    padding: 1.5rem 0;
 }
 
-/* Card styling */
+/* Override Bootstrap theme - Teenage Engineering style */
 .card {
-    background-color: var(--nike-gray-dark);
-    border: 1px solid var(--nike-gray);
+    background-color: var(--te-dark-gray);
+    border: 1px solid var(--te-gray);
     border-radius: var(--card-radius);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     overflow: hidden;
-    transition: all 0.3s ease;
-    margin-bottom: 1.5rem;
+    transition: box-shadow 0.2s ease;
 }
 
 .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
 .card-header {
-    background-color: var(--nike-gray-dark);
-    border-bottom: 1px solid var(--nike-gray);
-    padding: 1.25rem 1.5rem;
-    font-family: 'Roboto', sans-serif;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    font-size: 1.1rem;
+    background-color: var(--te-dark-gray);
+    border-bottom: 1px solid var(--te-gray);
+    padding: 0.875rem 1rem;
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.875rem;
 }
 
 .card-body {
-    padding: 1.5rem;
+    padding: 1rem;
+}
+
+/* Buttons - Teenage Engineering style */
+.btn {
+    border-radius: var(--button-radius);
+    text-transform: uppercase;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 1.25rem;
+    transition: all 0.15s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.btn:hover::after {
+    opacity: 1;
+}
+
+.btn-primary {
+    background-color: var(--te-accent);
+    border-color: var(--te-accent);
+    color: var(--te-black);
+}
+
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus {
+    background-color: var(--te-accent) !important;
+    border-color: var(--te-accent) !important;
+    color: var(--te-black) !important;
+}
+
+.btn-outline-primary {
+    border: 1px solid var(--te-accent);
+    color: var(--te-accent);
+    background-color: transparent;
+}
+
+.btn-outline-primary:hover {
+    background-color: transparent;
+    border-color: var(--te-accent);
+    color: var(--te-accent);
+}
+
+.badge {
+    padding: 0.35rem 0.6rem;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 0.7rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badge.bg-primary {
+    background-color: var(--te-accent) !important;
+    color: var(--te-black) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--te-success) !important;
+}
+
+.badge.bg-warning {
+    background-color: var(--te-warning) !important;
+}
+
+.badge.bg-info {
+    background-color: var(--te-info) !important;
+}
+
+.badge.bg-secondary {
+    background-color: var(--te-light-gray) !important;
+}
+
+/* Progress bars */
+.progress {
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background-color: var(--nike-accent);
+}
+
+.progress-bar.bg-success {
+    background-color: var(--nike-success) !important;
+}
+
+.progress-bar.bg-warning {
+    background-color: var(--nike-warning) !important;
+}
+
+.progress-bar.bg-info {
+    background-color: var(--nike-info) !important;
 }
 
 /* Activity monitor styles */
 .activity-icon-container {
-    width: 60px;
-    height: 60px;
+    width: 56px;
+    height: 56px;
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 2px solid var(--nike-accent);
-    background-color: var(--nike-gray-dark);
+    border-radius: 50%;
+    background-color: var(--nike-gray);
     color: var(--nike-accent);
-    border-radius: 12px;
-    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .activity-icon-container i {
@@ -79,195 +184,180 @@ main {
     height: 28px;
 }
 
-/* Metrics display */
 .metric {
-    background-color: var(--nike-gray-dark);
-    border: 1px solid var(--nike-gray);
+    background-color: var(--nike-gray);
     border-radius: 12px;
     padding: 1rem;
     display: flex;
     flex-direction: column;
-    min-width: 120px;
-    transition: all 0.3s ease;
+    min-width: 80px;
+    transition: transform 0.2s ease;
 }
 
 .metric:hover {
-    border-color: var(--nike-accent);
-    transform: translateY(-2px);
+    transform: translateY(-4px);
 }
 
 .metric-label {
-    font-family: 'Roboto', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.8rem;
+    opacity: 0.7;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--nike-white);
-    opacity: 0.7;
-    margin-bottom: 0.5rem;
 }
 
 .metric-value {
-    font-family: 'Roboto', sans-serif;
-    font-weight: 700;
-    font-size: 1.5rem;
-    color: var(--nike-white);
-}
-
-/* Progress bars */
-.progress {
-    height: 8px;
-    background-color: var(--nike-gray);
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 1rem 0;
-}
-
-.progress-bar {
-    background-color: var(--nike-accent);
-    transition: width 0.3s ease;
-}
-
-/* Buttons */
-.btn {
-    border-radius: var(--button-radius);
-    text-transform: uppercase;
-    font-family: 'Roboto', sans-serif;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    padding: 0.75rem 1.5rem;
-    transition: all 0.2s ease;
-    border: none;
-}
-
-.btn-primary {
-    background-color: var(--nike-accent);
-    color: var(--nike-white);
-}
-
-.btn-primary:hover {
-    background-color: #ff6b1a;
-    transform: translateY(-1px);
-}
-
-/* Badges */
-.badge {
-    padding: 0.5rem 1rem;
-    font-family: 'Roboto', sans-serif;
-    font-weight: 600;
-    font-size: 0.75rem;
-    border-radius: var(--button-radius);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.badge.bg-primary {
-    background-color: var(--nike-accent) !important;
-}
-
-/* Navigation */
-.nav-link {
-    color: var(--nike-white);
-    opacity: 0.7;
-    font-family: 'Roboto', sans-serif;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0.75rem 1.5rem;
-    margin: 0 0.5rem;
-    border-radius: var(--button-radius);
-    transition: all 0.2s ease;
-}
-
-.nav-link:hover {
-    opacity: 1;
-    background-color: var(--nike-gray);
-}
-
-.nav-link.active {
-    opacity: 1;
-    background-color: var(--nike-accent);
+    font-weight: bold;
+    font-size: 1.3rem;
 }
 
 /* Focus score display */
 .score-display {
-    background-color: var(--nike-gray-dark);
-    border-radius: var(--card-radius);
-    padding: 2rem;
+    position: relative;
+}
+
+.progress-ring {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin: 0 auto;
+}
+
+.ring-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.ring-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     text-align: center;
 }
 
 #focus-score {
-    font-size: 4rem;
-    font-weight: 700;
-    color: var(--nike-accent);
+    font-size: 3rem;
+    font-weight: bold;
     line-height: 1;
-    margin: 1rem 0;
+    color: var(--nike-white);
 }
 
-/* Camera container */
+/* Camera and video styles */
 .camera-container {
-    border: 2px solid var(--nike-gray);
-    border-radius: var(--card-radius);
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    background-color: #000;
+    border-radius: 16px;
     overflow: hidden;
-    transition: all 0.3s ease;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
-.camera-container:hover {
-    border-color: var(--nike-accent);
+#webcam {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-/* Water tracking */
+#output-canvas, #annotation-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.placeholder-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.85);
+}
+
+/* Water intake visualization */
 .water-container {
-    background-color: var(--nike-gray-dark);
-    border-radius: var(--card-radius);
-    padding: 1.5rem;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .water-bottle {
-    border: 2px solid var(--nike-info);
-    border-radius: 8px;
+    position: relative;
+    width: 70px;
+    height: 160px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 35px;
+    overflow: hidden;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* Header and footer */
+.water-level {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(135deg, #0396FF 0%, #0096FF 100%);
+    border-radius: 0;
+    box-shadow: 0 -5px 15px rgba(3, 150, 255, 0.3);
+    transition: height 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* Header and footer - TE style */
 header {
-    background-color: var(--nike-black);
-    border-bottom: 1px solid var(--nike-gray);
-    padding: 1rem 0;
+    border-bottom: 1px solid var(--te-gray);
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.7);
+    font-family: 'Space Mono', monospace;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.4rem 1rem;
+    margin: 0 0.25rem;
+    border-radius: 2px;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+}
+
+.nav-link:hover, .nav-link:focus {
+    color: var(--te-accent);
+    border-color: var(--te-accent);
+    background-color: transparent;
+}
+
+.nav-link.active {
+    color: var(--te-accent);
+    border-color: var(--te-accent);
+    background-color: transparent;
+}
+
+.time-display {
+    background-color: var(--te-dark-gray);
+    border: 1px solid var(--te-light-gray);
+    padding: 0.4rem 0.75rem;
+    border-radius: 2px;
+    font-weight: normal;
 }
 
 footer {
-    background-color: var(--nike-black);
-    border-top: 1px solid var(--nike-gray);
-    padding: 1rem 0;
-    margin-top: auto;
+    border-top: 1px solid var(--te-gray);
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .card-header {
-        padding: 1rem;
-    }
-
-    .card-body {
-        padding: 1rem;
-    }
-
-    #focus-score {
-        font-size: 3rem;
-    }
-
-    .nav-link {
-        padding: 0.5rem 1rem;
-    }
-}
-
+/* Icon sizes */
 .feather-icon {
     width: 20px;
     height: 20px;
     vertical-align: text-bottom;
-    stroke-width: 1.5;
+    stroke-width: a,5;
 }
 
 .feather-icon-sm {
@@ -280,60 +370,52 @@ footer {
     height: 56px;
 }
 
+/* Toast styling */
 .toast {
     opacity: 1;
     background-color: var(--nike-gray-dark);
-    border: 1px solid var(--nike-gray);
-    border-radius: var(--card-radius);
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
 }
 
 .toast-header {
-    background-color: var(--nike-gray-dark);
+    background-color: var(--nike-gray);
     color: var(--nike-white);
-    border-bottom: 1px solid var(--nike-gray);
-    font-family: 'Roboto', sans-serif;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    border-bottom: none;
 }
 
-.toast-body {
-    font-family: 'Roboto', sans-serif;
-}
-
+/* Metric cards */
 .metric-card {
-    background-color: var(--nike-gray-dark);
-    border: 1px solid var(--nike-gray);
-    border-radius: var(--card-radius);
-    padding: 1rem;
+    background-color: var(--nike-gray);
+    border-radius: 16px;
+    padding: 1.25rem;
     margin-bottom: 1rem;
-    transition: box-shadow 0.2s ease;
+    transition: transform 0.2s ease;
 }
 
 .metric-card:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(-4px);
 }
 
 .metric-card .metric-label {
-    font-family: 'Roboto', sans-serif;
-    font-weight: 400;
+    font-weight: 500;
     color: rgba(255, 255, 255, 0.8);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    font-size: 0.75rem;
-    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
 }
 
 .metric-card .metric-value {
-    font-weight: 700;
-    font-size: 1.25rem;
-    font-family: 'Roboto', sans-serif;
+    font-weight: bold;
+    font-size: 1.5rem;
 }
 
+/* Timeline */
 .timeline-container {
     position: relative;
     padding: 1rem 0;
-    margin-left: 35px;
+    margin-left: 50px;
 }
 
 .timeline-container::before {
@@ -341,84 +423,70 @@ footer {
     position: absolute;
     left: 0;
     top: 0;
-    width: 1px;
+    width: 3px;
     height: 100%;
     background-color: var(--nike-gray);
+    border-radius: 3px;
 }
 
 .timeline-item {
     position: relative;
-    padding-left: 1.75rem;
+    padding-left: 2rem;
     margin-bottom: 1.5rem;
 }
 
 .timeline-item::before {
     content: '';
     position: absolute;
-    left: -4px;
+    left: -8px;
     top: 8px;
-    width: 8px;
-    height: 8px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
     background-color: var(--nike-accent);
+    box-shadow: 0 0 0 4px rgba(250, 84, 0, 0.3);
     z-index: 1;
 }
 
 .timeline-item-content {
-    padding: 0.75rem 1rem;
-    background-color: var(--nike-gray-dark);
-    border: 1px solid var(--nike-gray);
-    border-radius: var(--card-radius);
-    font-family: 'Roboto', sans-serif;
-}
-
-.timeline-item-content .time {
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.5);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.5rem;
-}
-
-.timeline-item-content .event {
-    font-size: 0.85rem;
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    background-color: var(--nike-gray);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .timeline-item.focus::before {
     background-color: var(--nike-success);
+    box-shadow: 0 0 0 4px rgba(82, 196, 26, 0.3);
 }
 
 .timeline-item.posture::before {
     background-color: var(--nike-warning);
+    box-shadow: 0 0 0 4px rgba(250, 173, 20, 0.3);
 }
 
 .timeline-item.activity::before {
     background-color: var(--nike-info);
+    box-shadow: 0 0 0 4px rgba(19, 194, 194, 0.3);
 }
 
+/* Responsive adjustments for small screens */
 @media (max-width: 768px) {
     #focus-score {
         font-size: 2.5rem;
     }
-
+    
     .water-bottle {
         height: 130px;
         width: 60px;
     }
-
+    
     .card-header, .card-body {
         padding: 1rem;
     }
-
+    
     .progress-ring {
         width: 150px;
         height: 150px;
     }
-}
-
-.time-display {
-    background-color: var(--nike-gray);
-    padding: 0.4rem 1rem;
-    border-radius: 24px;
-    font-weight: bold;
-    font-family: 'Roboto', sans-serif;
 }
