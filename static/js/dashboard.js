@@ -259,11 +259,6 @@ function updatePostureStatus() {
                 // Set angle indicator color based on quality
                 angleIndicator.className = `progress-bar ${qualityClass}`;
                 
-                // Show notification for poor posture
-                if (data.posture_quality === 'poor' || (data.posture === 'slouched' && angle > 20)) {
-                    showNotification('Posture Alert', data.feedback || 'Poor posture detected. Please adjust your sitting position.', 'warning');
-                }
-                
                 // Show recommendation if available
                 if (data.recommendation) {
                     const recommendationEl = document.getElementById('posture-recommendation');

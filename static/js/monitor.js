@@ -636,8 +636,10 @@ function addTimelineEvent(event) {
     // Update the timeline display
     updateTimelineDisplay();
     
-    // Show notification
-    showDetectionToast(event);
+    // Show notification only for non-posture events
+    if (event.type !== 'posture') {
+        showDetectionToast(event);
+    }
 }
 
 // Update timeline display
