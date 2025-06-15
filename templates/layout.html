@@ -45,43 +45,62 @@
                     <h1 class="h3 mb-0 fw-bold">FLOW<span class="text-white-20">STATE</span></h1>
                 </div>
                 <div class="d-flex align-items-center">
-                    <nav class="me-4">
-                        <ul class="nav">
-                            <li class="nav-item">
-                                <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
-                                    <i data-feather="grid" class="me-1"></i> Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if request.path == '/monitor' %}active{% endif %}" href="/monitor">
-                                    <i data-feather="camera" class="me-1"></i> Monitor
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if request.path == '/activity-records' %}active{% endif %}" href="/activity-records">
-                                    <i data-feather="activity" class="me-1"></i> Activity Records
-                                </a>
-                            </li>
+                    <!-- Hamburger Menu -->
+                    <div class="dropdown me-4">
+                        <button class="btn btn-outline-light hamburger-btn" type="button" id="navDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i data-feather="menu" class="hamburger-icon"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark hamburger-menu" aria-labelledby="navDropdown">
+                            <li><a class="dropdown-item {% if request.path == '/' %}active{% endif %}" href="/">
+                                <div class="nav-item-content">
+                                    <i data-feather="grid" class="nav-icon"></i>
+                                    <div class="nav-text">
+                                        <strong>DASHBOARD</strong>
+                                    </div>
+                                </div>
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item {% if request.path == '/monitor' %}active{% endif %}" href="/monitor">
+                                <div class="nav-item-content">
+                                    <i data-feather="camera" class="nav-icon"></i>
+                                    <div class="nav-text">
+                                        <strong>MONITOR</strong>
+                                    </div>
+                                </div>
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item {% if request.path == '/activity-records' %}active{% endif %}" href="/activity-records">
+                                <div class="nav-item-content">
+                                    <i data-feather="activity" class="nav-icon"></i>
+                                    <div class="nav-text">
+                                        <strong>ACTIVITY</strong>
+                                        <small>RECORDS</small>
+                                    </div>
+                                </div>
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item {% if request.path == '/moodboard' %}active{% endif %}" href="/moodboard">
+                                <div class="nav-item-content">
+                                    <i data-feather="grid" class="nav-icon"></i>
+                                    <div class="nav-text">
+                                        <strong>MOODBOARD</strong>
+                                    </div>
+                                </div>
+                            </a></li>
+                            <li><a class="dropdown-item" href="/moodboard/customize">
+                                <div class="nav-item-content">
+                                    <i data-feather="settings" class="nav-icon"></i>
+                                    <div class="nav-text">
+                                        <small>Customize Moodboard</small>
+                                    </div>
+                                </div>
+                            </a></li>
                         </ul>
-                    </nav>
-                    <div class="d-flex align-items-center">
-                        <div class="dropdown me-3">
-                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="moodboardDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i data-feather="grid" class="me-1"></i> Moodboard
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="moodboardDropdown">
-                                <li><a class="dropdown-item" href="/moodboard">
-                                    <i data-feather="monitor" class="me-2"></i> View Display
-                                </a></li>
-                                <li><a class="dropdown-item" href="/moodboard/customize">
-                                    <i data-feather="settings" class="me-2"></i> Customize
-                                </a></li>
-                            </ul>
-                        </div>
-                        <div class="time-display">
-                            <i data-feather="clock" class="feather-icon-sm me-1"></i>
-                            <span id="current-time">00:00</span>
-                        </div>
+                    </div>
+                    
+                    <div class="time-display">
+                        <i data-feather="clock" class="feather-icon-sm me-2"></i>
+                        <span id="current-time">00:00</span>
                     </div>
                 </div>
             </div>
