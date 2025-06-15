@@ -81,6 +81,19 @@ class MoodEntry(db.Model):
     date = db.Column(db.Date, default=datetime.now().date)
     timestamp = db.Column(db.DateTime, default=datetime.now)
 
+class CalendarEvent(db.Model):
+    """Calendar events including meetings, appointments, and deadlines"""
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    start_time = db.Column(db.DateTime, nullable=False)
+    end_time = db.Column(db.DateTime, nullable=True)
+    event_type = db.Column(db.String(50), default='meeting')  # meeting, appointment, deadline, reminder
+    location = db.Column(db.String(200), nullable=True)
+    is_all_day = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
 class TodoItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200))
@@ -88,5 +101,10 @@ class TodoItem(db.Model):
     is_completed = db.Column(db.Boolean, default=False)
     priority = db.Column(db.String(20), default='medium')  # low, medium, high
     due_date = db.Column(db.Date, nullable=True)
+    due_time = db.Column(db.Time, nullable=True)  # Optional specific time
+    calendar_event_id = db.Column(db.Integer, db.ForeignKey('calendar_event.id'), nullable=True)  # Link to calendar event
     created_at = db.Column(db.DateTime, default=datetime.now)
     completed_at = db.Column(db.DateTime, nullable=True)
+    
+    # Relationship to calendar event
+    calendar_event = db.relationship('CalendarEvent', backref='linked_todos')

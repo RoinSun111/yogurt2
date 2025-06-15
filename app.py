@@ -560,21 +560,113 @@ def update_mood():
     db.session.commit()
     return jsonify({'success': True})
 
+@app.route('/api/moodboard/calendar/events')
+def get_calendar_events():
+    """Get calendar events for a specific date or today"""
+    try:
+        date_str = request.args.get('date')
+        if date_str:
+            target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        else:
+            target_date = datetime.now().date()
+            
+        events = models.CalendarEvent.query.filter(
+            db.func.date(models.CalendarEvent.start_time) == target_date
+        ).order_by(models.CalendarEvent.start_time).all()
+        
+        events_data = []
+        for event in events:
+            events_data.append({
+                'id': event.id,
+                'title': event.title,
+                'time': event.start_time.strftime('%H:%M') if not event.is_all_day else 'All Day',
+                'end_time': event.end_time.strftime('%H:%M') if event.end_time and not event.is_all_day else None,
+                'type': event.event_type,
+                'location': event.location
+            })
+        
+        return jsonify({'success': True, 'events': events_data})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/moodboard/todos')
+def get_todos():
+    """Get todos, optionally filtered by date"""
+    try:
+        date_str = request.args.get('date')
+        completed = request.args.get('completed', 'false').lower() == 'true'
+        
+        query = models.TodoItem.query
+        
+        if date_str:
+            target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            query = query.filter(models.TodoItem.due_date == target_date)
+        
+        if not completed:
+            query = query.filter(models.TodoItem.is_completed == False)
+        
+        todos = query.order_by(models.TodoItem.created_at.desc()).all()
+        
+        todos_data = []
+        for todo in todos:
+            todos_data.append({
+                'id': todo.id,
+                'title': todo.title,
+                'description': todo.description,
+                'is_completed': todo.is_completed,
+                'priority': todo.priority,
+                'due_date': todo.due_date.strftime('%Y-%m-%d') if todo.due_date else None,
+                'due_time': todo.due_time.strftime('%H:%M') if todo.due_time else None,
+                'has_calendar_event': todo.calendar_event_id is not None
+            })
+        
+        return jsonify({'success': True, 'todos': todos_data})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 @app.route('/api/moodboard/todo', methods=['POST'])
 def add_todo():
-    """Add a new todo item"""
-    data = request.get_json()
-    
-    new_todo = models.TodoItem(
-        title=data.get('title', ''),
-        description=data.get('description', ''),
-        priority=data.get('priority', 'medium'),
-        due_date=datetime.strptime(data['due_date'], '%Y-%m-%d').date() if data.get('due_date') else None
-    )
-    db.session.add(new_todo)
-    db.session.commit()
-    
-    return jsonify({'success': True, 'id': new_todo.id})
+    """Add a new todo item with optional calendar integration"""
+    try:
+        data = request.get_json()
+        
+        # Parse due date and time
+        due_date = None
+        due_time = None
+        if data.get('due_date'):
+            due_date = datetime.strptime(data['due_date'], '%Y-%m-%d').date()
+        if data.get('due_time'):
+            due_time = datetime.strptime(data['due_time'], '%H:%M').time()
+        
+        # Create calendar event if both date and time are provided and requested
+        calendar_event_id = None
+        if due_date and due_time and data.get('create_calendar_event'):
+            start_datetime = datetime.combine(due_date, due_time)
+            calendar_event = models.CalendarEvent(
+                title=f"TODO: {data.get('title', '')}",
+                description=data.get('description', ''),
+                start_time=start_datetime,
+                event_type='deadline'
+            )
+            db.session.add(calendar_event)
+            db.session.flush()
+            calendar_event_id = calendar_event.id
+        
+        new_todo = models.TodoItem(
+            title=data.get('title', ''),
+            description=data.get('description', ''),
+            priority=data.get('priority', 'medium'),
+            due_date=due_date,
+            due_time=due_time,
+            calendar_event_id=calendar_event_id
+        )
+        db.session.add(new_todo)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'id': new_todo.id})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/api/moodboard/todo/<int:todo_id>/complete', methods=['POST'])
 def complete_todo(todo_id):
