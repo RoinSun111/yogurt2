@@ -589,6 +589,56 @@ def get_calendar_events():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
 
+@app.route('/api/moodboard/calendar/events/<int:event_id>', methods=['PUT'])
+def update_calendar_event(event_id):
+    """Update a calendar event"""
+    try:
+        data = request.get_json()
+        event = models.CalendarEvent.query.get_or_404(event_id)
+        
+        # Update event fields
+        if 'title' in data:
+            event.title = data['title']
+        if 'description' in data:
+            event.description = data['description']
+        if 'location' in data:
+            event.location = data['location']
+        if 'time' in data and data['time']:
+            # Update time while keeping the same date
+            new_time = datetime.strptime(data['time'], '%H:%M').time()
+            event.start_time = datetime.combine(event.start_time.date(), new_time)
+            # Update end time if it exists (add 1 hour by default)
+            if event.end_time:
+                event.end_time = datetime.combine(event.start_time.date(), 
+                                                 (datetime.combine(datetime.min, new_time) + timedelta(hours=1)).time())
+        
+        event.updated_at = datetime.now()
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Event updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/moodboard/calendar/events/<int:event_id>', methods=['DELETE'])
+def delete_calendar_event(event_id):
+    """Delete a calendar event"""
+    try:
+        event = models.CalendarEvent.query.get_or_404(event_id)
+        
+        # Also delete any linked todos
+        linked_todos = models.TodoItem.query.filter_by(calendar_event_id=event_id).all()
+        for todo in linked_todos:
+            todo.calendar_event_id = None  # Unlink instead of deleting the todo
+        
+        db.session.delete(event)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Event deleted successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
 @app.route('/api/moodboard/todos')
 def get_todos():
     """Get todos, optionally filtered by date"""

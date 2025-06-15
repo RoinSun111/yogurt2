@@ -150,10 +150,29 @@
     padding: 8px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     gap: 12px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    transition: all 0.2s;
 }
 
 .meeting-item:last-child {
     border-bottom: none;
+}
+
+.meeting-item.clickable {
+    cursor: pointer;
+    padding: 10px 8px;
+}
+
+.meeting-item.clickable:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(2px);
+}
+
+.meeting-location {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-top: 2px;
 }
 
 .meeting-time {
@@ -292,6 +311,140 @@
 }
 
 .collapse-calendar-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Event Modal Styling */
+.event-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.event-modal-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+    color: white;
+    position: relative;
+}
+
+.event-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.event-modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.close-modal:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.event-field {
+    margin-bottom: 15px;
+}
+
+.event-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.event-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+}
+
+.event-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.event-input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.event-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.event-modal-actions button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-save {
+    background: #ff6b35;
+    color: white;
+}
+
+.btn-save:hover {
+    background: #ff5722;
+}
+
+.btn-delete {
+    background: #f44336;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #d32f2f;
+}
+
+.btn-cancel {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.btn-cancel:hover {
     background: rgba(255, 255, 255, 0.3);
 }
 
@@ -457,6 +610,39 @@
             </button>
         </div>
         
+        <!-- Event Details Modal -->
+        <div class="event-modal" id="event-modal" style="display: none;">
+            <div class="event-modal-content">
+                <div class="event-modal-header">
+                    <h3 id="event-title">Meeting Details</h3>
+                    <button class="close-modal" onclick="closeEventModal()">&times;</button>
+                </div>
+                <div class="event-modal-body">
+                    <div class="event-field">
+                        <label>Title:</label>
+                        <input type="text" id="edit-event-title" class="event-input">
+                    </div>
+                    <div class="event-field">
+                        <label>Time:</label>
+                        <input type="time" id="edit-event-time" class="event-input">
+                    </div>
+                    <div class="event-field">
+                        <label>Location:</label>
+                        <input type="text" id="edit-event-location" class="event-input">
+                    </div>
+                    <div class="event-field">
+                        <label>Description:</label>
+                        <textarea id="edit-event-description" class="event-input" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="event-modal-actions">
+                    <button class="btn-save" onclick="saveEventChanges()">Save Changes</button>
+                    <button class="btn-delete" onclick="deleteEvent()">Delete Event</button>
+                    <button class="btn-cancel" onclick="closeEventModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+        
         <!-- Full Calendar View (Hidden by default) -->
         <div class="full-calendar-view" id="full-calendar-view" style="display: none;">
             <div class="calendar-header">
@@ -619,7 +805,9 @@ function loadTodayCalendarEvents() {
                 
                 data.events.forEach(event => {
                     const meetingItem = document.createElement('div');
-                    meetingItem.className = 'meeting-item';
+                    meetingItem.className = 'meeting-item clickable';
+                    meetingItem.setAttribute('data-event-id', event.id);
+                    meetingItem.onclick = () => showEventDetails(event);
                     
                     const timeElement = document.createElement('div');
                     timeElement.className = 'meeting-time';
@@ -628,6 +816,13 @@ function loadTodayCalendarEvents() {
                     const titleElement = document.createElement('div');
                     titleElement.className = 'meeting-title';
                     titleElement.textContent = event.title;
+                    
+                    if (event.location) {
+                        const locationElement = document.createElement('div');
+                        locationElement.className = 'meeting-location';
+                        locationElement.textContent = event.location;
+                        titleElement.appendChild(locationElement);
+                    }
                     
                     meetingItem.appendChild(timeElement);
                     meetingItem.appendChild(titleElement);
@@ -707,6 +902,104 @@ function collapseCalendar() {
     document.getElementById('full-calendar-view').style.display = 'none';
     feather.replace();
 }
+
+// Event management functions
+let currentEvent = null;
+
+function showEventDetails(event) {
+    currentEvent = event;
+    
+    // Populate modal with event details
+    document.getElementById('event-title').textContent = event.title;
+    document.getElementById('edit-event-title').value = event.title;
+    document.getElementById('edit-event-time').value = event.time !== 'All Day' ? event.time : '';
+    document.getElementById('edit-event-location').value = event.location || '';
+    document.getElementById('edit-event-description').value = event.description || '';
+    
+    // Show modal
+    document.getElementById('event-modal').style.display = 'flex';
+}
+
+function closeEventModal() {
+    document.getElementById('event-modal').style.display = 'none';
+    currentEvent = null;
+}
+
+function saveEventChanges() {
+    if (!currentEvent) return;
+    
+    const updatedEvent = {
+        id: currentEvent.id,
+        title: document.getElementById('edit-event-title').value.trim(),
+        time: document.getElementById('edit-event-time').value,
+        location: document.getElementById('edit-event-location').value.trim(),
+        description: document.getElementById('edit-event-description').value.trim()
+    };
+    
+    if (!updatedEvent.title) {
+        alert('Event title is required');
+        return;
+    }
+    
+    // Send update to server
+    fetch(`/api/moodboard/calendar/events/${currentEvent.id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedEvent)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeEventModal();
+            loadTodayCalendarEvents(); // Refresh calendar events
+        } else {
+            alert('Error updating event: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error updating event:', error);
+        alert('Error updating event');
+    });
+}
+
+function deleteEvent() {
+    if (!currentEvent) return;
+    
+    if (!confirm(`Are you sure you want to delete "${currentEvent.title}"?`)) {
+        return;
+    }
+    
+    // Send delete request to server
+    fetch(`/api/moodboard/calendar/events/${currentEvent.id}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeEventModal();
+            loadTodayCalendarEvents(); // Refresh calendar events
+        } else {
+            alert('Error deleting event: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting event:', error);
+        alert('Error deleting event');
+    });
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('event-modal');
+    if (event.target === modal) {
+        closeEventModal();
+    }
+});
 
 // Update mood
 function updateMood() {
