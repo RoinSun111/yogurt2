@@ -1274,226 +1274,15 @@ function updateCharCount() {
     }
 }
 
-// Load widget configuration and render dynamic layout
-function loadWidgetConfiguration() {
-    fetch('/api/moodboard/widgets')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                renderWidgets(data.widgets);
-            } else {
-                console.error('Failed to load widget configuration');
-                renderDefaultWidgets();
-            }
-        })
-        .catch(error => {
-            console.error('Error loading widgets:', error);
-            renderDefaultWidgets();
-        });
-}
-
-// Render widgets based on configuration
-function renderWidgets(widgets) {
-    const widgetGrid = document.getElementById('widget-grid');
-    widgetGrid.innerHTML = '';
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updateDateTime();
+    setInterval(updateDateTime, 60000); // Update every minute
+    updateTodayInfo(); // This also loads calendar events
+    loadTodos(); // Load today's todos
     
-    // Create a 2x3 grid (6 positions)
-    const positions = Array(6).fill(null);
-    
-    // Place widgets in their configured positions
-    widgets.forEach(widget => {
-        if (widget.enabled && widget.x < 2 && widget.y < 3) {
-            const position = widget.y * 2 + widget.x; // Convert 2D to 1D
-            if (position < 6) {
-                positions[position] = widget;
-            }
-        }
-    });
-    
-    // Render each position
-    positions.forEach((widget, index) => {
-        if (widget) {
-            const widgetElement = createWidget(widget);
-            widgetElement.style.gridArea = `${Math.floor(index / 2) + 1} / ${(index % 2) + 1}`;
-            widgetGrid.appendChild(widgetElement);
-        }
-    });
-    
-    // Load widget data after rendering
-    setTimeout(() => {
-        updateTodayInfo();
-        loadTodos();
-        feather.replace();
-    }, 100);
-}
-
-// Create individual widget elements
-function createWidget(widget) {
-    const widgetDiv = document.createElement('div');
-    widgetDiv.className = `widget ${widget.type}-widget`;
-    
-    switch (widget.type) {
-        case 'mood':
-            widgetDiv.innerHTML = createMoodWidget();
-            setupMoodWidget(widgetDiv);
-            break;
-        case 'calendar':
-            widgetDiv.innerHTML = createCalendarWidget();
-            break;
-        case 'todo':
-            widgetDiv.innerHTML = createTodoWidget();
-            break;
-        case 'focus_score':
-            widgetDiv.innerHTML = createFocusScoreWidget();
-            break;
-        case 'water':
-            widgetDiv.innerHTML = createWaterWidget();
-            break;
-        case 'posture_score':
-            widgetDiv.innerHTML = createPostureWidget();
-            break;
-        default:
-            widgetDiv.innerHTML = '<div class="widget-title">Unknown Widget</div>';
-    }
-    
-    return widgetDiv;
-}
-
-// Widget creation functions
-function createMoodWidget() {
-    // Load current mood from server and create widget dynamically
-    const currentMoodText = '{{ current_mood.mood_text if current_mood else "" }}';
-    const hasCurrentMood = {{ 'true' if current_mood else 'false' }};
-    
-    let moodContent = '';
-    if (hasCurrentMood) {
-        moodContent = `
-            <p class="mood-text" id="mood-display" onclick="editMood()">${currentMoodText}</p>
-            <div class="mood-edit-container" id="mood-edit-container" style="display: none;">
-                <textarea class="mood-input" placeholder="How are you feeling today?" id="mood-input" maxlength="140">${currentMoodText}</textarea>
-                <div class="mood-actions">
-                    <span class="char-count" id="char-count">${currentMoodText.length}/140</span>
-                    <div class="mood-buttons">
-                        <button class="mood-btn save" onclick="saveMood()">Save</button>
-                        <button class="mood-btn cancel" onclick="cancelMoodEdit()">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        `;
-    } else {
-        moodContent = `
-            <div class="mood-edit-container" id="mood-edit-container">
-                <textarea class="mood-input" placeholder="How are you feeling today?" id="mood-input" maxlength="140"></textarea>
-                <div class="mood-actions">
-                    <span class="char-count" id="char-count">0/140</span>
-                    <div class="mood-buttons">
-                        <button class="mood-btn save" onclick="saveMood()">Save</button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-    
-    return `
-        <div class="widget-title">
-            <i data-feather="smile"></i>
-            Mood
-        </div>
-        <div class="mood-content">
-            ${moodContent}
-        </div>
-    `;
-}
-
-function createCalendarWidget() {
-    return `
-        <div class="widget-title">
-            <i data-feather="calendar"></i>
-            Calendar
-        </div>
-        <div class="today-view" id="today-view">
-            <div class="today-date">
-                <div class="today-number" id="today-number">15</div>
-                <div class="today-info">
-                    <div class="today-month" id="today-month">June</div>
-                    <div class="today-year" id="today-year">2025</div>
-                </div>
-            </div>
-            <div class="today-meetings">
-                <div class="meetings-header">Today's Meetings</div>
-                <div class="meetings-list" id="meetings-list">
-                    <div class="meeting-item" style="display: none;">
-                        <div class="meeting-time">Loading...</div>
-                        <div class="meeting-title">Loading meetings...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function createTodoWidget() {
-    return `
-        <div class="widget-title">
-            <i data-feather="check-square"></i>
-            Todo
-        </div>
-        <div class="todo-content">
-            <div class="todo-list" id="todo-list">
-                <div class="todo-item">
-                    <div class="todo-content">
-                        <div class="todo-title">Loading todos...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function createFocusScoreWidget() {
-    return `
-        <div class="widget-title">
-            <i data-feather="target"></i>
-            Focus Score
-        </div>
-        <div class="focus-content">
-            <div class="focus-score-display">
-                <div class="focus-percentage" id="focus-percentage">85%</div>
-                <div class="focus-label">today</div>
-            </div>
-        </div>
-    `;
-}
-
-function createWaterWidget() {
-    return `
-        <div class="widget-title">
-            <i data-feather="droplet"></i>
-            Water
-        </div>
-        <div class="water-content">
-            <div class="water-amount" id="water-amount">0ml</div>
-            <div class="water-goal">/ 2000ml goal</div>
-        </div>
-    `;
-}
-
-function createPostureWidget() {
-    return `
-        <div class="widget-title">
-            <i data-feather="user"></i>
-            Posture
-        </div>
-        <div class="posture-content">
-            <div class="posture-score" id="posture-score">Good</div>
-            <div class="posture-feedback" id="posture-feedback">Keep it up!</div>
-        </div>
-    `;
-}
-
-// Setup functions for interactive widgets
-function setupMoodWidget(widgetElement) {
-    const moodInput = widgetElement.querySelector('#mood-input');
+    // Setup mood input character counter
+    const moodInput = document.getElementById('mood-input');
     if (moodInput) {
         moodInput.addEventListener('input', updateCharCount);
         moodInput.addEventListener('keypress', function(e) {
@@ -1502,26 +1291,11 @@ function setupMoodWidget(widgetElement) {
                 saveMood();
             }
         });
-        updateCharCount();
+        updateCharCount(); // Initialize counter
     }
-}
-
-// Render default widgets if no configuration exists
-function renderDefaultWidgets() {
-    const defaultWidgets = [
-        {type: 'mood', enabled: true, x: 0, y: 0},
-        {type: 'calendar', enabled: true, x: 1, y: 0},
-        {type: 'todo', enabled: true, x: 0, y: 1},
-        {type: 'focus_score', enabled: true, x: 1, y: 1}
-    ];
-    renderWidgets(defaultWidgets);
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    updateDateTime();
-    setInterval(updateDateTime, 60000); // Update every minute
-    loadWidgetConfiguration(); // Load dynamic widgets
+    
+    // Initialize Feather icons
+    feather.replace();
 });
 </script>
 {% endblock %}
