@@ -559,6 +559,25 @@
     color: white;
 }
 
+.widget-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 15px;
+    height: calc(100vh - 120px);
+    padding: 20px;
+}
+
+.widget-grid .widget {
+    border-radius: 15px;
+    padding: 20px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -631,74 +650,12 @@
         <div class="current-date" id="moodboard-date">Today</div>
     </div>
 
-    <!-- Mood Widget -->
-    <div class="widget mood-widget">
-        <div class="widget-title">
-            <i data-feather="smile"></i>
-            Mood
-        </div>
-        <div class="mood-content">
-            {% if current_mood %}
-                <p class="mood-text" id="mood-display" onclick="editMood()">{{ current_mood.mood_text }}</p>
-                <div class="mood-edit-container" id="mood-edit-container" style="display: none;">
-                    <textarea class="mood-input" placeholder="How are you feeling today?" id="mood-input" maxlength="140">{{ current_mood.mood_text }}</textarea>
-                    <div class="mood-actions">
-                        <span class="char-count" id="char-count">{{ current_mood.mood_text|length }}/140</span>
-                        <div class="mood-buttons">
-                            <button class="mood-btn save" onclick="saveMood()">Save</button>
-                            <button class="mood-btn cancel" onclick="cancelMoodEdit()">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-            {% else %}
-                <div class="mood-edit-container" id="mood-edit-container">
-                    <textarea class="mood-input" placeholder="How are you feeling today?" id="mood-input" maxlength="140"></textarea>
-                    <div class="mood-actions">
-                        <span class="char-count" id="char-count">0/140</span>
-                        <div class="mood-buttons">
-                            <button class="mood-btn save" onclick="saveMood()">Save</button>
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-        </div>
+    <!-- Dynamic Widget Grid -->
+    <div class="widget-grid" id="widget-grid">
+        <!-- Widgets will be loaded dynamically based on configuration -->
     </div>
 
-    <!-- Calendar Widget -->
-    <div class="widget calendar-widget" id="calendar-widget">
-        <div class="widget-title">
-            <i data-feather="calendar"></i>
-            Calendar
-        </div>
-        
-        <!-- Today's Info (Default View) -->
-        <div class="today-view" id="today-view">
-            <div class="today-date">
-                <div class="today-number" id="today-number">15</div>
-                <div class="today-info">
-                    <div class="today-month" id="today-month">June</div>
-                    <div class="today-year" id="today-year">2025</div>
-                </div>
-            </div>
-            
-            <div class="today-meetings">
-                <div class="meetings-header">Today's Meetings</div>
-                <div class="meetings-list" id="meetings-list">
-                    <!-- Calendar events will be loaded dynamically -->
-                    <div class="meeting-item" style="display: none;">
-                        <div class="meeting-time">Loading...</div>
-                        <div class="meeting-title">Loading meetings...</div>
-                    </div>
-                </div>
-            </div>
-            
-            <button class="expand-calendar-btn" onclick="expandCalendar()">
-                <i data-feather="maximize-2"></i>
-                View Full Calendar
-            </button>
-        </div>
-        
-        <!-- Event Details Modal -->
+    <!-- Event Details Modal -->
         <div class="event-modal" id="event-modal" style="display: none;">
             <div class="event-modal-content">
                 <div class="event-modal-header">
