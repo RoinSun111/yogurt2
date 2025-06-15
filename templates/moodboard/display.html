@@ -68,19 +68,87 @@
     margin: 0;
 }
 
+.mood-content {
+    position: relative;
+}
+
+.mood-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+.mood-text:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.mood-edit-container {
+    width: 100%;
+}
+
 .mood-input {
     background: rgba(255, 255, 255, 0.2);
     border: none;
     border-radius: 10px;
     color: white;
-    padding: 10px;
+    padding: 12px;
     width: 100%;
     font-size: 1rem;
-    text-align: center;
+    resize: none;
+    min-height: 60px;
+    font-family: inherit;
 }
 
 .mood-input::placeholder {
     color: rgba(255, 255, 255, 0.7);
+}
+
+.mood-input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.mood-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.char-count {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.mood-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.mood-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mood-btn.save {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.mood-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
 }
 
 .calendar-widget {
@@ -569,11 +637,31 @@
             <i data-feather="smile"></i>
             Mood
         </div>
-        {% if current_mood %}
-            <p class="mood-text">{{ current_mood.mood_text }}</p>
-        {% else %}
-            <input type="text" class="mood-input" placeholder="How are you feeling today?" id="mood-input">
-        {% endif %}
+        <div class="mood-content">
+            {% if current_mood %}
+                <p class="mood-text" id="mood-display" onclick="editMood()">{{ current_mood.mood_text }}</p>
+                <div class="mood-edit-container" id="mood-edit-container" style="display: none;">
+                    <textarea class="mood-input" placeholder="How are you feeling today?" id="mood-input" maxlength="140">{{ current_mood.mood_text }}</textarea>
+                    <div class="mood-actions">
+                        <span class="char-count" id="char-count">{{ current_mood.mood_text|length }}/140</span>
+                        <div class="mood-buttons">
+                            <button class="mood-btn save" onclick="saveMood()">Save</button>
+                            <button class="mood-btn cancel" onclick="cancelMoodEdit()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="mood-edit-container" id="mood-edit-container">
+                    <textarea class="mood-input" placeholder="How are you feeling today?" id="mood-input" maxlength="140"></textarea>
+                    <div class="mood-actions">
+                        <span class="char-count" id="char-count">0/140</span>
+                        <div class="mood-buttons">
+                            <button class="mood-btn save" onclick="saveMood()">Save</button>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
     </div>
 
     <!-- Calendar Widget -->
@@ -1147,6 +1235,88 @@ function addTodo() {
     });
 }
 
+// Mood editing functions
+function editMood() {
+    document.getElementById('mood-display').style.display = 'none';
+    document.getElementById('mood-edit-container').style.display = 'block';
+    
+    const moodInput = document.getElementById('mood-input');
+    moodInput.focus();
+    
+    // Set cursor to end of text
+    moodInput.setSelectionRange(moodInput.value.length, moodInput.value.length);
+    
+    // Setup character counter
+    updateCharCount();
+}
+
+function cancelMoodEdit() {
+    document.getElementById('mood-display').style.display = 'block';
+    document.getElementById('mood-edit-container').style.display = 'none';
+}
+
+function saveMood() {
+    const moodInput = document.getElementById('mood-input');
+    const moodText = moodInput.value.trim();
+    
+    if (!moodText) {
+        alert('Please enter your mood');
+        return;
+    }
+    
+    if (moodText.length > 140) {
+        alert('Mood text must be 140 characters or less');
+        return;
+    }
+    
+    fetch('/api/moodboard/mood', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            mood_text: moodText
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the display text
+            const moodDisplay = document.getElementById('mood-display');
+            if (moodDisplay) {
+                moodDisplay.textContent = moodText;
+                cancelMoodEdit();
+            } else {
+                // If no display element exists (first time), reload to show the new structure
+                location.reload();
+            }
+        } else {
+            alert('Failed to save mood: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error saving mood:', error);
+        alert('Failed to save mood. Please try again.');
+    });
+}
+
+function updateCharCount() {
+    const moodInput = document.getElementById('mood-input');
+    const charCount = document.getElementById('char-count');
+    
+    if (moodInput && charCount) {
+        const currentLength = moodInput.value.length;
+        charCount.textContent = `${currentLength}/140`;
+        
+        // Change color if approaching limit
+        if (currentLength > 120) {
+            charCount.style.color = '#ffcccb';
+        } else {
+            charCount.style.color = 'rgba(255, 255, 255, 0.7)';
+        }
+    }
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     updateDateTime();
@@ -1154,15 +1324,17 @@ document.addEventListener('DOMContentLoaded', function() {
     updateTodayInfo(); // This also loads calendar events
     loadTodos(); // Load today's todos
     
-    // Auto-save mood on input change
+    // Setup mood input character counter
     const moodInput = document.getElementById('mood-input');
     if (moodInput) {
-        moodInput.addEventListener('blur', updateMood);
+        moodInput.addEventListener('input', updateCharCount);
         moodInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                updateMood();
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                saveMood();
             }
         });
+        updateCharCount(); // Initialize counter
     }
     
     // Initialize Feather icons

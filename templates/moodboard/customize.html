@@ -339,7 +339,7 @@
                 <div class="drop-zone" data-position="0">1</div>
                 <div class="drop-zone" data-position="1">2</div>
                 <div class="drop-zone" data-position="2">3</div>
-                <div class="drop-zone active" data-position="3">4</div>
+                <div class="drop-zone" data-position="3">4</div>
                 <div class="drop-zone" data-position="4">5</div>
                 <div class="drop-zone" data-position="5">6</div>
                 <div class="drop-zone" data-position="6">7</div>
@@ -349,27 +349,6 @@
             
             <div class="canvas-widgets" id="canvas-widgets">
                 <!-- Placed widgets will appear here -->
-                <div class="canvas-widget mood" data-widget-type="mood" data-position="3" style="grid-column: 1; grid-row: 2;">
-                    <button class="widget-remove" onclick="removeWidget(this)">×</button>
-                    <strong>Mood</strong><br>
-                    Feeling productive!
-                </div>
-                <div class="canvas-widget calendar" data-widget-type="calendar" data-position="1" style="grid-column: 2; grid-row: 1;">
-                    <button class="widget-remove" onclick="removeWidget(this)">×</button>
-                    <strong>Calendar</strong><br>
-                    June 2025
-                </div>
-                <div class="canvas-widget todo" data-widget-type="todo" data-position="2" style="grid-column: 3; grid-row: 1;">
-                    <button class="widget-remove" onclick="removeWidget(this)">×</button>
-                    <strong>Todo</strong><br>
-                    • Finish project<br>
-                    • Review code
-                </div>
-                <div class="canvas-widget focus_score" data-widget-type="focus_score" data-position="4" style="grid-column: 2; grid-row: 2;">
-                    <button class="widget-remove" onclick="removeWidget(this)">×</button>
-                    <strong>Focus Score</strong><br>
-                    85% today
-                </div>
             </div>
             
             <div class="canvas-actions">
@@ -526,13 +505,22 @@ function updateDropZones() {
 }
 
 function loadCurrentLayout() {
-    // Load existing widgets from the initial setup
-    document.querySelectorAll('.canvas-widget').forEach(widget => {
-        const position = parseInt(widget.dataset.position);
-        const widgetType = widget.dataset.widgetType;
-        placedWidgets.set(position, widgetType);
-    });
-    updateDropZones();
+    // Load existing widget configuration from the server
+    fetch('/api/moodboard/widgets')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.widgets) {
+                data.widgets.forEach(widget => {
+                    if (widget.enabled) {
+                        const position = widget.y * 3 + widget.x;
+                        addWidgetToCanvas(widget.type, position);
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error loading current layout:', error);
+        });
 }
 
 function saveLayout() {
