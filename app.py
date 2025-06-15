@@ -728,28 +728,6 @@ def complete_todo(todo_id):
     
     return jsonify({'success': True})
 
-@app.route('/api/moodboard/widgets', methods=['GET'])
-def get_widget_settings():
-    """Get current widget configuration"""
-    try:
-        widgets = models.MoodboardSettings.query.all()
-        widgets_data = []
-        
-        for widget in widgets:
-            widgets_data.append({
-                'type': widget.widget_type,
-                'enabled': widget.is_enabled,
-                'x': widget.position_x,
-                'y': widget.position_y,
-                'width': widget.width,
-                'height': widget.height,
-                'config': widget.config
-            })
-        
-        return jsonify({'success': True, 'widgets': widgets_data})
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)})
-
 @app.route('/api/moodboard/widgets', methods=['POST'])
 def update_widget_settings():
     """Update widget configuration"""

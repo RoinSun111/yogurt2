@@ -137,10 +137,9 @@
 .canvas {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
     gap: 15px;
     margin-bottom: 20px;
-    height: 300px;
+    min-height: 400px;
 }
 
 .drop-zone {
@@ -181,9 +180,7 @@
     right: 20px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
     gap: 15px;
-    height: 300px;
     pointer-events: none;
 }
 
@@ -345,6 +342,9 @@
                 <div class="drop-zone" data-position="3">4</div>
                 <div class="drop-zone" data-position="4">5</div>
                 <div class="drop-zone" data-position="5">6</div>
+                <div class="drop-zone" data-position="6">7</div>
+                <div class="drop-zone" data-position="7">8</div>
+                <div class="drop-zone" data-position="8">9</div>
             </div>
             
             <div class="canvas-widgets" id="canvas-widgets">
@@ -450,10 +450,7 @@ function addWidgetToCanvas(widgetType, position) {
     const template = widgetTemplates[widgetType];
     if (!template) return;
     
-    // Validate position is within 0-5 range for 2x3 grid
-    if (position < 0 || position > 5) return;
-    
-    // Calculate grid position for 2x3 grid
+    // Calculate grid position
     const gridCol = (position % 3) + 1;
     const gridRow = Math.floor(position / 3) + 1;
     
