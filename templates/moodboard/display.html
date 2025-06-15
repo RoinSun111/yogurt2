@@ -443,13 +443,10 @@
             <div class="today-meetings">
                 <div class="meetings-header">Today's Meetings</div>
                 <div class="meetings-list" id="meetings-list">
-                    <div class="meeting-item">
-                        <div class="meeting-time">09:00</div>
-                        <div class="meeting-title">Team Standup</div>
-                    </div>
-                    <div class="meeting-item">
-                        <div class="meeting-time">14:30</div>
-                        <div class="meeting-title">Project Review</div>
+                    <!-- Calendar events will be loaded dynamically -->
+                    <div class="meeting-item" style="display: none;">
+                        <div class="meeting-time">Loading...</div>
+                        <div class="meeting-title">Loading meetings...</div>
                     </div>
                 </div>
             </div>
@@ -594,7 +591,7 @@ function updateDateTime() {
 // Calendar state
 let currentCalendarDate = new Date();
 
-// Update today's info
+// Update today's info and load calendar events
 function updateTodayInfo() {
     const today = new Date();
     const months = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -603,6 +600,48 @@ function updateTodayInfo() {
     document.getElementById('today-number').textContent = today.getDate();
     document.getElementById('today-month').textContent = months[today.getMonth()];
     document.getElementById('today-year').textContent = today.getFullYear();
+    
+    // Load today's calendar events
+    loadTodayCalendarEvents();
+}
+
+// Load today's calendar events from the API
+function loadTodayCalendarEvents() {
+    const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    
+    fetch(`/api/moodboard/calendar/events?date=${today}`)
+        .then(response => response.json())
+        .then(data => {
+            const meetingsList = document.getElementById('meetings-list');
+            
+            if (data.success && data.events.length > 0) {
+                meetingsList.innerHTML = '';
+                
+                data.events.forEach(event => {
+                    const meetingItem = document.createElement('div');
+                    meetingItem.className = 'meeting-item';
+                    
+                    const timeElement = document.createElement('div');
+                    timeElement.className = 'meeting-time';
+                    timeElement.textContent = event.time;
+                    
+                    const titleElement = document.createElement('div');
+                    titleElement.className = 'meeting-title';
+                    titleElement.textContent = event.title;
+                    
+                    meetingItem.appendChild(timeElement);
+                    meetingItem.appendChild(titleElement);
+                    meetingsList.appendChild(meetingItem);
+                });
+            } else {
+                meetingsList.innerHTML = '<div class="meeting-item"><div class="meeting-time"></div><div class="meeting-title">No meetings scheduled</div></div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading calendar events:', error);
+            const meetingsList = document.getElementById('meetings-list');
+            meetingsList.innerHTML = '<div class="meeting-item"><div class="meeting-time"></div><div class="meeting-title">Error loading events</div></div>';
+        });
 }
 
 // Generate calendar for full view
@@ -691,6 +730,69 @@ function updateMood() {
     }
 }
 
+// Load todos from API
+function loadTodos() {
+    const today = new Date().toISOString().split('T')[0];
+    
+    fetch(`/api/moodboard/todos?date=${today}`)
+        .then(response => response.json())
+        .then(data => {
+            const todoList = document.querySelector('.todo-list');
+            
+            if (data.success && data.todos.length > 0) {
+                todoList.innerHTML = '';
+                
+                data.todos.forEach(todo => {
+                    const todoItem = document.createElement('div');
+                    todoItem.className = `todo-item ${todo.is_completed ? 'completed' : ''}`;
+                    todoItem.setAttribute('data-todo-id', todo.id);
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = todo.is_completed;
+                    checkbox.onchange = () => completeTodo(todo.id);
+                    
+                    const content = document.createElement('div');
+                    content.className = 'todo-content';
+                    
+                    const title = document.createElement('div');
+                    title.className = 'todo-title';
+                    title.textContent = todo.title;
+                    
+                    const meta = document.createElement('div');
+                    meta.className = 'todo-meta';
+                    
+                    if (todo.due_time) {
+                        meta.textContent = `Due: ${todo.due_time}`;
+                        if (todo.has_calendar_event) {
+                            meta.textContent += ' 📅';
+                        }
+                    } else if (todo.priority !== 'medium') {
+                        meta.textContent = `Priority: ${todo.priority}`;
+                    }
+                    
+                    content.appendChild(title);
+                    if (meta.textContent) {
+                        content.appendChild(meta);
+                    }
+                    
+                    todoItem.appendChild(checkbox);
+                    todoItem.appendChild(content);
+                    todoList.appendChild(todoItem);
+                });
+            } else {
+                todoList.innerHTML = '<div class="todo-item"><div class="todo-content"><div class="todo-title">No todos for today</div></div></div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading todos:', error);
+            const todoList = document.querySelector('.todo-list');
+            if (todoList) {
+                todoList.innerHTML = '<div class="todo-item"><div class="todo-content"><div class="todo-title">Error loading todos</div></div></div>';
+            }
+        });
+}
+
 // Complete todo
 function completeTodo(todoId) {
     fetch(`/api/moodboard/todo/${todoId}/complete`, {
@@ -703,10 +805,12 @@ function completeTodo(todoId) {
     .then(data => {
         if (data.success) {
             const todoItem = document.querySelector(`[data-todo-id="${todoId}"]`);
-            todoItem.style.opacity = '0.5';
-            setTimeout(() => {
-                todoItem.remove();
-            }, 300);
+            if (todoItem) {
+                todoItem.style.opacity = '0.5';
+                setTimeout(() => {
+                    todoItem.remove();
+                }, 300);
+            }
         }
     });
 }
@@ -738,7 +842,8 @@ function addTodo() {
             title: title,
             description: description,
             priority: priority,
-            due_date: dueDate || null
+            due_date: dueDate || null,
+            create_calendar_event: false
         })
     })
     .then(response => response.json())
@@ -753,7 +858,8 @@ function addTodo() {
 document.addEventListener('DOMContentLoaded', function() {
     updateDateTime();
     setInterval(updateDateTime, 60000); // Update every minute
-    updateTodayInfo();
+    updateTodayInfo(); // This also loads calendar events
+    loadTodos(); // Load today's todos
     
     // Auto-save mood on input change
     const moodInput = document.getElementById('mood-input');
