@@ -64,9 +64,24 @@
                             </li>
                         </ul>
                     </nav>
-                    <div class="time-display">
-                        <i data-feather="clock" class="feather-icon-sm me-1"></i>
-                        <span id="current-time">00:00</span>
+                    <div class="d-flex align-items-center">
+                        <div class="dropdown me-3">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="moodboardDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i data-feather="grid" class="me-1"></i> Moodboard
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="moodboardDropdown">
+                                <li><a class="dropdown-item" href="/moodboard">
+                                    <i data-feather="monitor" class="me-2"></i> View Display
+                                </a></li>
+                                <li><a class="dropdown-item" href="/moodboard/customize">
+                                    <i data-feather="settings" class="me-2"></i> Customize
+                                </a></li>
+                            </ul>
+                        </div>
+                        <div class="time-display">
+                            <i data-feather="clock" class="feather-icon-sm me-1"></i>
+                            <span id="current-time">00:00</span>
+                        </div>
                     </div>
                 </div>
             </div>

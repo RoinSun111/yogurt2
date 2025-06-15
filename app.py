@@ -499,6 +499,123 @@ def process_frame():
     
     return jsonify(response_data)
 
+# Moodboard routes
+@app.route('/moodboard')
+def moodboard():
+    """Display the moodboard with configured widgets"""
+    # Get widget configurations
+    widgets = models.MoodboardSettings.query.filter_by(is_enabled=True).all()
+    
+    # Get current mood
+    current_mood = models.MoodEntry.query.filter_by(date=datetime.now().date()).first()
+    
+    # Get todos
+    todos = models.TodoItem.query.filter_by(is_completed=False).order_by(models.TodoItem.priority.desc()).limit(5).all()
+    
+    # Get focus score for today
+    today = datetime.now().date()
+    focus_entries = models.FocusScore.query.filter_by(date=today).all()
+    
+    total_entries = len(focus_entries)
+    working_entries = sum(1 for entry in focus_entries if entry.is_focused)
+    focus_score = (working_entries / total_entries) * 100 if total_entries > 0 else 0
+    
+    # Get water intake for today
+    water_entries = models.WaterIntake.query.filter_by(date=today).all()
+    total_water = sum(entry.amount for entry in water_entries)
+    
+    # Get latest posture
+    latest_posture = models.PostureStatus.query.order_by(models.PostureStatus.timestamp.desc()).first()
+    
+    return render_template('moodboard/display.html', 
+                         widgets=widgets,
+                         current_mood=current_mood,
+                         todos=todos,
+                         focus_score=round(focus_score, 1),
+                         total_water=total_water,
+                         latest_posture=latest_posture)
+
+@app.route('/moodboard/customize')
+def moodboard_customize():
+    """Display the moodboard customization page"""
+    widgets = models.MoodboardSettings.query.all()
+    return render_template('moodboard/customize.html', widgets=widgets)
+
+@app.route('/api/moodboard/mood', methods=['POST'])
+def update_mood():
+    """Update the current mood text"""
+    data = request.get_json()
+    mood_text = data.get('mood_text', '')
+    
+    today = datetime.now().date()
+    existing_mood = models.MoodEntry.query.filter_by(date=today).first()
+    
+    if existing_mood:
+        existing_mood.mood_text = mood_text
+        existing_mood.timestamp = datetime.now()
+    else:
+        new_mood = models.MoodEntry(mood_text=mood_text, date=today)
+        db.session.add(new_mood)
+    
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/api/moodboard/todo', methods=['POST'])
+def add_todo():
+    """Add a new todo item"""
+    data = request.get_json()
+    
+    new_todo = models.TodoItem(
+        title=data.get('title', ''),
+        description=data.get('description', ''),
+        priority=data.get('priority', 'medium'),
+        due_date=datetime.strptime(data['due_date'], '%Y-%m-%d').date() if data.get('due_date') else None
+    )
+    db.session.add(new_todo)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'id': new_todo.id})
+
+@app.route('/api/moodboard/todo/<int:todo_id>/complete', methods=['POST'])
+def complete_todo(todo_id):
+    """Mark a todo as completed"""
+    todo = models.TodoItem.query.get_or_404(todo_id)
+    todo.is_completed = True
+    todo.completed_at = datetime.now()
+    db.session.commit()
+    
+    return jsonify({'success': True})
+
+@app.route('/api/moodboard/widgets', methods=['POST'])
+def update_widget_settings():
+    """Update widget configuration"""
+    data = request.get_json()
+    
+    for widget_data in data.get('widgets', []):
+        widget = models.MoodboardSettings.query.filter_by(widget_type=widget_data['type']).first()
+        
+        if widget:
+            widget.is_enabled = widget_data.get('enabled', True)
+            widget.position_x = widget_data.get('x', 0)
+            widget.position_y = widget_data.get('y', 0)
+            widget.width = widget_data.get('width', 1)
+            widget.height = widget_data.get('height', 1)
+            widget.config = widget_data.get('config', '')
+        else:
+            new_widget = models.MoodboardSettings(
+                widget_type=widget_data['type'],
+                is_enabled=widget_data.get('enabled', True),
+                position_x=widget_data.get('x', 0),
+                position_y=widget_data.get('y', 0),
+                width=widget_data.get('width', 1),
+                height=widget_data.get('height', 1),
+                config=widget_data.get('config', '')
+            )
+            db.session.add(new_widget)
+    
+    db.session.commit()
+    return jsonify({'success': True})
+
 # Error handlers
 @app.errorhandler(404)
 def page_not_found(e):

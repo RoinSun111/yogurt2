@@ -1,0 +1,431 @@
+{% extends "layout.html" %}
+
+{% block styles %}
+<style>
+.customize-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.widget-config-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.widget-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.widget-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #fff;
+    display: flex;
+    align-items: center;
+}
+
+.widget-name i {
+    margin-right: 8px;
+    color: #ff6b35;
+}
+
+.widget-toggle {
+    margin-left: auto;
+}
+
+.preview-container {
+    display: flex;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.moodboard-preview {
+    max-width: 300px;
+    height: 600px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    border-radius: 20px;
+    padding: 15px;
+    border: 2px solid #333;
+    overflow-y: auto;
+}
+
+.preview-widget {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 0.8rem;
+    color: #fff;
+}
+
+.preview-widget.mood {
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+}
+
+.preview-widget.calendar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.preview-widget.todo {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.config-section {
+    flex: 1;
+}
+
+.position-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.position-cell {
+    aspect-ratio: 1;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+.position-cell:hover {
+    border-color: #ff6b35;
+    background: rgba(255, 107, 53, 0.1);
+}
+
+.position-cell.selected {
+    border-color: #ff6b35;
+    background: rgba(255, 107, 53, 0.2);
+    color: #ff6b35;
+}
+
+.save-btn {
+    background: #ff6b35;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.2s;
+}
+
+.save-btn:hover {
+    background: #e55a2b;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+}
+
+.back-btn {
+    background: transparent;
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 20px;
+    transition: all 0.2s;
+}
+
+.back-btn:hover {
+    border-color: #ff6b35;
+    color: #ff6b35;
+    text-decoration: none;
+}
+
+.back-btn i {
+    margin-right: 8px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="customize-container">
+    <a href="/moodboard" class="back-btn">
+        <i data-feather="arrow-left"></i>
+        Back to Moodboard
+    </a>
+
+    <h2 class="text-white mb-4">Customize Your Moodboard</h2>
+
+    <div class="preview-container">
+        <div class="config-section">
+            <!-- Mood Widget Config -->
+            <div class="widget-config-card">
+                <div class="widget-header">
+                    <div class="widget-name">
+                        <i data-feather="smile"></i>
+                        Mood Widget
+                    </div>
+                    <div class="widget-toggle">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="moodEnabled" checked>
+                            <label class="form-check-label" for="moodEnabled">Enabled</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-white">Position</label>
+                    <div class="position-grid" data-widget="mood">
+                        <div class="position-cell selected" data-pos="0">1</div>
+                        <div class="position-cell" data-pos="1">2</div>
+                        <div class="position-cell" data-pos="2">3</div>
+                        <div class="position-cell" data-pos="3">4</div>
+                        <div class="position-cell" data-pos="4">5</div>
+                        <div class="position-cell" data-pos="5">6</div>
+                        <div class="position-cell" data-pos="6">7</div>
+                        <div class="position-cell" data-pos="7">8</div>
+                        <div class="position-cell" data-pos="8">9</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Widget Config -->
+            <div class="widget-config-card">
+                <div class="widget-header">
+                    <div class="widget-name">
+                        <i data-feather="calendar"></i>
+                        Calendar Widget
+                    </div>
+                    <div class="widget-toggle">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="calendarEnabled" checked>
+                            <label class="form-check-label" for="calendarEnabled">Enabled</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-white">Position</label>
+                    <div class="position-grid" data-widget="calendar">
+                        <div class="position-cell" data-pos="0">1</div>
+                        <div class="position-cell selected" data-pos="1">2</div>
+                        <div class="position-cell" data-pos="2">3</div>
+                        <div class="position-cell" data-pos="3">4</div>
+                        <div class="position-cell" data-pos="4">5</div>
+                        <div class="position-cell" data-pos="5">6</div>
+                        <div class="position-cell" data-pos="6">7</div>
+                        <div class="position-cell" data-pos="7">8</div>
+                        <div class="position-cell" data-pos="8">9</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Todo Widget Config -->
+            <div class="widget-config-card">
+                <div class="widget-header">
+                    <div class="widget-name">
+                        <i data-feather="check-square"></i>
+                        Todo Widget
+                    </div>
+                    <div class="widget-toggle">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="todoEnabled" checked>
+                            <label class="form-check-label" for="todoEnabled">Enabled</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-white">Position</label>
+                    <div class="position-grid" data-widget="todo">
+                        <div class="position-cell" data-pos="0">1</div>
+                        <div class="position-cell" data-pos="1">2</div>
+                        <div class="position-cell selected" data-pos="2">3</div>
+                        <div class="position-cell" data-pos="3">4</div>
+                        <div class="position-cell" data-pos="4">5</div>
+                        <div class="position-cell" data-pos="5">6</div>
+                        <div class="position-cell" data-pos="6">7</div>
+                        <div class="position-cell" data-pos="7">8</div>
+                        <div class="position-cell" data-pos="8">9</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Focus Score Widget Config -->
+            <div class="widget-config-card">
+                <div class="widget-header">
+                    <div class="widget-name">
+                        <i data-feather="trending-up"></i>
+                        Focus Score Widget
+                    </div>
+                    <div class="widget-toggle">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="focusEnabled" checked>
+                            <label class="form-check-label" for="focusEnabled">Enabled</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-white">Position</label>
+                    <div class="position-grid" data-widget="focus">
+                        <div class="position-cell" data-pos="0">1</div>
+                        <div class="position-cell" data-pos="1">2</div>
+                        <div class="position-cell" data-pos="2">3</div>
+                        <div class="position-cell selected" data-pos="3">4</div>
+                        <div class="position-cell" data-pos="4">5</div>
+                        <div class="position-cell" data-pos="5">6</div>
+                        <div class="position-cell" data-pos="6">7</div>
+                        <div class="position-cell" data-pos="7">8</div>
+                        <div class="position-cell" data-pos="8">9</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="save-btn" onclick="saveConfiguration()">
+                <i data-feather="save"></i>
+                Save Configuration
+            </button>
+        </div>
+
+        <div class="moodboard-preview">
+            <div class="text-center mb-3">
+                <div style="font-size: 1.5rem; font-weight: bold; color: #fff;">12:00</div>
+                <div style="font-size: 0.7rem; color: #aaa;">PREVIEW</div>
+            </div>
+            
+            <div id="preview-widgets">
+                <div class="preview-widget mood" data-widget="mood" data-position="0">
+                    <strong>Mood</strong><br>
+                    Feeling productive! 
+                </div>
+                <div class="preview-widget calendar" data-widget="calendar" data-position="1">
+                    <strong>Calendar</strong><br>
+                    June 2025
+                </div>
+                <div class="preview-widget todo" data-widget="todo" data-position="2">
+                    <strong>Todo</strong><br>
+                    • Finish project<br>
+                    • Review code
+                </div>
+                <div class="preview-widget" data-widget="focus" data-position="3">
+                    <strong>Focus Score</strong><br>
+                    85% today
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let widgetConfigs = {
+    mood: { enabled: true, position: 0 },
+    calendar: { enabled: true, position: 1 },
+    todo: { enabled: true, position: 2 },
+    focus: { enabled: true, position: 3 }
+};
+
+// Handle position selection
+document.querySelectorAll('.position-cell').forEach(cell => {
+    cell.addEventListener('click', function() {
+        const grid = this.closest('.position-grid');
+        const widget = grid.dataset.widget;
+        const position = parseInt(this.dataset.pos);
+        
+        // Remove selected class from all cells in this grid
+        grid.querySelectorAll('.position-cell').forEach(c => c.classList.remove('selected'));
+        
+        // Add selected class to clicked cell
+        this.classList.add('selected');
+        
+        // Update config
+        widgetConfigs[widget].position = position;
+        
+        // Update preview
+        updatePreview();
+    });
+});
+
+// Handle toggle switches
+document.querySelectorAll('input[type="checkbox"]').forEach(toggle => {
+    toggle.addEventListener('change', function() {
+        const widget = this.id.replace('Enabled', '');
+        widgetConfigs[widget].enabled = this.checked;
+        updatePreview();
+    });
+});
+
+function updatePreview() {
+    const previewContainer = document.getElementById('preview-widgets');
+    const widgets = Array.from(previewContainer.children);
+    
+    // Sort widgets by position and filter enabled ones
+    const enabledWidgets = Object.keys(widgetConfigs)
+        .filter(key => widgetConfigs[key].enabled)
+        .sort((a, b) => widgetConfigs[a].position - widgetConfigs[b].position);
+    
+    // Clear and rebuild preview
+    previewContainer.innerHTML = '';
+    
+    enabledWidgets.forEach(widgetType => {
+        const widget = widgets.find(w => w.dataset.widget === widgetType);
+        if (widget) {
+            previewContainer.appendChild(widget.cloneNode(true));
+        }
+    });
+}
+
+function saveConfiguration() {
+    const widgetData = Object.keys(widgetConfigs).map(type => ({
+        type: type,
+        enabled: widgetConfigs[type].enabled,
+        x: widgetConfigs[type].position % 3,
+        y: Math.floor(widgetConfigs[type].position / 3),
+        width: 1,
+        height: 1
+    }));
+    
+    fetch('/api/moodboard/widgets', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            widgets: widgetData
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            const btn = document.querySelector('.save-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i data-feather="check"></i> Saved!';
+            btn.style.background = '#28a745';
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = '#ff6b35';
+                feather.replace();
+            }, 2000);
+            
+            feather.replace();
+        }
+    })
+    .catch(error => {
+        console.error('Error saving configuration:', error);
+        alert('Failed to save configuration. Please try again.');
+    });
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updatePreview();
+    feather.replace();
+});
+</script>
+{% endblock %}

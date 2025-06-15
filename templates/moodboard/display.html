@@ -1,0 +1,488 @@
+{% extends "layout.html" %}
+
+{% block styles %}
+<style>
+.moodboard-container {
+    max-width: 375px;
+    height: 812px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    border-radius: 25px;
+    padding: 20px;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 2px solid #333;
+}
+
+.moodboard-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.current-time {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 5px;
+}
+
+.current-date {
+    font-size: 0.9rem;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.widget {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.widget-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.widget-title i {
+    margin-right: 8px;
+    color: #ff6b35;
+}
+
+.mood-widget {
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+    color: white;
+    text-align: center;
+}
+
+.mood-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+.mood-input {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 10px;
+    width: 100%;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.mood-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.calendar-widget {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-top: 10px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    font-size: 0.8rem;
+    color: white;
+}
+
+.calendar-day.today {
+    background: #ff6b35;
+    font-weight: bold;
+}
+
+.calendar-day.other-month {
+    opacity: 0.4;
+}
+
+.todo-widget {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.todo-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.todo-item:last-child {
+    border-bottom: none;
+}
+
+.todo-checkbox {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid white;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.todo-checkbox:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.todo-text {
+    flex: 1;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.todo-priority {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.stat-card {
+    text-align: center;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ff6b35;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-top: 5px;
+}
+
+.add-todo-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 8px 15px;
+    font-size: 0.8rem;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-todo-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.customize-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #ff6b35;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+    transition: all 0.3s;
+}
+
+.customize-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.6);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="moodboard-container">
+    <!-- Header with Time -->
+    <div class="moodboard-header">
+        <div class="current-time" id="moodboard-time">12:00</div>
+        <div class="current-date" id="moodboard-date">Today</div>
+    </div>
+
+    <!-- Mood Widget -->
+    <div class="widget mood-widget">
+        <div class="widget-title">
+            <i data-feather="smile"></i>
+            Mood
+        </div>
+        {% if current_mood %}
+            <p class="mood-text">{{ current_mood.mood_text }}</p>
+        {% else %}
+            <input type="text" class="mood-input" placeholder="How are you feeling today?" id="mood-input">
+        {% endif %}
+    </div>
+
+    <!-- Calendar Widget -->
+    <div class="widget calendar-widget">
+        <div class="widget-title">
+            <i data-feather="calendar"></i>
+            Calendar
+        </div>
+        <div class="calendar-grid" id="calendar-grid">
+            <!-- Calendar will be generated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Todo Widget -->
+    <div class="widget todo-widget">
+        <div class="widget-title">
+            <i data-feather="check-square"></i>
+            Todo
+        </div>
+        <div id="todo-list">
+            {% for todo in todos %}
+            <div class="todo-item" data-todo-id="{{ todo.id }}">
+                <div class="todo-checkbox" onclick="completeTodo({{ todo.id }})"></div>
+                <div class="todo-text">{{ todo.title }}</div>
+                <div class="todo-priority">{{ todo.priority }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        <button class="add-todo-btn" onclick="showAddTodoModal()">
+            <i data-feather="plus"></i> Add Todo
+        </button>
+    </div>
+
+    <!-- Stats Widget -->
+    <div class="widget">
+        <div class="widget-title">
+            <i data-feather="trending-up"></i>
+            Today's Stats
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ focus_score }}%</div>
+                <div class="stat-label">Focus Score</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ total_water|int }}ml</div>
+                <div class="stat-label">Water Intake</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Customize Button -->
+<button class="customize-btn" onclick="window.location.href='/moodboard/customize'">
+    <i data-feather="settings"></i>
+</button>
+
+<!-- Add Todo Modal -->
+<div class="modal fade" id="addTodoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Todo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="todoTitle" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="todoTitle" placeholder="Enter todo title">
+                </div>
+                <div class="mb-3">
+                    <label for="todoDescription" class="form-label">Description</label>
+                    <textarea class="form-control" id="todoDescription" rows="3" placeholder="Optional description"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="todoPriority" class="form-label">Priority</label>
+                    <select class="form-select" id="todoPriority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="todoDueDate" class="form-label">Due Date</label>
+                    <input type="date" class="form-control" id="todoDueDate">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="addTodo()">Add Todo</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update time and date
+function updateDateTime() {
+    const now = new Date();
+    const timeEl = document.getElementById('moodboard-time');
+    const dateEl = document.getElementById('moodboard-date');
+    
+    timeEl.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    dateEl.textContent = now.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+}
+
+// Generate calendar
+function generateCalendar() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    
+    const calendarGrid = document.getElementById('calendar-grid');
+    calendarGrid.innerHTML = '';
+    
+    for (let i = 0; i < 42; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        dayEl.textContent = date.getDate();
+        
+        if (date.getMonth() !== month) {
+            dayEl.classList.add('other-month');
+        }
+        
+        if (date.toDateString() === today.toDateString()) {
+            dayEl.classList.add('today');
+        }
+        
+        calendarGrid.appendChild(dayEl);
+    }
+}
+
+// Update mood
+function updateMood() {
+    const moodInput = document.getElementById('mood-input');
+    if (moodInput && moodInput.value.trim()) {
+        fetch('/api/moodboard/mood', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                mood_text: moodInput.value.trim()
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+}
+
+// Complete todo
+function completeTodo(todoId) {
+    fetch(`/api/moodboard/todo/${todoId}/complete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const todoItem = document.querySelector(`[data-todo-id="${todoId}"]`);
+            todoItem.style.opacity = '0.5';
+            setTimeout(() => {
+                todoItem.remove();
+            }, 300);
+        }
+    });
+}
+
+// Show add todo modal
+function showAddTodoModal() {
+    const modal = new bootstrap.Modal(document.getElementById('addTodoModal'));
+    modal.show();
+}
+
+// Add todo
+function addTodo() {
+    const title = document.getElementById('todoTitle').value.trim();
+    const description = document.getElementById('todoDescription').value.trim();
+    const priority = document.getElementById('todoPriority').value;
+    const dueDate = document.getElementById('todoDueDate').value;
+    
+    if (!title) {
+        alert('Please enter a title for the todo');
+        return;
+    }
+    
+    fetch('/api/moodboard/todo', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            title: title,
+            description: description,
+            priority: priority,
+            due_date: dueDate || null
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updateDateTime();
+    setInterval(updateDateTime, 60000); // Update every minute
+    generateCalendar();
+    
+    // Auto-save mood on input change
+    const moodInput = document.getElementById('mood-input');
+    if (moodInput) {
+        moodInput.addEventListener('blur', updateMood);
+        moodInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                updateMood();
+            }
+        });
+    }
+    
+    // Initialize Feather icons
+    feather.replace();
+});
+</script>
+{% endblock %}

@@ -63,3 +63,30 @@ class DistractionEvent(db.Model):
     end_time = db.Column(db.DateTime, nullable=True)
     date = db.Column(db.Date, default=datetime.now().date)
     details = db.Column(db.String(255), nullable=True)  # Additional context about the event
+
+class MoodboardSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    widget_type = db.Column(db.String(50))  # 'mood', 'calendar', 'todo', 'focus_score', 'water', 'posture_score'
+    is_enabled = db.Column(db.Boolean, default=True)
+    position_x = db.Column(db.Integer, default=0)  # Grid position X
+    position_y = db.Column(db.Integer, default=0)  # Grid position Y
+    width = db.Column(db.Integer, default=1)  # Grid width
+    height = db.Column(db.Integer, default=1)  # Grid height
+    config = db.Column(db.Text, nullable=True)  # JSON configuration for the widget
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+class MoodEntry(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    mood_text = db.Column(db.String(200))  # Customizable mood text
+    date = db.Column(db.Date, default=datetime.now().date)
+    timestamp = db.Column(db.DateTime, default=datetime.now)
+
+class TodoItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200))
+    description = db.Column(db.Text, nullable=True)
+    is_completed = db.Column(db.Boolean, default=False)
+    priority = db.Column(db.String(20), default='medium')  # low, medium, high
+    due_date = db.Column(db.Date, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    completed_at = db.Column(db.DateTime, nullable=True)
