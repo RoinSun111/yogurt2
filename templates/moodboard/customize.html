@@ -3,115 +3,252 @@
 {% block styles %}
 <style>
 .customize-container {
-    max-width: 800px;
+    background: #0a0a0a;
+    min-height: 100vh;
+    color: white;
+    padding: 20px;
+}
+
+.customize-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.customize-layout {
+    display: flex;
+    gap: 40px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
-.widget-config-card {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.widget-header {
-    display: flex;
-    justify-content: between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.widget-name {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #fff;
-    display: flex;
-    align-items: center;
-}
-
-.widget-name i {
-    margin-right: 8px;
-    color: #ff6b35;
-}
-
-.widget-toggle {
-    margin-left: auto;
-}
-
-.preview-container {
-    display: flex;
-    gap: 30px;
-    margin-top: 30px;
-}
-
-.moodboard-preview {
-    max-width: 300px;
-    height: 600px;
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+/* Widget Library */
+.widget-library {
+    width: 300px;
+    background: #1a1a1a;
     border-radius: 20px;
-    padding: 15px;
-    border: 2px solid #333;
-    overflow-y: auto;
+    padding: 20px;
+    height: fit-content;
 }
 
-.preview-widget {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    padding: 10px;
-    margin-bottom: 10px;
-    font-size: 0.8rem;
+.widget-library h3 {
+    margin-bottom: 20px;
+    font-size: 1.2rem;
     color: #fff;
 }
 
-.preview-widget.mood {
-    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-}
-
-.preview-widget.calendar {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.preview-widget.todo {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-}
-
-.config-section {
-    flex: 1;
-}
-
-.position-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+.widget-list {
+    display: flex;
+    flex-direction: column;
     gap: 10px;
-    margin-top: 10px;
 }
 
-.position-cell {
-    aspect-ratio: 1;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    cursor: pointer;
+.widget-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    background: #2a2a2a;
+    border-radius: 12px;
+    cursor: grab;
     transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.widget-item:hover {
+    background: #3a3a3a;
+    transform: translateX(5px);
+}
+
+.widget-item:active {
+    cursor: grabbing;
+}
+
+.widget-item.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+}
+
+.widget-icon {
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
-    color: #aaa;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
 }
 
-.position-cell:hover {
+.widget-item[data-widget-type="calendar"] .widget-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.widget-item[data-widget-type="todo"] .widget-icon {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.widget-item[data-widget-type="focus_score"] .widget-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.widget-item[data-widget-type="water"] .widget-icon {
+    background: linear-gradient(135deg, #00bcd4 0%, #00acc1 100%);
+}
+
+.widget-item[data-widget-type="posture_score"] .widget-icon {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+}
+
+.widget-item span {
+    font-weight: 500;
+    color: #fff;
+}
+
+/* Canvas Area */
+.canvas-area {
+    flex: 1;
+    background: #1a1a1a;
+    border-radius: 20px;
+    padding: 20px;
+    position: relative;
+}
+
+.canvas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.time-display {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+.preview-label {
+    font-size: 0.8rem;
+    color: #888;
+    font-weight: 600;
+}
+
+.canvas {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+    min-height: 400px;
+}
+
+.drop-zone {
+    background: #2a2a2a;
+    border: 2px dashed #444;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #666;
+    transition: all 0.3s;
+    aspect-ratio: 1;
+    position: relative;
+}
+
+.drop-zone:hover {
     border-color: #ff6b35;
     background: rgba(255, 107, 53, 0.1);
 }
 
-.position-cell.selected {
+.drop-zone.drag-over {
     border-color: #ff6b35;
     background: rgba(255, 107, 53, 0.2);
+    border-style: solid;
+}
+
+.drop-zone.active {
+    border-color: #ff6b35;
+    background: rgba(255, 107, 53, 0.15);
     color: #ff6b35;
 }
 
-.save-btn {
+.canvas-widgets {
+    position: absolute;
+    top: 80px;
+    left: 20px;
+    right: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    pointer-events: none;
+}
+
+.canvas-widget {
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+    border-radius: 15px;
+    padding: 15px;
+    color: white;
+    font-size: 0.9rem;
+    position: relative;
+    pointer-events: all;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.canvas-widget:hover {
+    transform: scale(1.02);
+}
+
+.canvas-widget.calendar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.canvas-widget.todo {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.canvas-widget.focus_score {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.canvas-widget.water {
+    background: linear-gradient(135deg, #00bcd4 0%, #00acc1 100%);
+}
+
+.canvas-widget.posture_score {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+}
+
+.widget-remove {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.widget-remove:hover {
+    background: #f44336;
+}
+
+.canvas-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.btn-save {
     background: #ff6b35;
     color: white;
     border: none;
@@ -120,274 +257,298 @@
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    margin-top: 20px;
     transition: all 0.2s;
 }
 
-.save-btn:hover {
+.btn-save:hover {
     background: #e55a2b;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
 }
 
-.back-btn {
+.btn-back {
     background: transparent;
     color: #fff;
     border: 2px solid rgba(255, 255, 255, 0.2);
-    padding: 8px 20px;
+    padding: 10px 25px;
     border-radius: 10px;
     text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    margin-bottom: 20px;
+    font-weight: 500;
     transition: all 0.2s;
 }
 
-.back-btn:hover {
+.btn-back:hover {
     border-color: #ff6b35;
     color: #ff6b35;
     text-decoration: none;
 }
 
-.back-btn i {
-    margin-right: 8px;
+/* Drag feedback */
+.drag-ghost {
+    opacity: 0.5;
+    transform: rotate(5deg);
+    pointer-events: none;
 }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="customize-container">
-    <a href="/moodboard" class="back-btn">
-        <i data-feather="arrow-left"></i>
-        Back to Moodboard
-    </a>
-
-    <h2 class="text-white mb-4">Customize Your Moodboard</h2>
-
-    <div class="preview-container">
-        <div class="config-section">
-            <!-- Mood Widget Config -->
-            <div class="widget-config-card">
-                <div class="widget-header">
-                    <div class="widget-name">
-                        <i data-feather="smile"></i>
-                        Mood Widget
-                    </div>
-                    <div class="widget-toggle">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="moodEnabled" checked>
-                            <label class="form-check-label" for="moodEnabled">Enabled</label>
-                        </div>
-                    </div>
+    <h1 class="customize-title">Customize Your Moodboard</h1>
+    
+    <div class="customize-layout">
+        <!-- Widget Library -->
+        <div class="widget-library">
+            <h3>Available Widgets</h3>
+            <div class="widget-list">
+                <div class="widget-item" draggable="true" data-widget-type="mood">
+                    <div class="widget-icon">😊</div>
+                    <span>Mood Widget</span>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label text-white">Position</label>
-                    <div class="position-grid" data-widget="mood">
-                        <div class="position-cell selected" data-pos="0">1</div>
-                        <div class="position-cell" data-pos="1">2</div>
-                        <div class="position-cell" data-pos="2">3</div>
-                        <div class="position-cell" data-pos="3">4</div>
-                        <div class="position-cell" data-pos="4">5</div>
-                        <div class="position-cell" data-pos="5">6</div>
-                        <div class="position-cell" data-pos="6">7</div>
-                        <div class="position-cell" data-pos="7">8</div>
-                        <div class="position-cell" data-pos="8">9</div>
-                    </div>
+                <div class="widget-item" draggable="true" data-widget-type="calendar">
+                    <div class="widget-icon">📅</div>
+                    <span>Calendar</span>
+                </div>
+                <div class="widget-item" draggable="true" data-widget-type="todo">
+                    <div class="widget-icon">✅</div>
+                    <span>Todo</span>
+                </div>
+                <div class="widget-item" draggable="true" data-widget-type="focus_score">
+                    <div class="widget-icon">🎯</div>
+                    <span>Focus Score</span>
+                </div>
+                <div class="widget-item" draggable="true" data-widget-type="water">
+                    <div class="widget-icon">💧</div>
+                    <span>Water Intake</span>
+                </div>
+                <div class="widget-item" draggable="true" data-widget-type="posture_score">
+                    <div class="widget-icon">🏃</div>
+                    <span>Posture Score</span>
                 </div>
             </div>
-
-            <!-- Calendar Widget Config -->
-            <div class="widget-config-card">
-                <div class="widget-header">
-                    <div class="widget-name">
-                        <i data-feather="calendar"></i>
-                        Calendar Widget
-                    </div>
-                    <div class="widget-toggle">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="calendarEnabled" checked>
-                            <label class="form-check-label" for="calendarEnabled">Enabled</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label text-white">Position</label>
-                    <div class="position-grid" data-widget="calendar">
-                        <div class="position-cell" data-pos="0">1</div>
-                        <div class="position-cell selected" data-pos="1">2</div>
-                        <div class="position-cell" data-pos="2">3</div>
-                        <div class="position-cell" data-pos="3">4</div>
-                        <div class="position-cell" data-pos="4">5</div>
-                        <div class="position-cell" data-pos="5">6</div>
-                        <div class="position-cell" data-pos="6">7</div>
-                        <div class="position-cell" data-pos="7">8</div>
-                        <div class="position-cell" data-pos="8">9</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Todo Widget Config -->
-            <div class="widget-config-card">
-                <div class="widget-header">
-                    <div class="widget-name">
-                        <i data-feather="check-square"></i>
-                        Todo Widget
-                    </div>
-                    <div class="widget-toggle">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="todoEnabled" checked>
-                            <label class="form-check-label" for="todoEnabled">Enabled</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label text-white">Position</label>
-                    <div class="position-grid" data-widget="todo">
-                        <div class="position-cell" data-pos="0">1</div>
-                        <div class="position-cell" data-pos="1">2</div>
-                        <div class="position-cell selected" data-pos="2">3</div>
-                        <div class="position-cell" data-pos="3">4</div>
-                        <div class="position-cell" data-pos="4">5</div>
-                        <div class="position-cell" data-pos="5">6</div>
-                        <div class="position-cell" data-pos="6">7</div>
-                        <div class="position-cell" data-pos="7">8</div>
-                        <div class="position-cell" data-pos="8">9</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Focus Score Widget Config -->
-            <div class="widget-config-card">
-                <div class="widget-header">
-                    <div class="widget-name">
-                        <i data-feather="trending-up"></i>
-                        Focus Score Widget
-                    </div>
-                    <div class="widget-toggle">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="focusEnabled" checked>
-                            <label class="form-check-label" for="focusEnabled">Enabled</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label text-white">Position</label>
-                    <div class="position-grid" data-widget="focus">
-                        <div class="position-cell" data-pos="0">1</div>
-                        <div class="position-cell" data-pos="1">2</div>
-                        <div class="position-cell" data-pos="2">3</div>
-                        <div class="position-cell selected" data-pos="3">4</div>
-                        <div class="position-cell" data-pos="4">5</div>
-                        <div class="position-cell" data-pos="5">6</div>
-                        <div class="position-cell" data-pos="6">7</div>
-                        <div class="position-cell" data-pos="7">8</div>
-                        <div class="position-cell" data-pos="8">9</div>
-                    </div>
-                </div>
-            </div>
-
-            <button class="save-btn" onclick="saveConfiguration()">
-                <i data-feather="save"></i>
-                Save Configuration
-            </button>
         </div>
-
-        <div class="moodboard-preview">
-            <div class="text-center mb-3">
-                <div style="font-size: 1.5rem; font-weight: bold; color: #fff;">12:00</div>
-                <div style="font-size: 0.7rem; color: #aaa;">PREVIEW</div>
+        
+        <!-- Canvas Area -->
+        <div class="canvas-area">
+            <div class="canvas-header">
+                <div class="time-display">12:00</div>
+                <div class="preview-label">PREVIEW</div>
             </div>
             
-            <div id="preview-widgets">
-                <div class="preview-widget mood" data-widget="mood" data-position="0">
+            <div class="canvas" id="moodboard-canvas">
+                <div class="drop-zone" data-position="0">1</div>
+                <div class="drop-zone" data-position="1">2</div>
+                <div class="drop-zone" data-position="2">3</div>
+                <div class="drop-zone active" data-position="3">4</div>
+                <div class="drop-zone" data-position="4">5</div>
+                <div class="drop-zone" data-position="5">6</div>
+                <div class="drop-zone" data-position="6">7</div>
+                <div class="drop-zone" data-position="7">8</div>
+                <div class="drop-zone" data-position="8">9</div>
+            </div>
+            
+            <div class="canvas-widgets" id="canvas-widgets">
+                <!-- Placed widgets will appear here -->
+                <div class="canvas-widget mood" data-widget-type="mood" data-position="3" style="grid-column: 1; grid-row: 2;">
+                    <button class="widget-remove" onclick="removeWidget(this)">×</button>
                     <strong>Mood</strong><br>
-                    Feeling productive! 
+                    Feeling productive!
                 </div>
-                <div class="preview-widget calendar" data-widget="calendar" data-position="1">
+                <div class="canvas-widget calendar" data-widget-type="calendar" data-position="1" style="grid-column: 2; grid-row: 1;">
+                    <button class="widget-remove" onclick="removeWidget(this)">×</button>
                     <strong>Calendar</strong><br>
                     June 2025
                 </div>
-                <div class="preview-widget todo" data-widget="todo" data-position="2">
+                <div class="canvas-widget todo" data-widget-type="todo" data-position="2" style="grid-column: 3; grid-row: 1;">
+                    <button class="widget-remove" onclick="removeWidget(this)">×</button>
                     <strong>Todo</strong><br>
                     • Finish project<br>
                     • Review code
                 </div>
-                <div class="preview-widget" data-widget="focus" data-position="3">
+                <div class="canvas-widget focus_score" data-widget-type="focus_score" data-position="4" style="grid-column: 2; grid-row: 2;">
+                    <button class="widget-remove" onclick="removeWidget(this)">×</button>
                     <strong>Focus Score</strong><br>
                     85% today
                 </div>
+            </div>
+            
+            <div class="canvas-actions">
+                <button class="btn-save" onclick="saveLayout()">Save Layout</button>
+                <a href="/moodboard" class="btn-back">Back to Moodboard</a>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-let widgetConfigs = {
-    mood: { enabled: true, position: 0 },
-    calendar: { enabled: true, position: 1 },
-    todo: { enabled: true, position: 2 },
-    focus: { enabled: true, position: 3 }
+let placedWidgets = new Map();
+let draggedWidget = null;
+
+// Widget templates for preview content
+const widgetTemplates = {
+    mood: { title: 'Mood', content: 'Feeling productive!' },
+    calendar: { title: 'Calendar', content: 'June 2025' },
+    todo: { title: 'Todo', content: '• Finish project<br>• Review code' },
+    focus_score: { title: 'Focus Score', content: '85% today' },
+    water: { title: 'Water Intake', content: '6/8 glasses' },
+    posture_score: { title: 'Posture Score', content: 'Good posture' }
 };
 
-// Handle position selection
-document.querySelectorAll('.position-cell').forEach(cell => {
-    cell.addEventListener('click', function() {
-        const grid = this.closest('.position-grid');
-        const widget = grid.dataset.widget;
-        const position = parseInt(this.dataset.pos);
-        
-        // Remove selected class from all cells in this grid
-        grid.querySelectorAll('.position-cell').forEach(c => c.classList.remove('selected'));
-        
-        // Add selected class to clicked cell
-        this.classList.add('selected');
-        
-        // Update config
-        widgetConfigs[widget].position = position;
-        
-        // Update preview
-        updatePreview();
-    });
+// Initialize drag and drop functionality
+document.addEventListener('DOMContentLoaded', function() {
+    setupDragAndDrop();
+    loadCurrentLayout();
 });
 
-// Handle toggle switches
-document.querySelectorAll('input[type="checkbox"]').forEach(toggle => {
-    toggle.addEventListener('change', function() {
-        const widget = this.id.replace('Enabled', '');
-        widgetConfigs[widget].enabled = this.checked;
-        updatePreview();
+function setupDragAndDrop() {
+    // Make widget items draggable
+    document.querySelectorAll('.widget-item').forEach(item => {
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragend', handleDragEnd);
     });
-});
 
-function updatePreview() {
-    const previewContainer = document.getElementById('preview-widgets');
-    const widgets = Array.from(previewContainer.children);
+    // Setup drop zones
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+        zone.addEventListener('dragover', handleDragOver);
+        zone.addEventListener('dragenter', handleDragEnter);
+        zone.addEventListener('dragleave', handleDragLeave);
+        zone.addEventListener('drop', handleDrop);
+    });
+}
+
+function handleDragStart(e) {
+    draggedWidget = {
+        type: this.dataset.widgetType,
+        element: this
+    };
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'copy';
+}
+
+function handleDragEnd(e) {
+    this.classList.remove('dragging');
+    draggedWidget = null;
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+}
+
+function handleDragEnter(e) {
+    e.preventDefault();
+    this.classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+    this.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    this.classList.remove('drag-over');
     
-    // Sort widgets by position and filter enabled ones
-    const enabledWidgets = Object.keys(widgetConfigs)
-        .filter(key => widgetConfigs[key].enabled)
-        .sort((a, b) => widgetConfigs[a].position - widgetConfigs[b].position);
+    if (!draggedWidget) return;
     
-    // Clear and rebuild preview
-    previewContainer.innerHTML = '';
+    const position = parseInt(this.dataset.position);
+    const widgetType = draggedWidget.type;
     
-    enabledWidgets.forEach(widgetType => {
-        const widget = widgets.find(w => w.dataset.widget === widgetType);
-        if (widget) {
-            previewContainer.appendChild(widget.cloneNode(true));
+    // Check if position is already occupied
+    if (isPositionOccupied(position)) {
+        alert('This position is already occupied. Please choose another spot.');
+        return;
+    }
+    
+    // Add widget to the canvas
+    addWidgetToCanvas(widgetType, position);
+    
+    // Update visual feedback
+    this.classList.add('active');
+    updateDropZones();
+}
+
+function addWidgetToCanvas(widgetType, position) {
+    const template = widgetTemplates[widgetType];
+    if (!template) return;
+    
+    // Calculate grid position
+    const gridCol = (position % 3) + 1;
+    const gridRow = Math.floor(position / 3) + 1;
+    
+    // Create widget element
+    const widget = document.createElement('div');
+    widget.className = `canvas-widget ${widgetType}`;
+    widget.dataset.widgetType = widgetType;
+    widget.dataset.position = position;
+    widget.style.gridColumn = gridCol;
+    widget.style.gridRow = gridRow;
+    
+    widget.innerHTML = `
+        <button class="widget-remove" onclick="removeWidget(this)">×</button>
+        <strong>${template.title}</strong><br>
+        ${template.content}
+    `;
+    
+    // Add to canvas
+    document.getElementById('canvas-widgets').appendChild(widget);
+    
+    // Track placement
+    placedWidgets.set(position, widgetType);
+}
+
+function removeWidget(button) {
+    const widget = button.closest('.canvas-widget');
+    const position = parseInt(widget.dataset.position);
+    
+    // Remove from tracking
+    placedWidgets.delete(position);
+    
+    // Remove from DOM
+    widget.remove();
+    
+    // Update drop zones
+    updateDropZones();
+}
+
+function isPositionOccupied(position) {
+    return placedWidgets.has(position);
+}
+
+function updateDropZones() {
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+        const position = parseInt(zone.dataset.position);
+        if (placedWidgets.has(position)) {
+            zone.classList.add('active');
+        } else {
+            zone.classList.remove('active');
         }
     });
 }
 
-function saveConfiguration() {
-    const widgetData = Object.keys(widgetConfigs).map(type => ({
-        type: type,
-        enabled: widgetConfigs[type].enabled,
-        x: widgetConfigs[type].position % 3,
-        y: Math.floor(widgetConfigs[type].position / 3),
-        width: 1,
-        height: 1
-    }));
+function loadCurrentLayout() {
+    // Load existing widgets from the initial setup
+    document.querySelectorAll('.canvas-widget').forEach(widget => {
+        const position = parseInt(widget.dataset.position);
+        const widgetType = widget.dataset.widgetType;
+        placedWidgets.set(position, widgetType);
+    });
+    updateDropZones();
+}
+
+function saveLayout() {
+    const widgets = [];
+    
+    // Convert placed widgets to the expected format
+    placedWidgets.forEach((widgetType, position) => {
+        widgets.push({
+            type: widgetType,
+            enabled: true,
+            x: position % 3,
+            y: Math.floor(position / 3),
+            width: 1,
+            height: 1
+        });
+    });
     
     fetch('/api/moodboard/widgets', {
         method: 'POST',
@@ -395,37 +556,35 @@ function saveConfiguration() {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            widgets: widgetData
+            widgets: widgets
         })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             // Show success message
-            const btn = document.querySelector('.save-btn');
+            const btn = document.querySelector('.btn-save');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<i data-feather="check"></i> Saved!';
+            btn.innerHTML = 'Saved!';
             btn.style.background = '#28a745';
             
             setTimeout(() => {
                 btn.innerHTML = originalText;
                 btn.style.background = '#ff6b35';
-                feather.replace();
             }, 2000);
-            
-            feather.replace();
+        } else {
+            alert('Failed to save layout: ' + (data.message || 'Unknown error'));
         }
     })
     .catch(error => {
-        console.error('Error saving configuration:', error);
-        alert('Failed to save configuration. Please try again.');
+        console.error('Error saving layout:', error);
+        alert('Failed to save layout. Please try again.');
     });
 }
 
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    updatePreview();
-    feather.replace();
+// Prevent default drag behavior on the canvas
+document.getElementById('moodboard-canvas').addEventListener('dragover', function(e) {
+    e.preventDefault();
 });
 </script>
 {% endblock %}
