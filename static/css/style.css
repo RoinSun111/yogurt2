@@ -433,13 +433,18 @@ footer {
 /* Hamburger Menu Styling */
 .hamburger-btn {
     background-color: transparent;
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    border: 2px solid var(--nike-accent);
     border-radius: 12px;
-    padding: 12px 16px;
-    color: var(--nike-white);
+    padding: 10px 12px;
+    color: var(--nike-accent);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    min-width: 48px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .hamburger-btn:hover {
@@ -537,20 +542,67 @@ footer {
 
 /* Time display improvements */
 .time-display {
-    background-color: var(--nike-gray);
-    padding: 0.75rem 1.25rem;
+    background-color: var(--nike-gray-dark);
+    padding: 10px 16px;
     border-radius: 50px;
     font-weight: 600;
     font-size: 0.9rem;
     letter-spacing: 0.05em;
     color: var(--nike-white);
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    white-space: nowrap;
 }
 
 .time-display:hover {
     border-color: var(--nike-accent);
     box-shadow: 0 4px 12px rgba(250, 84, 0, 0.2);
+}
+
+/* Header responsive spacing */
+@media (max-width: 576px) {
+    .hamburger-btn {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 8px 10px;
+    }
+    
+    .time-display {
+        min-height: 44px;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+    
+    .brand h1 {
+        font-size: 1.3rem !important;
+    }
+    
+    .d-flex.align-items-center.gap-3 {
+        gap: 0.75rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .brand h1 {
+        font-size: 1.1rem !important;
+    }
+    
+    .d-flex.align-items-center.gap-3 {
+        gap: 0.5rem !important;
+    }
+    
+    .time-display {
+        padding: 6px 10px;
+    }
+    
+    .hamburger-btn {
+        min-width: 40px;
+        min-height: 40px;
+        padding: 6px 8px;
+    }
 }
 
 /* Responsive adjustments for small screens */
