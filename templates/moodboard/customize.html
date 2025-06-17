@@ -502,12 +502,19 @@ document.addEventListener('DOMContentLoaded', function() {
 function setupDragAndDrop() {
     // Make widget items draggable
     document.querySelectorAll('.widget-item').forEach(item => {
+        // Desktop drag events
         item.addEventListener('dragstart', handleDragStart);
         item.addEventListener('dragend', handleDragEnd);
+        
+        // Mobile touch events
+        item.addEventListener('touchstart', handleTouchStart, { passive: false });
+        item.addEventListener('touchmove', handleTouchMove, { passive: false });
+        item.addEventListener('touchend', handleTouchEnd, { passive: false });
     });
 
     // Setup drop zones
     document.querySelectorAll('.drop-zone').forEach(zone => {
+        // Desktop drag events
         zone.addEventListener('dragover', handleDragOver);
         zone.addEventListener('dragenter', handleDragEnter);
         zone.addEventListener('dragleave', handleDragLeave);
@@ -564,6 +571,83 @@ function handleDrop(e) {
     // Update visual feedback
     this.classList.add('active');
     updateDropZones();
+}
+
+// Mobile touch event handlers
+let touchStartPos = { x: 0, y: 0 };
+let touchDragElement = null;
+
+function handleTouchStart(e) {
+    const touch = e.touches[0];
+    touchStartPos = { x: touch.clientX, y: touch.clientY };
+    
+    draggedWidget = {
+        type: this.dataset.widgetType,
+        element: this
+    };
+    
+    this.classList.add('dragging');
+    e.preventDefault();
+}
+
+function handleTouchMove(e) {
+    if (!draggedWidget) return;
+    
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - touchStartPos.x;
+    const deltaY = touch.clientY - touchStartPos.y;
+    
+    // Check if we've moved enough to start dragging
+    if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+        // Find element under touch
+        const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+        const dropZone = elementBelow?.closest('.drop-zone');
+        
+        // Clear previous highlights
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.classList.remove('drag-over');
+        });
+        
+        // Highlight current drop zone
+        if (dropZone) {
+            dropZone.classList.add('drag-over');
+        }
+    }
+    
+    e.preventDefault();
+}
+
+function handleTouchEnd(e) {
+    if (!draggedWidget) return;
+    
+    const touch = e.changedTouches[0];
+    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+    const dropZone = elementBelow?.closest('.drop-zone');
+    
+    // Clear all highlights
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+        zone.classList.remove('drag-over');
+    });
+    
+    draggedWidget.element.classList.remove('dragging');
+    
+    if (dropZone) {
+        const position = parseInt(dropZone.dataset.position);
+        const widgetType = draggedWidget.type;
+        
+        // Check if position is already occupied
+        if (isPositionOccupied(position)) {
+            alert('This position is already occupied. Please choose another spot.');
+        } else {
+            // Add widget to the canvas
+            addWidgetToCanvas(widgetType, position);
+            dropZone.classList.add('active');
+            updateDropZones();
+        }
+    }
+    
+    draggedWidget = null;
+    e.preventDefault();
 }
 
 function addWidgetToCanvas(widgetType, position) {
