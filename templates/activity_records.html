@@ -9,6 +9,102 @@
         <!-- Demo data button removed to focus on real tracking -->
     </div>
     
+    <!-- Gamification Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            {% if summary.is_elite %}
+                <div class="card border-warning bg-gradient" style="background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%); color: #000;">
+                    <div class="card-body text-center py-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-2">
+                                <i class="fas fa-trophy fa-4x text-warning" style="filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));"></i>
+                            </div>
+                            <div class="col-md-8">
+                                <h3 class="mb-2 fw-bold">🎉 ELITE PERFORMER! 🎉</h3>
+                                <p class="mb-2 fs-5">Congratulations! You've achieved an outstanding health score of <strong>{{ summary.health_score }}%</strong></p>
+                                <div class="row mt-3">
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <i class="fas fa-fire me-2 text-danger"></i>
+                                            <span class="fw-bold">{{ summary.elite_streak }} Day Streak</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <i class="fas fa-crown me-2 text-warning"></i>
+                                            <span class="fw-bold">Best: {{ summary.longest_streak }} Days</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if summary.achievements_earned %}
+                                    <div class="mt-3">
+                                        <div class="fw-bold mb-2">🏆 New Achievements Unlocked:</div>
+                                        {% for achievement in summary.achievements_earned %}
+                                            <span class="badge bg-dark me-2 px-3 py-2">{{ achievement }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-2">
+                                <div class="badge bg-dark fs-6 px-3 py-2">
+                                    <i class="fas fa-star"></i> {{ summary.health_score }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card bg-dark text-white border-secondary">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="mb-2">Today's Health Score</h5>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="progress flex-grow-1 me-3" style="height: 25px;">
+                                        {% set score_color = 'bg-success' if summary.health_score >= 95 else 'bg-warning' if summary.health_score >= 70 else 'bg-danger' %}
+                                        <div class="progress-bar {{ score_color }}" role="progressbar" 
+                                             style="width: {{ summary.health_score }}%;" 
+                                             aria-valuenow="{{ summary.health_score }}" aria-valuemin="0" aria-valuemax="100">
+                                            {{ summary.health_score }}%
+                                        </div>
+                                    </div>
+                                    <span class="fs-4 fw-bold">{{ summary.health_score }}%</span>
+                                </div>
+                                {% if summary.health_score < 95 %}
+                                    <div class="d-flex align-items-center justify-content-center mt-2">
+                                        <i class="fas fa-target me-2 text-warning"></i>
+                                        <span class="text-muted">{{ 95 - summary.health_score|round(1) }}% to Elite Status</span>
+                                        {% if summary.elite_streak > 0 %}
+                                            <span class="badge bg-secondary ms-2">
+                                                <i class="fas fa-fire me-1"></i>{{ summary.elite_streak }} streak lost
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <div class="small text-muted">Focus</div>
+                                        <div class="fw-bold text-primary">{{ summary.focus_score }}%</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="small text-muted">Posture</div>
+                                        <div class="fw-bold text-success">{{ summary.posture_score }}%</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="small text-muted">Hydration</div>
+                                        <div class="fw-bold text-info">{{ summary.water_score }}%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card bg-dark text-white border-secondary">

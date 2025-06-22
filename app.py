@@ -76,6 +76,117 @@ def activity_records():
         else:
             events_by_type['distraction'].append(event)
     
+    # Calculate health score for gamification
+    focus_entries = models.FocusScore.query.filter_by(date=today).all()
+    posture_entries = models.PostureStatus.query.filter(
+        models.PostureStatus.timestamp >= datetime.combine(today, datetime.min.time())
+    ).all()
+    water_entries = models.WaterIntake.query.filter_by(date=today).all()
+    
+    # Calculate component scores
+    focus_score = 0
+    if focus_entries:
+        focused_entries = sum(1 for entry in focus_entries if entry.is_focused)
+        focus_score = (focused_entries / len(focus_entries)) * 100
+    
+    posture_score = 0
+    if posture_entries:
+        good_posture_count = sum(1 for entry in posture_entries 
+                               if getattr(entry, 'posture_quality', 'unknown') in ['excellent', 'good'])
+        posture_score = (good_posture_count / len(posture_entries)) * 100
+    
+    water_score = 0
+    if water_entries:
+        total_water = sum(entry.amount for entry in water_entries)
+        water_score = min(100, (total_water / 2000) * 100)  # 2000ml daily goal
+    
+    # Distraction penalty
+    distraction_penalty = min(50, len(distraction_events) * 5)  # Up to 50 points penalty
+    
+    # Calculate overall health score
+    health_score = max(0, (focus_score * 0.4 + posture_score * 0.3 + water_score * 0.3) - distraction_penalty)
+    
+    # Handle achievements and streaks
+    is_elite = health_score > 95
+    achievements_earned = []
+    
+    # Check and update elite performer streak
+    elite_streak = models.DailyStreak.query.filter_by(streak_type='elite_performer').first()
+    if not elite_streak:
+        elite_streak = models.DailyStreak(streak_type='elite_performer')
+        db.session.add(elite_streak)
+    
+    if is_elite:
+        if elite_streak.last_update_date != today:
+            elite_streak.current_streak += 1
+            elite_streak.longest_streak = max(elite_streak.longest_streak, elite_streak.current_streak)
+            elite_streak.last_update_date = today
+            
+            # Award achievements for streaks
+            if elite_streak.current_streak == 1:
+                achievement = models.Achievement(
+                    achievement_type='elite_performer',
+                    score=health_score
+                )
+                db.session.add(achievement)
+                achievements_earned.append('Elite Performer')
+            elif elite_streak.current_streak == 3:
+                achievement = models.Achievement(
+                    achievement_type='elite_streak_3',
+                    score=health_score,
+                    streak_count=3
+                )
+                db.session.add(achievement)
+                achievements_earned.append('3-Day Elite Streak')
+            elif elite_streak.current_streak == 7:
+                achievement = models.Achievement(
+                    achievement_type='elite_streak_7',
+                    score=health_score,
+                    streak_count=7
+                )
+                db.session.add(achievement)
+                achievements_earned.append('Week Champion')
+    else:
+        # Reset streak if not elite
+        if elite_streak.last_update_date != today:
+            elite_streak.current_streak = 0
+            elite_streak.last_update_date = today
+    
+    # Check for perfect posture achievement
+    if posture_score == 100:
+        today_perfect_posture = models.Achievement.query.filter_by(
+            achievement_type='perfect_posture',
+            date_earned=today
+        ).first()
+        if not today_perfect_posture:
+            achievement = models.Achievement(
+                achievement_type='perfect_posture',
+                score=posture_score
+            )
+            db.session.add(achievement)
+            achievements_earned.append('Perfect Posture')
+    
+    # Check for hydration hero achievement
+    if water_score >= 100:
+        today_hydration = models.Achievement.query.filter_by(
+            achievement_type='hydration_hero',
+            date_earned=today
+        ).first()
+        if not today_hydration:
+            achievement = models.Achievement(
+                achievement_type='hydration_hero',
+                score=water_score
+            )
+            db.session.add(achievement)
+            achievements_earned.append('Hydration Hero')
+    
+    db.session.commit()
+    
+    # Get recent achievements for display
+    recent_achievements = models.Achievement.query.filter(
+        models.Achievement.date_earned >= today - timedelta(days=7)
+    ).order_by(models.Achievement.timestamp.desc()).limit(5).all()
+    
     # Get activity summary
     activity_summary = {
         'distraction_count': len(events_by_type['distraction']),
@@ -83,7 +194,16 @@ def activity_records():
         'talking_count': len(events_by_type['talking']),
         'phone_use_count': len(events_by_type['phone_use']),
         'total_distraction_time': sum([e.duration or 0 for e in distraction_events]),
-        'date': today.strftime('%Y-%m-%d')
+        'date': today.strftime('%Y-%m-%d'),
+        'health_score': round(health_score, 1),
+        'focus_score': round(focus_score, 1),
+        'posture_score': round(posture_score, 1),
+        'water_score': round(water_score, 1),
+        'is_elite': is_elite,
+        'elite_streak': elite_streak.current_streak,
+        'longest_streak': elite_streak.longest_streak,
+        'achievements_earned': achievements_earned,
+        'recent_achievements': recent_achievements
     }
     
     return render_template('activity_records.html', 

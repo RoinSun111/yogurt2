@@ -108,3 +108,25 @@ class TodoItem(db.Model):
     
     # Relationship to calendar event
     calendar_event = db.relationship('CalendarEvent', backref='linked_todos')
+
+
+class Achievement(db.Model):
+    """Track user achievements and milestones"""
+    id = db.Column(db.Integer, primary_key=True)
+    achievement_type = db.Column(db.String(50), nullable=False)  # 'elite_performer', 'streak_3', 'streak_7', 'perfect_posture', etc.
+    date_earned = db.Column(db.Date, default=datetime.now().date)
+    timestamp = db.Column(db.DateTime, default=datetime.now)
+    score = db.Column(db.Float, nullable=True)  # Score when achievement was earned
+    streak_count = db.Column(db.Integer, default=0)  # For streak-based achievements
+    achievement_data = db.Column(db.Text, nullable=True)  # JSON string for additional data
+
+
+class DailyStreak(db.Model):
+    """Track daily streaks for various metrics"""
+    id = db.Column(db.Integer, primary_key=True)
+    streak_type = db.Column(db.String(50), nullable=False)  # 'elite_performer', 'good_posture', 'hydration_goal'
+    current_streak = db.Column(db.Integer, default=0)
+    longest_streak = db.Column(db.Integer, default=0)
+    last_update_date = db.Column(db.Date, default=datetime.now().date)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
