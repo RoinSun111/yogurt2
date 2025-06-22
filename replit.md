@@ -122,7 +122,8 @@ The system leverages TinyML (TensorFlow Lite) for real-time pose detection and a
 - **Session Management**: Secure session handling with environment-based secrets
 
 ## Changelog
-- June 15, 2025. Initial setup
+- June 22, 2025: Added comprehensive gamification system with achievements, streaks, and health score rewards
+- June 15, 2025: Initial setup
 
 ## User Preferences
 

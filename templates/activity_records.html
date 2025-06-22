@@ -105,6 +105,72 @@
         </div>
     </div>
     
+    <!-- Recent Achievements Section -->
+    {% if summary.recent_achievements %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark text-white border-secondary">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-medal me-2 text-warning"></i>
+                        Recent Achievements
+                        <span class="badge bg-warning text-dark ms-2">{{ summary.recent_achievements|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for achievement in summary.recent_achievements %}
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-center p-3 rounded" style="background: rgba(255, 255, 255, 0.05);">
+                                    <div class="me-3">
+                                        {% if achievement.achievement_type == 'elite_performer' %}
+                                            <i class="fas fa-star fa-2x text-warning"></i>
+                                        {% elif achievement.achievement_type == 'perfect_posture' %}
+                                            <i class="fas fa-user-check fa-2x text-success"></i>
+                                        {% elif achievement.achievement_type == 'hydration_hero' %}
+                                            <i class="fas fa-tint fa-2x text-info"></i>
+                                        {% elif 'streak' in achievement.achievement_type %}
+                                            <i class="fas fa-fire fa-2x text-danger"></i>
+                                        {% else %}
+                                            <i class="fas fa-trophy fa-2x text-warning"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold">
+                                            {% if achievement.achievement_type == 'elite_performer' %}
+                                                Elite Performer
+                                            {% elif achievement.achievement_type == 'elite_streak_3' %}
+                                                3-Day Elite Streak
+                                            {% elif achievement.achievement_type == 'elite_streak_7' %}
+                                                Week Champion
+                                            {% elif achievement.achievement_type == 'perfect_posture' %}
+                                                Perfect Posture
+                                            {% elif achievement.achievement_type == 'hydration_hero' %}
+                                                Hydration Hero
+                                            {% else %}
+                                                {{ achievement.achievement_type|title }}
+                                            {% endif %}
+                                        </div>
+                                        <div class="small text-muted">
+                                            {{ achievement.date_earned.strftime('%b %d, %Y') }}
+                                            {% if achievement.score %}
+                                                • {{ achievement.score }}% score
+                                            {% endif %}
+                                            {% if achievement.streak_count %}
+                                                • {{ achievement.streak_count }} day streak
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card bg-dark text-white border-secondary">
