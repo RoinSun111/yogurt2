@@ -3,18 +3,38 @@
 {% block styles %}
 <style>
 .customize-container {
-    background: #0a0a0a;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
     min-height: 100vh;
     color: white;
-    padding: 10px;
+    padding: 15px;
     box-sizing: border-box;
+    position: relative;
+}
+
+.customize-container::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 20%, rgba(255, 107, 53, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(103, 126, 234, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
 }
 
 .customize-title {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 20px;
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: 25px;
     text-align: center;
+    background: linear-gradient(135deg, #ff6b35 0%, #667eea 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    z-index: 1;
 }
 
 .customize-layout {
@@ -45,10 +65,25 @@
 /* Widget Library */
 .widget-library {
     width: 100%;
-    background: #1a1a1a;
-    border-radius: 15px;
-    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 20px;
     height: fit-content;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.widget-library::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
 }
 
 @media (min-width: 768px) {
@@ -161,10 +196,24 @@
 /* Canvas Area */
 .canvas-area {
     flex: 1;
-    background: #1a1a1a;
-    border-radius: 15px;
-    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 20px;
     position: relative;
+    z-index: 1;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.canvas-area::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
 }
 
 @media (min-width: 768px) {
@@ -363,21 +412,27 @@
 
 .canvas-actions {
     display: flex;
-    gap: 15px;
+    gap: 20px;
     justify-content: center;
-    margin-top: 30px;
+    margin-top: 40px;
+    position: relative;
+    z-index: 1;
 }
 
 .btn-save {
-    background: #ff6b35;
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
     color: white;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 14px 32px;
+    border-radius: 16px;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(255, 107, 53, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .btn-save:hover {

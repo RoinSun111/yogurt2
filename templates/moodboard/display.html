@@ -737,21 +737,51 @@
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background: #ff6b35;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    font-size: 1.2rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 18px;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
-    transition: all 0.3s;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.customize-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.3) 0%, rgba(247, 147, 30, 0.3) 100%);
+    border-radius: 18px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .customize-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.6);
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 107, 53, 0.4);
+    box-shadow: 0 12px 40px rgba(255, 107, 53, 0.25);
+    color: white;
+}
+
+.customize-btn:hover::before {
+    opacity: 1;
+}
+
+.customize-btn i {
+    width: 20px;
+    height: 20px;
+    z-index: 1;
+    position: relative;
 }
 </style>
 {% endblock %}
