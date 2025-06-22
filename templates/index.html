@@ -145,17 +145,58 @@
         </div>
     </div>
 
-    <!-- Daily Stats Card -->
+    <!-- Health Score Card -->
     <div class="col-md-6 mb-4">
         <div class="card h-100">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
-                    <i data-feather="bar-chart-2" class="feather-icon"></i>
-                    Daily Stats
+                    <i data-feather="heart" class="feather-icon"></i>
+                    Health Score
                 </h5>
+                <span class="badge bg-primary" id="health-score-badge">Calculating...</span>
             </div>
             <div class="card-body">
-                <canvas id="daily-stats-chart" height="200"></canvas>
+                <div class="text-center mb-3">
+                    <div class="score-display">
+                        <div class="progress-ring">
+                            <div class="ring-container">
+                                <canvas id="health-score-chart" width="150" height="150"></canvas>
+                                <div class="ring-center">
+                                    <span id="health-score-value">--</span>
+                                    <span class="small">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Focus</div>
+                            <div class="metric-value" id="health-focus-score">--</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Posture</div>
+                            <div class="metric-value" id="health-posture-score">--</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="metric-card">
+                            <div class="metric-label">Hydration</div>
+                            <div class="metric-value" id="health-hydration-score">--</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3 text-center">
+                    <p class="mb-1" id="health-status-text">Building healthy habits...</p>
+                    <div class="achievement-status" id="achievement-display" style="display: none;">
+                        <span class="badge bg-warning">🏆 Elite Performer</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

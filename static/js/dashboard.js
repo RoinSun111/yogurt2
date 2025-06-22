@@ -3,17 +3,19 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize components
     initializeFocusChart();
-    initializeDailyStatsChart();
+    initializeHealthScoreChart();
     
     // Set up refresh intervals
     setInterval(updateFocusScore, 30000); // Update focus score every 30 seconds
     setInterval(updatePostureStatus, 5000); // Update posture status every 5 seconds
     setInterval(updateWaterIntake, 60000); // Update water intake every minute
+    setInterval(updateHealthScore, 30000); // Update health score every 30 seconds
     
     // Initial data load
     updateFocusScore();
     updatePostureStatus();
     updateWaterIntake();
+    updateHealthScore();
     
     // Initialize notification system
     initializeNotifications();
@@ -51,36 +53,30 @@ function initializeFocusChart() {
     });
 }
 
-// Daily stats chart initialization
-function initializeDailyStatsChart() {
-    const ctx = document.getElementById('daily-stats-chart').getContext('2d');
-    window.dailyStatsChart = new Chart(ctx, {
-        type: 'line',
+// Health score chart initialization
+function initializeHealthScoreChart() {
+    const ctx = document.getElementById('health-score-chart').getContext('2d');
+    window.healthScoreChart = new Chart(ctx, {
+        type: 'doughnut',
         data: {
-            labels: generateHourLabels(),
             datasets: [{
-                label: 'Focus Score',
-                data: Array(24).fill(null),
-                borderColor: 'rgb(13, 110, 253)',
-                backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                tension: 0.4,
-                fill: true
+                data: [0, 100],
+                backgroundColor: [
+                    'rgb(255, 106, 0)',
+                    'rgba(255, 255, 255, 0.1)'
+                ],
+                borderWidth: 0,
+                circumference: 360,
+                cutout: '80%'
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    title: {
-                        display: true,
-                        text: 'Focus Score (%)'
-                    }
-                }
-            },
             plugins: {
+                tooltip: {
+                    enabled: false
+                },
                 legend: {
                     display: false
                 }
@@ -89,13 +85,81 @@ function initializeDailyStatsChart() {
     });
 }
 
-// Generate hour labels for the daily stats chart
-function generateHourLabels() {
-    const hours = [];
-    for (let i = 0; i < 24; i++) {
-        hours.push(i.toString().padStart(2, '0') + ':00');
-    }
-    return hours;
+// Update health score from API
+function updateHealthScore() {
+    // Calculate health score based on focus, posture, and water intake
+    Promise.all([
+        fetch('/api/focus_score').then(r => r.json()),
+        fetch('/api/posture').then(r => r.json()),
+        fetch('/api/water_intake').then(r => r.json())
+    ]).then(([focusData, postureData, waterData]) => {
+        // Calculate component scores
+        const focusScore = focusData.score || 0;
+        
+        // Calculate posture score based on quality
+        let postureScore = 0;
+        switch(postureData.posture_quality) {
+            case 'excellent': postureScore = 100; break;
+            case 'good': postureScore = 80; break;
+            case 'fair': postureScore = 60; break;
+            case 'poor': postureScore = 40; break;
+            default: postureScore = 0;
+        }
+        
+        // Calculate hydration score (2000ml target)
+        const hydrationPercent = Math.min(100, (waterData.amount / 2000) * 100);
+        const hydrationScore = hydrationPercent;
+        
+        // Calculate overall health score (weighted average)
+        const healthScore = Math.round((focusScore * 0.4 + postureScore * 0.4 + hydrationScore * 0.2));
+        
+        // Update health score display
+        document.getElementById('health-score-value').textContent = healthScore;
+        document.getElementById('health-focus-score').textContent = Math.round(focusScore);
+        document.getElementById('health-posture-score').textContent = Math.round(postureScore);
+        document.getElementById('health-hydration-score').textContent = Math.round(hydrationScore);
+        
+        // Update health score chart
+        if (window.healthScoreChart) {
+            window.healthScoreChart.data.datasets[0].data = [healthScore, 100 - healthScore];
+            window.healthScoreChart.update();
+        }
+        
+        // Update health status badge and text
+        const healthBadge = document.getElementById('health-score-badge');
+        const healthStatusText = document.getElementById('health-status-text');
+        const achievementDisplay = document.getElementById('achievement-display');
+        
+        if (healthScore >= 95) {
+            healthBadge.textContent = 'Elite Performer';
+            healthBadge.className = 'badge bg-warning';
+            healthStatusText.textContent = 'Outstanding health metrics!';
+            achievementDisplay.style.display = 'block';
+        } else if (healthScore >= 80) {
+            healthBadge.textContent = 'Excellent';
+            healthBadge.className = 'badge bg-success';
+            healthStatusText.textContent = 'Great work maintaining healthy habits!';
+            achievementDisplay.style.display = 'none';
+        } else if (healthScore >= 60) {
+            healthBadge.textContent = 'Good';
+            healthBadge.className = 'badge bg-info';
+            healthStatusText.textContent = 'Good progress, keep it up!';
+            achievementDisplay.style.display = 'none';
+        } else if (healthScore >= 40) {
+            healthBadge.textContent = 'Fair';
+            healthBadge.className = 'badge bg-warning';
+            healthStatusText.textContent = 'Room for improvement in your habits.';
+            achievementDisplay.style.display = 'none';
+        } else {
+            healthBadge.textContent = 'Needs Work';
+            healthBadge.className = 'badge bg-danger';
+            healthStatusText.textContent = 'Focus on building healthier work habits.';
+            achievementDisplay.style.display = 'none';
+        }
+        
+    }).catch(error => {
+        console.error('Error calculating health score:', error);
+    });
 }
 
 // Update focus score from API
