@@ -436,26 +436,33 @@
 }
 
 .btn-save:hover {
-    background: #e55a2b;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+    background: linear-gradient(135deg, #e55a2b 0%, #d4851a 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(255, 107, 53, 0.5);
 }
 
 .btn-back {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.05);
     color: #fff;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    padding: 10px 25px;
-    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 14px 32px;
+    border-radius: 16px;
     text-decoration: none;
-    font-weight: 500;
-    transition: all 0.2s;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .btn-back:hover {
+    background: rgba(255, 107, 53, 0.1);
     border-color: #ff6b35;
     color: #ff6b35;
     text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(255, 107, 53, 0.2);
 }
 
 /* Drag feedback */
