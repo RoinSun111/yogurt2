@@ -171,6 +171,75 @@
     </div>
     {% endif %}
     
+    <!-- Health Score History Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark text-white border-secondary">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2 text-primary"></i>
+                        Health Score History (Last 30 Days)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-success">{{ summary.health_history|selectattr("is_elite")|list|length }}</div>
+                                <small class="text-muted">Elite Days</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                {% set avg_score = (summary.health_history|map(attribute='health_score')|sum / summary.health_history|length)|round(1) %}
+                                <div class="h4 text-info">{{ avg_score }}%</div>
+                                <small class="text-muted">Average Score</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                {% set max_score = summary.health_history|map(attribute='health_score')|max %}
+                                <div class="h4 text-warning">{{ max_score }}%</div>
+                                <small class="text-muted">Best Score</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                {% set trend = summary.health_history[-7:]|map(attribute='health_score')|sum - summary.health_history[-14:-7]|map(attribute='health_score')|sum %}
+                                <div class="h4 {{ 'text-success' if trend > 0 else 'text-danger' if trend < 0 else 'text-secondary' }}">
+                                    {{ "+" if trend > 0 else "" }}{{ (trend/7)|round(1) }}%
+                                </div>
+                                <small class="text-muted">Weekly Trend</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="height: 300px;">
+                        <canvas id="healthScoreChart"></canvas>
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for day in summary.health_history[-7:] %}
+                                    <div class="flex-fill text-center p-2 rounded" 
+                                         style="background: {% if day.is_elite %}rgba(40, 167, 69, 0.2){% elif day.health_score >= 70 %}rgba(255, 193, 7, 0.2){% else %}rgba(220, 53, 69, 0.2){% endif %};">
+                                        <div class="small text-muted">{{ day.date_short }}</div>
+                                        <div class="fw-bold">{{ day.health_score }}%</div>
+                                        {% if day.is_elite %}
+                                            <i class="fas fa-crown text-warning small"></i>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card bg-dark text-white border-secondary">
@@ -376,8 +445,111 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Health Score Chart
+        const ctx = document.getElementById('healthScoreChart').getContext('2d');
+        const healthHistory = {{ summary.health_history | tojson }};
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: healthHistory.map(day => day.date_short),
+                datasets: [
+                    {
+                        label: 'Health Score',
+                        data: healthHistory.map(day => day.health_score),
+                        borderColor: '#ff6b35',
+                        backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: healthHistory.map(day => day.is_elite ? '#ffd700' : '#ff6b35'),
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    },
+                    {
+                        label: 'Elite Threshold',
+                        data: Array(healthHistory.length).fill(95),
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0,
+                        pointHoverRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#fff',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#ff6b35',
+                        borderWidth: 1,
+                        callbacks: {
+                            title: function(context) {
+                                const index = context[0].dataIndex;
+                                return healthHistory[index].date;
+                            },
+                            afterBody: function(context) {
+                                const index = context[0].dataIndex;
+                                const day = healthHistory[index];
+                                return [
+                                    `Focus: ${day.focus_score}%`,
+                                    `Posture: ${day.posture_score}%`,
+                                    `Hydration: ${day.water_score}%`,
+                                    day.is_elite ? '👑 Elite Day!' : ''
+                                ].filter(Boolean);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#fff',
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#fff'
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        });
+        
         // Initialize the demo data button
         const demoButton = document.getElementById('load-demo-data');
         if (demoButton) {

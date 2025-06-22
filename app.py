@@ -187,6 +187,50 @@ def activity_records():
         models.Achievement.date_earned >= today - timedelta(days=7)
     ).order_by(models.Achievement.timestamp.desc()).limit(5).all()
     
+    # Get historical health scores (last 30 days)
+    health_history = []
+    for i in range(29, -1, -1):  # Last 30 days including today
+        date = today - timedelta(days=i)
+        
+        # Get data for this date
+        daily_focus = models.FocusScore.query.filter_by(date=date).all()
+        daily_posture = models.PostureStatus.query.filter(
+            models.PostureStatus.timestamp >= datetime.combine(date, datetime.min.time()),
+            models.PostureStatus.timestamp < datetime.combine(date + timedelta(days=1), datetime.min.time())
+        ).all()
+        daily_water = models.WaterIntake.query.filter_by(date=date).all()
+        daily_distractions = models.DistractionEvent.query.filter_by(date=date).all()
+        
+        # Calculate daily scores
+        daily_focus_score = 0
+        if daily_focus:
+            focused_count = sum(1 for entry in daily_focus if entry.is_focused)
+            daily_focus_score = (focused_count / len(daily_focus)) * 100
+        
+        daily_posture_score = 0
+        if daily_posture:
+            good_posture_count = sum(1 for entry in daily_posture 
+                                   if getattr(entry, 'posture_quality', 'unknown') in ['excellent', 'good'])
+            daily_posture_score = (good_posture_count / len(daily_posture)) * 100
+        
+        daily_water_score = 0
+        if daily_water:
+            total_water = sum(entry.amount for entry in daily_water)
+            daily_water_score = min(100, (total_water / 2000) * 100)
+        
+        daily_distraction_penalty = min(50, len(daily_distractions) * 5)
+        daily_health_score = max(0, (daily_focus_score * 0.4 + daily_posture_score * 0.3 + daily_water_score * 0.3) - daily_distraction_penalty)
+        
+        health_history.append({
+            'date': date.strftime('%Y-%m-%d'),
+            'date_short': date.strftime('%m/%d'),
+            'health_score': round(daily_health_score, 1),
+            'focus_score': round(daily_focus_score, 1),
+            'posture_score': round(daily_posture_score, 1),
+            'water_score': round(daily_water_score, 1),
+            'is_elite': daily_health_score > 95
+        })
+    
     # Get activity summary
     activity_summary = {
         'distraction_count': len(events_by_type['distraction']),
@@ -203,7 +247,8 @@ def activity_records():
         'elite_streak': elite_streak.current_streak,
         'longest_streak': elite_streak.longest_streak,
         'achievements_earned': achievements_earned,
-        'recent_achievements': recent_achievements
+        'recent_achievements': recent_achievements,
+        'health_history': health_history
     }
     
     return render_template('activity_records.html', 
