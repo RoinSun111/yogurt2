@@ -531,6 +531,18 @@
     background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
 }
 
+.focus-widget {
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+}
+
+.water-widget {
+    background: linear-gradient(135deg, #13c2c2 0%, #52c41a 100%);
+}
+
+.posture-widget {
+    background: linear-gradient(135deg, #fa8c16 0%, #faad14 100%);
+}
+
 .todo-item {
     display: flex;
     align-items: center;
@@ -642,175 +654,237 @@
         <div class="current-date" id="moodboard-date">Today</div>
     </div>
 
-    <!-- Mood Widget -->
-    <div class="widget mood-widget">
-        <div class="widget-title">
-            <i data-feather="smile"></i>
-            Mood
-        </div>
-        <div class="mood-content">
-            {% if current_mood %}
-                <p class="mood-text" id="mood-display" onclick="editMood()">{{ current_mood.mood_text }}</p>
-                <div class="mood-edit-container" id="mood-edit-container" style="display: none;">
-                    <textarea class="mood-input" placeholder="How are you feeling today?" id="mood-input" maxlength="140">{{ current_mood.mood_text }}</textarea>
-                    <div class="mood-actions">
-                        <span class="char-count" id="char-count">{{ current_mood.mood_text|length }}/140</span>
-                        <div class="mood-buttons">
-                            <button class="mood-btn save" onclick="saveMood()">Save</button>
-                            <button class="mood-btn cancel" onclick="cancelMoodEdit()">Cancel</button>
+    <!-- Dynamic Widgets based on saved configuration -->
+    <div class="widgets-grid">
+        {% for widget in widgets | sort(attribute='position_y') | sort(attribute='position_x') %}
+            {% if widget.widget_type == 'mood' %}
+                <!-- Mood Widget -->
+                <div class="widget mood-widget" data-position="{{ widget.position_y * 3 + widget.position_x }}">
+                    <div class="widget-title">
+                        <i data-feather="smile"></i>
+                        Mood
+                    </div>
+                    <div class="mood-content">
+                        {% if current_mood %}
+                            <p class="mood-text" id="mood-display" onclick="editMood()">{{ current_mood.mood_text }}</p>
+                            <div class="mood-edit-container" id="mood-edit-container" style="display: none;">
+                                <textarea class="mood-input" placeholder="How are you feeling today?" id="mood-input" maxlength="140">{{ current_mood.mood_text }}</textarea>
+                                <div class="mood-actions">
+                                    <span class="char-count" id="char-count">{{ current_mood.mood_text|length }}/140</span>
+                                    <div class="mood-buttons">
+                                        <button class="mood-btn save" onclick="saveMood()">Save</button>
+                                        <button class="mood-btn cancel" onclick="cancelMoodEdit()">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="mood-edit-container" id="mood-edit-container">
+                                <textarea class="mood-input" placeholder="How are you feeling today?" id="mood-input" maxlength="140"></textarea>
+                                <div class="mood-actions">
+                                    <span class="char-count" id="char-count">0/140</span>
+                                    <div class="mood-buttons">
+                                        <button class="mood-btn save" onclick="saveMood()">Save</button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            
+            {% elif widget.widget_type == 'calendar' %}
+                <!-- Calendar Widget -->
+                <div class="widget calendar-widget" id="calendar-widget" data-position="{{ widget.position_y * 3 + widget.position_x }}">
+                    <div class="widget-title">
+                        <i data-feather="calendar"></i>
+                        Calendar
+                    </div>
+                    
+                    <!-- Today's Info (Default View) -->
+                    <div class="today-view" id="today-view">
+                        <div class="today-date">
+                            <div class="today-number" id="today-number">15</div>
+                            <div class="today-info">
+                                <div class="today-month" id="today-month">June</div>
+                                <div class="today-year" id="today-year">2025</div>
+                            </div>
+                        </div>
+                        
+                        <div class="today-meetings">
+                            <div class="meetings-header">Today's Meetings</div>
+                            <div class="meetings-list" id="meetings-list">
+                                <!-- Calendar events will be loaded dynamically -->
+                                <div class="meeting-item" style="display: none;">
+                                    <div class="meeting-time">Loading...</div>
+                                    <div class="meeting-title">Loading meetings...</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="expand-calendar-btn" onclick="expandCalendar()">
+                            <i data-feather="maximize-2"></i>
+                            View Full Calendar
+                        </button>
+                    </div>
+                </div>
+            
+            {% elif widget.widget_type == 'todo' %}
+                <!-- Todo Widget -->
+                <div class="widget todo-widget" data-position="{{ widget.position_y * 3 + widget.position_x }}">
+                    <div class="widget-title">
+                        <i data-feather="check-square"></i>
+                        Todo
+                    </div>
+                    <div id="todo-list">
+                        {% for todo in todos %}
+                        <div class="todo-item" data-todo-id="{{ todo.id }}">
+                            <div class="todo-checkbox" onclick="completeTodo({{ todo.id }})"></div>
+                            <div class="todo-text">{{ todo.title }}</div>
+                            <div class="todo-priority">{{ todo.priority }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button class="add-todo-btn" onclick="showAddTodoModal()">
+                        <i data-feather="plus"></i>
+                        Add Todo
+                    </button>
+                </div>
+            
+            {% elif widget.widget_type == 'focus_score' %}
+                <!-- Focus Score Widget -->
+                <div class="widget focus-widget" data-position="{{ widget.position_y * 3 + widget.position_x }}">
+                    <div class="widget-title">
+                        <i data-feather="target"></i>
+                        Focus Score
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ focus_score }}%</div>
+                            <div class="stat-label">Today</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">85%</div>
+                            <div class="stat-label">Average</div>
                         </div>
                     </div>
                 </div>
-            {% else %}
-                <div class="mood-edit-container" id="mood-edit-container">
-                    <textarea class="mood-input" placeholder="How are you feeling today?" id="mood-input" maxlength="140"></textarea>
-                    <div class="mood-actions">
-                        <span class="char-count" id="char-count">0/140</span>
-                        <div class="mood-buttons">
-                            <button class="mood-btn save" onclick="saveMood()">Save</button>
+            
+            {% elif widget.widget_type == 'water' %}
+                <!-- Water Intake Widget -->
+                <div class="widget water-widget" data-position="{{ widget.position_y * 3 + widget.position_x }}">
+                    <div class="widget-title">
+                        <i data-feather="droplet"></i>
+                        Water Intake
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ (total_water/1000)|round(1) }}L</div>
+                            <div class="stat-label">Today</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">8</div>
+                            <div class="stat-label">Goal</div>
+                        </div>
+                    </div>
+                </div>
+            
+            {% elif widget.widget_type == 'posture_score' %}
+                <!-- Posture Score Widget -->
+                <div class="widget posture-widget" data-position="{{ widget.position_y * 3 + widget.position_x }}">
+                    <div class="widget-title">
+                        <i data-feather="user"></i>
+                        Posture
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">
+                                {% if latest_posture %}
+                                    {{ latest_posture.posture_quality|title }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </div>
+                            <div class="stat-label">Current</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">
+                                {% if latest_posture %}
+                                    {{ latest_posture.angle|round(0) }}°
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </div>
+                            <div class="stat-label">Angle</div>
                         </div>
                     </div>
                 </div>
             {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Modals and Global Components (outside of widget loop) -->
+    <!-- Event Details Modal -->
+    <div class="event-modal" id="event-modal" style="display: none;">
+        <div class="event-modal-content">
+            <div class="event-modal-header">
+                <h3 id="event-title">Meeting Details</h3>
+                <button class="close-modal" onclick="closeEventModal()">&times;</button>
+            </div>
+            <div class="event-modal-body">
+                <div class="event-field">
+                    <label>Title:</label>
+                    <input type="text" id="edit-event-title" class="event-input">
+                </div>
+                <div class="event-field">
+                    <label>Time:</label>
+                    <input type="time" id="edit-event-time" class="event-input">
+                </div>
+                <div class="event-field">
+                    <label>Location:</label>
+                    <input type="text" id="edit-event-location" class="event-input">
+                </div>
+                <div class="event-field">
+                    <label>Description:</label>
+                    <textarea id="edit-event-description" class="event-input" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="event-modal-actions">
+                <button class="btn-save" onclick="saveEventChanges()">Save Changes</button>
+                <button class="btn-delete" onclick="deleteEvent()">Delete Event</button>
+                <button class="btn-cancel" onclick="closeEventModal()">Cancel</button>
+            </div>
         </div>
     </div>
 
-    <!-- Calendar Widget -->
-    <div class="widget calendar-widget" id="calendar-widget">
-        <div class="widget-title">
-            <i data-feather="calendar"></i>
-            Calendar
-        </div>
-        
-        <!-- Today's Info (Default View) -->
-        <div class="today-view" id="today-view">
-            <div class="today-date">
-                <div class="today-number" id="today-number">15</div>
-                <div class="today-info">
-                    <div class="today-month" id="today-month">June</div>
-                    <div class="today-year" id="today-year">2025</div>
-                </div>
-            </div>
-            
-            <div class="today-meetings">
-                <div class="meetings-header">Today's Meetings</div>
-                <div class="meetings-list" id="meetings-list">
-                    <!-- Calendar events will be loaded dynamically -->
-                    <div class="meeting-item" style="display: none;">
-                        <div class="meeting-time">Loading...</div>
-                        <div class="meeting-title">Loading meetings...</div>
-                    </div>
-                </div>
-            </div>
-            
-            <button class="expand-calendar-btn" onclick="expandCalendar()">
-                <i data-feather="maximize-2"></i>
-                View Full Calendar
+    <!-- Full Calendar View (Hidden by default) -->
+    <div class="full-calendar-view" id="full-calendar-view" style="display: none;">
+        <div class="calendar-header">
+            <button class="btn-calendar-nav" onclick="previousMonth()">
+                <i data-feather="chevron-left"></i>
+            </button>
+            <div class="calendar-month-year" id="calendar-month-year">June 2025</div>
+            <button class="btn-calendar-nav" onclick="nextMonth()">
+                <i data-feather="chevron-right"></i>
             </button>
         </div>
         
-        <!-- Event Details Modal -->
-        <div class="event-modal" id="event-modal" style="display: none;">
-            <div class="event-modal-content">
-                <div class="event-modal-header">
-                    <h3 id="event-title">Meeting Details</h3>
-                    <button class="close-modal" onclick="closeEventModal()">&times;</button>
-                </div>
-                <div class="event-modal-body">
-                    <div class="event-field">
-                        <label>Title:</label>
-                        <input type="text" id="edit-event-title" class="event-input">
-                    </div>
-                    <div class="event-field">
-                        <label>Time:</label>
-                        <input type="time" id="edit-event-time" class="event-input">
-                    </div>
-                    <div class="event-field">
-                        <label>Location:</label>
-                        <input type="text" id="edit-event-location" class="event-input">
-                    </div>
-                    <div class="event-field">
-                        <label>Description:</label>
-                        <textarea id="edit-event-description" class="event-input" rows="3"></textarea>
-                    </div>
-                </div>
-                <div class="event-modal-actions">
-                    <button class="btn-save" onclick="saveEventChanges()">Save Changes</button>
-                    <button class="btn-delete" onclick="deleteEvent()">Delete Event</button>
-                    <button class="btn-cancel" onclick="closeEventModal()">Cancel</button>
-                </div>
-            </div>
+        <div class="calendar-weekdays">
+            <div class="weekday">Sun</div>
+            <div class="weekday">Mon</div>
+            <div class="weekday">Tue</div>
+            <div class="weekday">Wed</div>
+            <div class="weekday">Thu</div>
+            <div class="weekday">Fri</div>
+            <div class="weekday">Sat</div>
         </div>
         
-        <!-- Full Calendar View (Hidden by default) -->
-        <div class="full-calendar-view" id="full-calendar-view" style="display: none;">
-            <div class="calendar-header">
-                <button class="btn-calendar-nav" onclick="previousMonth()">
-                    <i data-feather="chevron-left"></i>
-                </button>
-                <div class="calendar-month-year" id="calendar-month-year">June 2025</div>
-                <button class="btn-calendar-nav" onclick="nextMonth()">
-                    <i data-feather="chevron-right"></i>
-                </button>
-            </div>
-            
-            <div class="calendar-weekdays">
-                <div class="weekday">Sun</div>
-                <div class="weekday">Mon</div>
-                <div class="weekday">Tue</div>
-                <div class="weekday">Wed</div>
-                <div class="weekday">Thu</div>
-                <div class="weekday">Fri</div>
-                <div class="weekday">Sat</div>
-            </div>
-            
-            <div class="calendar-grid" id="calendar-grid">
-                <!-- Calendar will be generated by JavaScript -->
-            </div>
-            
-            <button class="collapse-calendar-btn" onclick="collapseCalendar()">
-                <i data-feather="minimize-2"></i>
-                Back to Today
-            </button>
+        <div class="calendar-grid" id="calendar-grid">
+            <!-- Calendar will be generated by JavaScript -->
         </div>
-    </div>
-
-    <!-- Todo Widget -->
-    <div class="widget todo-widget">
-        <div class="widget-title">
-            <i data-feather="check-square"></i>
-            Todo
-        </div>
-        <div id="todo-list">
-            {% for todo in todos %}
-            <div class="todo-item" data-todo-id="{{ todo.id }}">
-                <div class="todo-checkbox" onclick="completeTodo({{ todo.id }})"></div>
-                <div class="todo-text">{{ todo.title }}</div>
-                <div class="todo-priority">{{ todo.priority }}</div>
-            </div>
-            {% endfor %}
-        </div>
-        <button class="add-todo-btn" onclick="showAddTodoModal()">
-            <i data-feather="plus"></i> Add Todo
+        
+        <button class="collapse-calendar-btn" onclick="collapseCalendar()">
+            <i data-feather="minimize-2"></i>
+            Back to Today
         </button>
-    </div>
-
-    <!-- Stats Widget -->
-    <div class="widget">
-        <div class="widget-title">
-            <i data-feather="trending-up"></i>
-            Today's Stats
-        </div>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value">{{ focus_score }}%</div>
-                <div class="stat-label">Focus Score</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">{{ total_water|int }}ml</div>
-                <div class="stat-label">Water Intake</div>
-            </div>
-        </div>
     </div>
 </div>
 

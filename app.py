@@ -728,32 +728,48 @@ def complete_todo(todo_id):
     
     return jsonify({'success': True})
 
+@app.route('/api/moodboard/widgets', methods=['GET'])
+def get_widget_settings():
+    """Get current widget configuration"""
+    widgets = models.MoodboardSettings.query.all()
+    
+    widget_list = []
+    for widget in widgets:
+        widget_list.append({
+            'type': widget.widget_type,
+            'enabled': widget.is_enabled,
+            'x': widget.position_x,
+            'y': widget.position_y,
+            'width': widget.width,
+            'height': widget.height,
+            'config': widget.config
+        })
+    
+    return jsonify({
+        'success': True,
+        'widgets': widget_list
+    })
+
 @app.route('/api/moodboard/widgets', methods=['POST'])
 def update_widget_settings():
     """Update widget configuration"""
     data = request.get_json()
     
+    # Clear existing widgets first
+    models.MoodboardSettings.query.delete()
+    
+    # Add new widgets from the configuration
     for widget_data in data.get('widgets', []):
-        widget = models.MoodboardSettings.query.filter_by(widget_type=widget_data['type']).first()
-        
-        if widget:
-            widget.is_enabled = widget_data.get('enabled', True)
-            widget.position_x = widget_data.get('x', 0)
-            widget.position_y = widget_data.get('y', 0)
-            widget.width = widget_data.get('width', 1)
-            widget.height = widget_data.get('height', 1)
-            widget.config = widget_data.get('config', '')
-        else:
-            new_widget = models.MoodboardSettings(
-                widget_type=widget_data['type'],
-                is_enabled=widget_data.get('enabled', True),
-                position_x=widget_data.get('x', 0),
-                position_y=widget_data.get('y', 0),
-                width=widget_data.get('width', 1),
-                height=widget_data.get('height', 1),
-                config=widget_data.get('config', '')
-            )
-            db.session.add(new_widget)
+        new_widget = models.MoodboardSettings(
+            widget_type=widget_data['type'],
+            is_enabled=widget_data.get('enabled', True),
+            position_x=widget_data.get('x', 0),
+            position_y=widget_data.get('y', 0),
+            width=widget_data.get('width', 1),
+            height=widget_data.get('height', 1),
+            config=widget_data.get('config', '')
+        )
+        db.session.add(new_widget)
     
     db.session.commit()
     return jsonify({'success': True})
