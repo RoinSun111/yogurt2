@@ -204,21 +204,8 @@
 }
 
 .calendar-widget.expanded {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90vw;
-    max-width: 400px;
     height: auto;
-    max-height: 90vh;
-    z-index: 1000;
-    overflow-y: auto;
-    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.calendar-widget {
-    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    max-height: none;
 }
 
 /* Today View Styling */
@@ -1224,57 +1211,19 @@ function nextMonth() {
 // Expand/collapse calendar
 function expandCalendar() {
     const calendarWidget = document.getElementById('calendar-widget');
-    const backdrop = document.createElement('div');
-    backdrop.className = 'calendar-backdrop';
-    backdrop.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0);
-        z-index: 999;
-        backdrop-filter: blur(0px);
-        transition: all 0.15s ease-out;
-    `;
-    backdrop.onclick = collapseCalendar;
-    
-    document.body.appendChild(backdrop);
-    
-    // Trigger animations
-    requestAnimationFrame(() => {
-        backdrop.style.background = 'rgba(0, 0, 0, 0.7)';
-        backdrop.style.backdropFilter = 'blur(5px)';
-        calendarWidget.classList.add('expanded');
-        document.getElementById('today-view').style.display = 'none';
-        document.getElementById('full-calendar-view').style.display = 'block';
-    });
-    
+    calendarWidget.classList.add('expanded');
+    document.getElementById('today-view').style.display = 'none';
+    document.getElementById('full-calendar-view').style.display = 'block';
     generateCalendar();
     feather.replace();
 }
 
 function collapseCalendar() {
     const calendarWidget = document.getElementById('calendar-widget');
-    const backdrop = document.querySelector('.calendar-backdrop');
-    
-    if (backdrop) {
-        backdrop.style.background = 'rgba(0, 0, 0, 0)';
-        backdrop.style.backdropFilter = 'blur(0px)';
-        
-        setTimeout(() => {
-            backdrop.remove();
-        }, 150);
-    }
-    
     calendarWidget.classList.remove('expanded');
-    
-    // Use a slight delay to ensure smooth animation
-    setTimeout(() => {
-        document.getElementById('today-view').style.display = 'block';
-        document.getElementById('full-calendar-view').style.display = 'none';
-        feather.replace();
-    }, 100);
+    document.getElementById('today-view').style.display = 'block';
+    document.getElementById('full-calendar-view').style.display = 'none';
+    feather.replace();
 }
 
 // Event management functions
