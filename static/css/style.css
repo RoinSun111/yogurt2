@@ -1,14 +1,14 @@
-/* Nike-inspired styling - sleek, clean, cool */
+/* Nike-inspired styling - sleek, clean, athletic */
 :root {
-    --nike-black: #0b0e07;
-    --nike-white: #f5f5f5;
-    --nike-accent: #fa5400;
-    --nike-gray-dark: #222222;
-    --nike-gray: #333333;
-    --nike-gray-light: #4d4d4d;
-    --nike-success: #52c41a;
-    --nike-warning: #faad14;
-    --nike-info: #13c2c2;
+    --nike-black: #000000;
+    --nike-white: #ffffff;
+    --nike-accent: #ff6a00;
+    --nike-gray-dark: #1a1a1a;
+    --nike-gray: #2d2d2d;
+    --nike-gray-light: #404040;
+    --nike-success: #ff6a00;
+    --nike-warning: #ff8c00;
+    --nike-info: #ff6a00;
     --card-radius: 16px;
     --button-radius: 24px;
 }
@@ -70,8 +70,8 @@ main {
 }
 
 .btn-primary:hover, .btn-primary:active, .btn-primary:focus {
-    background-color: #ff6a1f !important;
-    border-color: #ff6a1f !important;
+    background-color: #ff8c00 !important;
+    border-color: #ff8c00 !important;
 }
 
 .btn-outline-primary {
@@ -274,9 +274,9 @@ main {
     bottom: 0;
     left: 0;
     width: 100%;
-    background: linear-gradient(135deg, #0396FF 0%, #0096FF 100%);
+    background: linear-gradient(135deg, var(--nike-accent) 0%, var(--nike-warning) 100%);
     border-radius: 0;
-    box-shadow: 0 -5px 15px rgba(3, 150, 255, 0.3);
+    box-shadow: 0 -5px 15px rgba(255, 106, 0, 0.3);
     transition: height 0.8s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
@@ -603,6 +603,128 @@ footer {
         min-height: 40px;
         padding: 6px 8px;
     }
+}
+
+/* Nike colorway consistency overrides */
+.text-primary {
+    color: var(--nike-accent) !important;
+}
+
+.text-success {
+    color: var(--nike-accent) !important;
+}
+
+.text-warning {
+    color: var(--nike-warning) !important;
+}
+
+.text-info {
+    color: var(--nike-accent) !important;
+}
+
+.bg-primary {
+    background-color: var(--nike-accent) !important;
+}
+
+.bg-success {
+    background-color: var(--nike-accent) !important;
+}
+
+.bg-warning {
+    background-color: var(--nike-warning) !important;
+}
+
+.bg-info {
+    background-color: var(--nike-accent) !important;
+}
+
+.border-primary {
+    border-color: var(--nike-accent) !important;
+}
+
+.border-success {
+    border-color: var(--nike-accent) !important;
+}
+
+.border-warning {
+    border-color: var(--nike-warning) !important;
+}
+
+.border-info {
+    border-color: var(--nike-accent) !important;
+}
+
+/* Form controls */
+.form-control, .form-select {
+    background-color: var(--nike-gray-dark);
+    border-color: var(--nike-gray);
+    color: var(--nike-white);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--nike-gray-dark);
+    border-color: var(--nike-accent);
+    box-shadow: 0 0 0 0.2rem rgba(255, 106, 0, 0.25);
+    color: var(--nike-white);
+}
+
+/* Links */
+a {
+    color: var(--nike-accent);
+}
+
+a:hover {
+    color: var(--nike-warning);
+}
+
+/* Alert components */
+.alert-primary {
+    background-color: rgba(255, 106, 0, 0.1);
+    border-color: var(--nike-accent);
+    color: var(--nike-white);
+}
+
+.alert-success {
+    background-color: rgba(255, 106, 0, 0.1);
+    border-color: var(--nike-accent);
+    color: var(--nike-white);
+}
+
+.alert-warning {
+    background-color: rgba(255, 140, 0, 0.1);
+    border-color: var(--nike-warning);
+    color: var(--nike-white);
+}
+
+.alert-info {
+    background-color: rgba(255, 106, 0, 0.1);
+    border-color: var(--nike-accent);
+    color: var(--nike-white);
+}
+
+/* List groups */
+.list-group-item {
+    background-color: var(--nike-gray-dark);
+    border-color: var(--nike-gray);
+    color: var(--nike-white);
+}
+
+.list-group-item:hover {
+    background-color: var(--nike-gray);
+}
+
+.list-group-item.active {
+    background-color: var(--nike-accent);
+    border-color: var(--nike-accent);
+}
+
+/* Tables */
+.table-dark {
+    --bs-table-bg: var(--nike-gray-dark);
+    --bs-table-color: var(--nike-white);
+    --bs-table-border-color: var(--nike-gray);
+    --bs-table-striped-bg: var(--nike-gray);
+    --bs-table-hover-bg: var(--nike-gray);
 }
 
 /* Responsive adjustments for small screens */
