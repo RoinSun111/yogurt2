@@ -340,7 +340,49 @@ header {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.85);
+    background-color: var(--whoop-gray-dark);
+    color: var(--whoop-gray-light);
+}
+
+/* WHOOP-style text and content refinements */
+h3, .h3 {
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: var(--whoop-white);
+}
+
+h5, .h5 {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--whoop-gray-light);
+}
+
+.text-muted {
+    color: var(--whoop-gray-light) !important;
+}
+
+/* Feather icon styling */
+.feather-icon, .feather-icon-sm, .feather-icon-lg {
+    color: var(--whoop-accent);
+}
+
+/* Container spacing adjustments for WHOOP look */
+.container {
+    max-width: 1200px;
+}
+
+.row {
+    margin-bottom: 0;
+}
+
+.col-md-6 {
+    margin-bottom: 1rem;
+}
+
+/* Achievement status styling */
+.achievement-status .badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
 }
 
 /* Water intake visualization */
@@ -352,12 +394,12 @@ header {
 
 .water-bottle {
     position: relative;
-    width: 70px;
-    height: 160px;
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 35px;
+    width: 60px;
+    height: 140px;
+    background-color: var(--whoop-gray-dark);
+    border-radius: 30px;
     overflow: hidden;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--whoop-gray);
 }
 
 .water-level {
