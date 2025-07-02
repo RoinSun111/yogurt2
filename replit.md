@@ -122,6 +122,8 @@ The system leverages TinyML (TensorFlow Lite) for real-time pose detection and a
 - **Session Management**: Secure session handling with environment-based secrets
 
 ## Changelog
+- July 2, 2025: Enhanced posture detection accuracy with MediaPipe Face Mesh integration for precise neck angle calculation using 468 facial landmarks
+- June 28, 2025: Refined UI with WHOOP-inspired design - minimal, data-focused interface with darker backgrounds and cleaner metrics
 - June 22, 2025: Added comprehensive gamification system with achievements, streaks, and health score rewards
 - June 15, 2025: Initial setup
 

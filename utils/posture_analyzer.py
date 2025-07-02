@@ -18,6 +18,32 @@ class PostureAnalyzer:
             model_complexity=1  # Use the medium model for better posture analysis
         )
         
+        # Initialize MediaPipe Face Mesh for precise neck angle detection
+        try:
+            self.mp_face_mesh = mp.solutions.face_mesh
+            self.face_mesh = self.mp_face_mesh.FaceMesh(
+                max_num_faces=1,
+                refine_landmarks=True,
+                min_detection_confidence=0.5,
+                min_tracking_confidence=0.5
+            )
+            self.face_mesh_available = True
+        except Exception as e:
+            self.logger.warning(f"Face Mesh not available: {e}")
+            self.face_mesh_available = False
+        
+        # Define key facial landmarks for head orientation
+        # These landmarks are used to calculate precise head pose
+        self.face_landmarks_3d = {
+            'nose_tip': 1,
+            'chin': 152,
+            'left_eye_corner': 33,
+            'right_eye_corner': 362,
+            'left_mouth_corner': 61,
+            'right_mouth_corner': 291,
+            'forehead': 10
+        }
+        
         # Store historical posture data for trend analysis
         self.posture_history = []
         self.history_max_size = 300  # Store ~5 minutes of data at 1 Hz
@@ -39,12 +65,15 @@ class PostureAnalyzer:
         
     def analyze(self, image):
         """
-        Analyze posture from an image using MediaPipe Pose
+        Analyze posture from an image using MediaPipe Pose and Face Mesh
         Returns: dict with detailed posture classification, angles, and feedback
         """
         try:
-            # Process the image with MediaPipe
-            results = self.pose.process(image)
+            # Process the image with MediaPipe Pose and Face Mesh
+            pose_results = self.pose.process(image)
+            face_results = None
+            if self.face_mesh_available:
+                face_results = self.face_mesh.process(image)
             
             # Default values if no pose is detected
             posture_data = {
@@ -61,12 +90,12 @@ class PostureAnalyzer:
             }
             
             # Check if pose landmarks are detected
-            if not results.pose_landmarks:
+            if not pose_results.pose_landmarks:
                 self.logger.debug("No pose landmarks detected")
                 return posture_data
             
             # Extract key landmarks for posture analysis
-            landmarks = results.pose_landmarks.landmark
+            landmarks = pose_results.pose_landmarks.landmark
             
             # Check if the person is visible (using visibility of key points)
             nose_visible = landmarks[self.mp_pose.PoseLandmark.NOSE].visibility > 0.5
@@ -87,8 +116,11 @@ class PostureAnalyzer:
             angle = self._calculate_posture_angle(landmarks)
             posture_data['angle'] = angle
             
-            # Neck angle (head tilt) calculation
-            neck_angle = self._calculate_neck_angle(landmarks)
+            # Enhanced neck angle calculation using Face Mesh if available
+            if self.face_mesh_available and face_results and face_results.multi_face_landmarks:
+                neck_angle = self._calculate_precise_neck_angle_face_mesh(face_results.multi_face_landmarks[0], landmarks)
+            else:
+                neck_angle = self._calculate_neck_angle(landmarks)
             posture_data['neck_angle'] = neck_angle
             
             # Calculate shoulder alignment score
@@ -498,3 +530,84 @@ class PostureAnalyzer:
         angle = math.degrees(math.acos(cos_angle))
         
         return angle
+    
+    def _calculate_precise_neck_angle_face_mesh(self, face_landmarks, pose_landmarks):
+        """
+        Calculate precise neck angle using MediaPipe Face Mesh (468 landmarks)
+        This provides much more accurate head orientation than pose landmarks alone
+        
+        Args:
+            face_landmarks: Face mesh landmarks from MediaPipe
+            pose_landmarks: Pose landmarks for reference points
+            
+        Returns:
+            float: Precise neck angle in degrees
+        """
+        try:
+            # Convert face landmarks to numpy array for easier processing
+            face_points = np.array([[lm.x, lm.y, lm.z] for lm in face_landmarks.landmark])
+            
+            # Key facial landmarks for head pose estimation
+            # These landmarks are stable across different face orientations
+            nose_tip = face_points[self.face_landmarks_3d['nose_tip']]  # Tip of nose
+            chin = face_points[self.face_landmarks_3d['chin']]  # Bottom of chin
+            forehead = face_points[self.face_landmarks_3d['forehead']]  # Center of forehead
+            left_eye = face_points[self.face_landmarks_3d['left_eye_corner']]  # Left eye corner
+            right_eye = face_points[self.face_landmarks_3d['right_eye_corner']]  # Right eye corner
+            
+            # Calculate head orientation vectors
+            # Vertical face vector (forehead to chin)
+            face_vertical = chin - forehead
+            
+            # Horizontal face vector (left to right eye)
+            face_horizontal = right_eye - left_eye
+            
+            # Calculate normal vector to face plane
+            face_normal = np.cross(face_horizontal, face_vertical)
+            face_normal = face_normal / np.linalg.norm(face_normal)  # Normalize
+            
+            # Reference vectors for neutral position
+            # Assume neutral head position has face normal pointing forward (0, 0, -1)
+            neutral_normal = np.array([0, 0, -1])
+            
+            # Calculate pitch (up/down tilt) - this is our neck angle
+            # Project face normal onto the vertical plane (XZ plane)
+            face_normal_xz = np.array([face_normal[0], 0, face_normal[2]])
+            face_normal_xz = face_normal_xz / np.linalg.norm(face_normal_xz)
+            
+            # Calculate angle between neutral and current head orientation
+            dot_product = np.dot(neutral_normal, face_normal_xz)
+            dot_product = np.clip(dot_product, -1.0, 1.0)  # Ensure valid range
+            
+            pitch_angle = np.degrees(np.arccos(dot_product))
+            
+            # Determine if head is tilted up or down
+            if face_normal[1] > 0:  # Head tilted up
+                pitch_angle = -pitch_angle
+            
+            # Calculate yaw (left/right turn) for additional context
+            face_normal_xy = np.array([face_normal[0], face_normal[1], 0])
+            if np.linalg.norm(face_normal_xy) > 0:
+                face_normal_xy = face_normal_xy / np.linalg.norm(face_normal_xy)
+                yaw_angle = np.degrees(np.arcsin(np.clip(face_normal[0], -1.0, 1.0)))
+            else:
+                yaw_angle = 0
+            
+            # Calculate roll (head tilt side to side)
+            roll_angle = np.degrees(np.arctan2(face_horizontal[1], 
+                                             np.sqrt(face_horizontal[0]**2 + face_horizontal[2]**2)))
+            
+            # Combine pitch and roll for comprehensive neck angle
+            # Pitch is primary for forward head posture, roll adds side tilt
+            combined_neck_angle = np.sqrt(pitch_angle**2 + roll_angle**2)
+            
+            # Add some contribution from yaw if head is turned significantly
+            if abs(yaw_angle) > 15:  # Head turned more than 15 degrees
+                combined_neck_angle += abs(yaw_angle) * 0.3  # Weighted contribution
+            
+            return abs(combined_neck_angle)
+            
+        except Exception as e:
+            self.logger.warning(f"Error in precise neck angle calculation: {e}")
+            # Fallback to basic pose-based calculation
+            return self._calculate_neck_angle(pose_landmarks)
