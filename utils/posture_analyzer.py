@@ -4,6 +4,7 @@ import numpy as np
 import math
 import cv2
 from datetime import datetime, timedelta
+from .posture_calibrator import PostureCalibrator
 
 class PostureAnalyzer:
     def __init__(self):
