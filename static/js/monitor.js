@@ -172,29 +172,35 @@ function updateMetrics(data) {
     const postureDetailedMetrics = document.getElementById('posture-detailed-metrics');
     const postureFeedback = document.getElementById('posture-feedback');
     
-    if (postureQualityBadge && data.posture_quality) {
+    if (postureQualityBadge) {
         // Set badge text and color based on quality
         let qualityText, qualityClass;
-        switch(data.posture_quality) {
-            case 'excellent':
-                qualityText = 'Excellent';
-                qualityClass = 'bg-success';
-                break;
-            case 'good':
-                qualityText = 'Good';
-                qualityClass = 'bg-info';
-                break;
-            case 'fair':
-                qualityText = 'Fair';
-                qualityClass = 'bg-warning';
-                break;
-            case 'poor':
-                qualityText = 'Poor';
-                qualityClass = 'bg-danger';
-                break;
-            default:
-                qualityText = 'Unknown';
-                qualityClass = 'bg-secondary';
+        
+        if (data.posture_quality && data.posture_quality !== 'unknown') {
+            switch(data.posture_quality) {
+                case 'excellent':
+                    qualityText = 'Excellent';
+                    qualityClass = 'bg-success';
+                    break;
+                case 'good':
+                    qualityText = 'Good';
+                    qualityClass = 'bg-info';
+                    break;
+                case 'fair':
+                    qualityText = 'Fair';
+                    qualityClass = 'bg-warning';
+                    break;
+                case 'poor':
+                    qualityText = 'Poor';
+                    qualityClass = 'bg-danger';
+                    break;
+                default:
+                    qualityText = 'Analyzing';
+                    qualityClass = 'bg-secondary';
+            }
+        } else {
+            qualityText = 'Analyzing';
+            qualityClass = 'bg-secondary';
         }
         
         postureQualityBadge.textContent = qualityText;
@@ -263,16 +269,28 @@ function updateMetrics(data) {
     }
     
     // Update posture feedback if available
-    if (postureFeedback && data.feedback) {
-        postureFeedback.textContent = data.feedback;
-    } else if (postureFeedback) {
-        // Set basic feedback based on posture
-        if (data.posture === 'upright') {
-            postureFeedback.textContent = 'Your posture looks good!';
-        } else if (data.posture === 'slouched') {
-            postureFeedback.textContent = 'Try to sit up straight to improve your posture.';
+    if (postureFeedback) {
+        if (data.feedback) {
+            postureFeedback.textContent = data.feedback;
+        } else if (data.posture && data.posture !== 'unknown') {
+            // Set feedback based on posture quality and basic posture
+            if (data.posture_quality === 'excellent') {
+                postureFeedback.textContent = 'Excellent posture! Keep it up!';
+            } else if (data.posture_quality === 'good') {
+                postureFeedback.textContent = 'Good posture detected. Stay consistent!';
+            } else if (data.posture_quality === 'fair') {
+                postureFeedback.textContent = 'Moderate posture. Consider minor adjustments.';
+            } else if (data.posture_quality === 'poor') {
+                postureFeedback.textContent = 'Poor posture detected. Please adjust your position.';
+            } else if (data.posture === 'upright') {
+                postureFeedback.textContent = 'Your posture looks good!';
+            } else if (data.posture === 'slouched') {
+                postureFeedback.textContent = 'Try to sit up straight to improve your posture.';
+            } else {
+                postureFeedback.textContent = 'Analyzing your posture...';
+            }
         } else {
-            postureFeedback.textContent = 'Analyzing your posture...';
+            postureFeedback.textContent = 'Position yourself in front of the camera for analysis.';
         }
     }
 }
