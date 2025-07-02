@@ -65,21 +65,19 @@ header {
 }
 
 .dropdown-menu {
-    background-color: rgba(26, 26, 26, 0.95);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--whoop-gray);
+    background-color: var(--whoop-dark);
+    border: 1px solid var(--whoop-gray-dark);
     border-radius: var(--button-radius);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .dropdown-item {
     color: var(--whoop-white);
     padding: 0.75rem 1rem;
-    font-weight: 500;
 }
 
 .dropdown-item:hover {
-    background-color: rgba(64, 64, 64, 0.8);
+    background-color: var(--whoop-gray-dark);
     color: var(--whoop-white);
 }
 
@@ -597,11 +595,10 @@ footer {
 }
 
 .hamburger-menu {
-    background-color: rgba(26, 26, 26, 0.98);
-    backdrop-filter: blur(15px);
-    border: 2px solid var(--whoop-gray);
+    background-color: var(--nike-gray-dark);
+    border: 1px solid var(--nike-gray);
     border-radius: 16px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     padding: 0.5rem 0;
     margin-top: 0.5rem;
     min-width: 280px;
@@ -617,13 +614,13 @@ footer {
 }
 
 .hamburger-menu .dropdown-item:hover {
-    background-color: rgba(255, 107, 53, 0.2);
-    color: var(--whoop-white);
+    background-color: rgba(250, 84, 0, 0.1);
+    color: var(--nike-white);
 }
 
 .hamburger-menu .dropdown-item.active {
-    background-color: var(--whoop-accent);
-    color: var(--whoop-white);
+    background-color: var(--nike-accent);
+    color: var(--nike-white);
 }
 
 .nav-item-content {
