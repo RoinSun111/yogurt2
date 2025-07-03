@@ -48,20 +48,20 @@ class PostureAnalyzer:
         self.posture_history = []
         self.history_max_size = 300  # Store ~5 minutes of data at 1 Hz
         
-        # Threshold angles for posture assessment
-        self.upright_threshold = 15.0  # Angle for basic upright vs slouched classification
-        self.excellent_threshold = 5.0  # Very upright posture
-        self.good_threshold = 10.0     # Good posture
-        self.fair_threshold = 15.0     # Acceptable posture
+        # Threshold angles for posture assessment (more realistic thresholds)
+        self.upright_threshold = 20.0  # Angle for basic upright vs slouched classification
+        self.excellent_threshold = 8.0  # Very upright posture
+        self.good_threshold = 15.0     # Good posture
+        self.fair_threshold = 22.0     # Acceptable posture
         # Anything above fair_threshold is considered poor
         
-        # Threshold for neck angle (head tilt)
-        self.neck_angle_threshold = 20.0  # Degree threshold for neck angle
+        # Threshold for neck angle (head tilt) - more forgiving
+        self.neck_angle_threshold = 25.0  # Degree threshold for neck angle
         
-        # Thresholds for shoulder alignment (higher is better, 1.0 is perfect)
-        self.shoulder_alignment_excellent = 0.95
-        self.shoulder_alignment_good = 0.9
-        self.shoulder_alignment_fair = 0.8
+        # Thresholds for shoulder alignment (more realistic for real-world conditions)
+        self.shoulder_alignment_excellent = 0.90
+        self.shoulder_alignment_good = 0.80
+        self.shoulder_alignment_fair = 0.65
         
     def analyze(self, image):
         """
@@ -105,8 +105,20 @@ class PostureAnalyzer:
             is_present = nose_visible and (left_shoulder_visible or right_shoulder_visible)
             posture_data['is_present'] = is_present
             
-            # Include pose landmarks in the result for activity analysis
-            posture_data['pose_landmarks'] = landmarks
+            # Include pose landmarks in the result for frontend visualization
+            # Convert landmarks to serializable format
+            serializable_landmarks = []
+            for landmark in landmarks:
+                serializable_landmarks.append({
+                    'x': landmark.x,
+                    'y': landmark.y,
+                    'z': landmark.z,
+                    'visibility': landmark.visibility
+                })
+            posture_data['pose_landmarks'] = serializable_landmarks
+            
+            # Also keep raw landmarks for internal analysis
+            posture_data['_raw_landmarks'] = landmarks
             
             if not is_present:
                 self.logger.debug("Person not clearly visible")
@@ -342,52 +354,52 @@ class PostureAnalyzer:
         # Start with a high score and deduct points for issues
         score = 100
         
-        # Deduct points based on overall back angle
+        # Deduct points based on overall back angle (more forgiving)
         if angle <= self.excellent_threshold:
             pass  # No deduction for excellent posture
         elif angle <= self.good_threshold:
-            score -= 10
+            score -= 5  # Reduced from 10
         elif angle <= self.fair_threshold:
-            score -= 20
+            score -= 12  # Reduced from 20
         else:
-            score -= 35
+            score -= 25  # Reduced from 35
         
-        # Deduct points based on neck angle (text neck)
+        # Deduct points based on neck angle (text neck) - more forgiving
         if neck_angle > self.neck_angle_threshold:
-            score -= min(30, int((neck_angle - self.neck_angle_threshold) * 1.5))
+            score -= min(20, int((neck_angle - self.neck_angle_threshold) * 1.0))  # Reduced penalty
         
-        # Deduct points based on shoulder alignment
+        # Deduct points based on shoulder alignment (more forgiving)
         if shoulder_alignment >= self.shoulder_alignment_excellent:
             pass  # No deduction for excellent alignment
         elif shoulder_alignment >= self.shoulder_alignment_good:
-            score -= 5
+            score -= 3  # Reduced from 5
         elif shoulder_alignment >= self.shoulder_alignment_fair:
-            score -= 15
+            score -= 8  # Reduced from 15
         else:
-            score -= 25
+            score -= 15  # Reduced from 25
         
-        # Deduct points for forward head position
-        if head_forward > 0.1:
-            score -= min(25, int(head_forward * 100))
+        # Deduct points for forward head position (more forgiving)
+        if head_forward > 0.15:  # Increased threshold
+            score -= min(15, int(head_forward * 50))  # Reduced penalty
         
-        # Deduct points for spine curvature
-        if spine_curvature > 160:
-            score -= 5
-        elif spine_curvature > 150:
-            score -= 15
-        elif spine_curvature > 140:
-            score -= 25
+        # Deduct points for spine curvature (more forgiving)
+        if spine_curvature > 155:
+            score -= 3  # Reduced from 5
+        elif spine_curvature > 145:
+            score -= 8  # Reduced from 15
+        elif spine_curvature > 135:
+            score -= 15  # Reduced from 25
         
-        # Deduct points for asymmetry
-        if symmetry < 0.8:
-            score -= min(20, int((1 - symmetry) * 50))
+        # Deduct points for asymmetry (more forgiving)
+        if symmetry < 0.7:  # Lowered threshold
+            score -= min(15, int((1 - symmetry) * 30))  # Reduced penalty
         
-        # Map score to quality categories
-        if score >= 85:
+        # Map score to quality categories (adjusted thresholds)
+        if score >= 80:  # Lowered from 85
             return 'excellent'
-        elif score >= 70:
+        elif score >= 65:  # Lowered from 70
             return 'good'
-        elif score >= 50:
+        elif score >= 45:  # Lowered from 50
             return 'fair'
         else:
             return 'poor'

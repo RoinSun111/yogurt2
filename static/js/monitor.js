@@ -453,10 +453,10 @@ function drawAnnotations(data) {
             drawHeadAngle(ctx, canvas.width, canvas.height, data.activity.head_angle);
         }
         
-        // Draw pose landmarks if available (would be passed from backend)
-        // Note: This would need to be implemented in the backend to pass the landmarks
-        if (landmarks) {
-            drawPoseLandmarks(ctx, landmarks, canvas.width, canvas.height);
+        // Draw pose landmarks if available
+        if (data.pose_landmarks) {
+            drawPoseLandmarks(ctx, data.pose_landmarks, canvas.width, canvas.height);
+            drawPostureAnalysis(ctx, data.pose_landmarks, data, canvas.width, canvas.height);
         }
     } else {
         // Draw "No person detected" message
@@ -492,6 +492,247 @@ function drawPostureIndicator(ctx, width, height, posture, angle) {
     // Draw angle
     ctx.font = '14px Arial';
     ctx.fillText(`Angle: ${Math.round(angle)}°`, x + 10, y + 75);
+}
+
+// Pose landmark connections (simplified MediaPipe pose connections)
+const POSE_CONNECTIONS = [
+    // Face
+    [0, 1], [1, 2], [2, 3], [3, 7],
+    [0, 4], [4, 5], [5, 6], [6, 8],
+    // Arms
+    [9, 10], [11, 12], [11, 13], [13, 15], [15, 17], [15, 19], [15, 21], [17, 19],
+    [12, 14], [14, 16], [16, 18], [16, 20], [16, 22], [18, 20],
+    // Body
+    [11, 12], [11, 23], [12, 24], [23, 24],
+    // Legs
+    [23, 25], [24, 26], [25, 27], [26, 28], [27, 29], [28, 30], [29, 31], [30, 32]
+];
+
+// Key landmarks for posture analysis
+const KEY_LANDMARKS = {
+    NOSE: 0,
+    LEFT_EYE: 1,
+    RIGHT_EYE: 2,
+    LEFT_EAR: 7,
+    RIGHT_EAR: 8,
+    LEFT_SHOULDER: 11,
+    RIGHT_SHOULDER: 12,
+    LEFT_ELBOW: 13,
+    RIGHT_ELBOW: 14,
+    LEFT_WRIST: 15,
+    RIGHT_WRIST: 16,
+    LEFT_HIP: 23,
+    RIGHT_HIP: 24
+};
+
+// Draw pose landmarks and connections
+function drawPoseLandmarks(ctx, landmarks, width, height) {
+    if (!landmarks || landmarks.length === 0) return;
+    
+    // Draw connections first (behind landmarks)
+    ctx.strokeStyle = 'rgba(0, 255, 0, 0.6)';
+    ctx.lineWidth = 2;
+    
+    POSE_CONNECTIONS.forEach(connection => {
+        const startIdx = connection[0];
+        const endIdx = connection[1];
+        
+        if (startIdx < landmarks.length && endIdx < landmarks.length) {
+            const startPoint = landmarks[startIdx];
+            const endPoint = landmarks[endIdx];
+            
+            // Only draw if both landmarks are visible
+            if (startPoint.visibility > 0.5 && endPoint.visibility > 0.5) {
+                ctx.beginPath();
+                ctx.moveTo(startPoint.x * width, startPoint.y * height);
+                ctx.lineTo(endPoint.x * width, endPoint.y * height);
+                ctx.stroke();
+            }
+        }
+    });
+    
+    // Draw landmarks
+    landmarks.forEach((landmark, index) => {
+        if (landmark.visibility > 0.5) {
+            const x = landmark.x * width;
+            const y = landmark.y * height;
+            
+            // Use different colors for different body parts
+            let color = 'rgba(255, 255, 0, 0.8)'; // Default yellow
+            
+            if (index === KEY_LANDMARKS.NOSE) {
+                color = 'rgba(255, 0, 0, 0.9)'; // Red for nose
+            } else if (index === KEY_LANDMARKS.LEFT_SHOULDER || index === KEY_LANDMARKS.RIGHT_SHOULDER) {
+                color = 'rgba(0, 0, 255, 0.9)'; // Blue for shoulders
+            } else if (index === KEY_LANDMARKS.LEFT_HIP || index === KEY_LANDMARKS.RIGHT_HIP) {
+                color = 'rgba(255, 0, 255, 0.9)'; // Magenta for hips
+            } else if (index === KEY_LANDMARKS.LEFT_EAR || index === KEY_LANDMARKS.RIGHT_EAR) {
+                color = 'rgba(0, 255, 255, 0.9)'; // Cyan for ears
+            }
+            
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw landmark index for debugging (small text)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(index.toString(), x, y - 8);
+        }
+    });
+}
+
+// Draw detailed posture analysis overlays
+function drawPostureAnalysis(ctx, landmarks, data, width, height) {
+    if (!landmarks || landmarks.length === 0) return;
+    
+    // Draw shoulder line and angle
+    if (landmarks[KEY_LANDMARKS.LEFT_SHOULDER] && landmarks[KEY_LANDMARKS.RIGHT_SHOULDER]) {
+        const leftShoulder = landmarks[KEY_LANDMARKS.LEFT_SHOULDER];
+        const rightShoulder = landmarks[KEY_LANDMARKS.RIGHT_SHOULDER];
+        
+        if (leftShoulder.visibility > 0.5 && rightShoulder.visibility > 0.5) {
+            const leftX = leftShoulder.x * width;
+            const leftY = leftShoulder.y * height;
+            const rightX = rightShoulder.x * width;
+            const rightY = rightShoulder.y * height;
+            
+            // Draw shoulder line
+            ctx.strokeStyle = 'rgba(255, 165, 0, 0.8)'; // Orange
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(leftX, leftY);
+            ctx.lineTo(rightX, rightY);
+            ctx.stroke();
+            
+            // Calculate and display shoulder alignment
+            const heightDiff = Math.abs(leftY - rightY);
+            const alignmentText = `Shoulder Alignment: ${(data.shoulder_alignment * 100).toFixed(1)}%`;
+            
+            ctx.fillStyle = 'rgba(255, 165, 0, 0.9)';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(alignmentText, 10, 30);
+        }
+    }
+    
+    // Draw spine line (shoulder to hip midpoints)
+    if (landmarks[KEY_LANDMARKS.LEFT_SHOULDER] && landmarks[KEY_LANDMARKS.RIGHT_SHOULDER] &&
+        landmarks[KEY_LANDMARKS.LEFT_HIP] && landmarks[KEY_LANDMARKS.RIGHT_HIP]) {
+        
+        const leftShoulder = landmarks[KEY_LANDMARKS.LEFT_SHOULDER];
+        const rightShoulder = landmarks[KEY_LANDMARKS.RIGHT_SHOULDER];
+        const leftHip = landmarks[KEY_LANDMARKS.LEFT_HIP];
+        const rightHip = landmarks[KEY_LANDMARKS.RIGHT_HIP];
+        
+        if (leftShoulder.visibility > 0.5 && rightShoulder.visibility > 0.5 &&
+            leftHip.visibility > 0.5 && rightHip.visibility > 0.5) {
+            
+            const shoulderMidX = ((leftShoulder.x + rightShoulder.x) / 2) * width;
+            const shoulderMidY = ((leftShoulder.y + rightShoulder.y) / 2) * height;
+            const hipMidX = ((leftHip.x + rightHip.x) / 2) * width;
+            const hipMidY = ((leftHip.y + rightHip.y) / 2) * height;
+            
+            // Draw spine line
+            ctx.strokeStyle = 'rgba(255, 0, 255, 0.8)'; // Magenta
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(shoulderMidX, shoulderMidY);
+            ctx.lineTo(hipMidX, hipMidY);
+            ctx.stroke();
+            
+            // Display spine angle
+            const spineAngleText = `Spine Angle: ${data.angle.toFixed(1)}°`;
+            ctx.fillStyle = 'rgba(255, 0, 255, 0.9)';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(spineAngleText, 10, 50);
+        }
+    }
+    
+    // Draw head forward position indicator
+    if (landmarks[KEY_LANDMARKS.NOSE] && landmarks[KEY_LANDMARKS.LEFT_SHOULDER] && landmarks[KEY_LANDMARKS.RIGHT_SHOULDER]) {
+        const nose = landmarks[KEY_LANDMARKS.NOSE];
+        const leftShoulder = landmarks[KEY_LANDMARKS.LEFT_SHOULDER];
+        const rightShoulder = landmarks[KEY_LANDMARKS.RIGHT_SHOULDER];
+        
+        if (nose.visibility > 0.5 && leftShoulder.visibility > 0.5 && rightShoulder.visibility > 0.5) {
+            const noseX = nose.x * width;
+            const noseY = nose.y * height;
+            const shoulderMidX = ((leftShoulder.x + rightShoulder.x) / 2) * width;
+            const shoulderMidY = ((leftShoulder.y + rightShoulder.y) / 2) * height;
+            
+            // Draw line from nose to shoulder midpoint
+            ctx.strokeStyle = 'rgba(255, 255, 0, 0.6)'; // Yellow
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(noseX, noseY);
+            ctx.lineTo(shoulderMidX, shoulderMidY);
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset line dash
+            
+            // Display head forward position
+            const headForwardText = `Head Forward: ${(data.head_forward_position * 100).toFixed(1)}%`;
+            ctx.fillStyle = 'rgba(255, 255, 0, 0.9)';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(headForwardText, 10, 70);
+        }
+    }
+    
+    // Draw neck angle indicator
+    if (landmarks[KEY_LANDMARKS.LEFT_EAR] && landmarks[KEY_LANDMARKS.RIGHT_EAR] && landmarks[KEY_LANDMARKS.NOSE]) {
+        const leftEar = landmarks[KEY_LANDMARKS.LEFT_EAR];
+        const rightEar = landmarks[KEY_LANDMARKS.RIGHT_EAR];
+        const nose = landmarks[KEY_LANDMARKS.NOSE];
+        
+        // Use the most visible ear
+        const ear = leftEar.visibility > rightEar.visibility ? leftEar : rightEar;
+        
+        if (ear.visibility > 0.5 && nose.visibility > 0.5) {
+            const earX = ear.x * width;
+            const earY = ear.y * height;
+            const noseX = nose.x * width;
+            const noseY = nose.y * height;
+            
+            // Draw neck line
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.8)'; // Cyan
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(earX, earY);
+            ctx.lineTo(noseX, noseY);
+            ctx.stroke();
+            
+            // Display neck angle
+            const neckAngleText = `Neck Angle: ${data.neck_angle.toFixed(1)}°`;
+            ctx.fillStyle = 'rgba(0, 255, 255, 0.9)';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(neckAngleText, 10, 90);
+        }
+    }
+    
+    // Draw posture quality indicator in top right
+    const qualityColor = {
+        'excellent': 'rgba(0, 255, 0, 0.9)', // Green
+        'good': 'rgba(135, 206, 235, 0.9)', // Light blue
+        'fair': 'rgba(255, 255, 0, 0.9)', // Yellow
+        'poor': 'rgba(255, 0, 0, 0.9)' // Red
+    };
+    
+    ctx.fillStyle = qualityColor[data.posture_quality] || 'rgba(128, 128, 128, 0.9)';
+    ctx.font = 'bold 18px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(`Posture: ${data.posture_quality.toUpperCase()}`, width - 20, 30);
+    
+    // Draw symmetry score
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.font = '14px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Symmetry: ${(data.symmetry_score * 100).toFixed(1)}%`, 10, 110);
 }
 
 // Draw activity label
