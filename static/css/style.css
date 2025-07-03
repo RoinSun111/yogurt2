@@ -198,9 +198,9 @@ header {
 
 /* WHOOP-style progress bars - minimal and clean */
 .progress {
-    height: 4px;
+    height: 8px;
     background-color: var(--whoop-gray-dark);
-    border-radius: 2px;
+    border-radius: 4px;
     overflow: hidden;
     box-shadow: none;
 }
