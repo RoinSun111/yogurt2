@@ -65,20 +65,27 @@ header {
 }
 
 .dropdown-menu {
-    background-color: var(--whoop-dark);
-    border: 1px solid var(--whoop-gray-dark);
-    border-radius: var(--button-radius);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    background-color: var(--whoop-dark) !important;
+    border: 1px solid var(--whoop-gray-dark) !important;
+    border-radius: var(--button-radius) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(10px);
 }
 
 .dropdown-item {
-    color: var(--whoop-white);
+    color: var(--whoop-white) !important;
     padding: 0.75rem 1rem;
+    background-color: transparent !important;
 }
 
-.dropdown-item:hover {
-    background-color: var(--whoop-gray-dark);
-    color: var(--whoop-white);
+.dropdown-item:hover, .dropdown-item:focus {
+    background-color: var(--whoop-gray-dark) !important;
+    color: var(--whoop-white) !important;
+}
+
+.dropdown-item:active {
+    background-color: var(--whoop-gray) !important;
+    color: var(--whoop-white) !important;
 }
 
 /* WHOOP-style cards - minimal, borderless */
@@ -892,4 +899,154 @@ a:hover {
         padding: 0.5rem 1rem;
         font-size: 0.85rem;
     }
+}
+
+/* Enhanced tooltip and overlay visibility */
+.tooltip {
+    --bs-tooltip-bg: var(--whoop-dark) !important;
+    --bs-tooltip-color: var(--whoop-white) !important;
+    --bs-tooltip-opacity: 0.95 !important;
+}
+
+.tooltip .tooltip-inner {
+    background-color: var(--whoop-dark) !important;
+    color: var(--whoop-white) !important;
+    padding: 0.75rem 1rem !important;
+    border: 1px solid var(--whoop-gray-dark) !important;
+    border-radius: var(--button-radius) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+    font-weight: 500 !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: var(--whoop-dark) !important;
+}
+
+.tooltip.bs-tooltip-bottom .tooltip-arrow::before {
+    border-bottom-color: var(--whoop-dark) !important;
+}
+
+.tooltip.bs-tooltip-start .tooltip-arrow::before {
+    border-left-color: var(--whoop-dark) !important;
+}
+
+.tooltip.bs-tooltip-end .tooltip-arrow::before {
+    border-right-color: var(--whoop-dark) !important;
+}
+
+/* Popover enhancements */
+.popover {
+    --bs-popover-bg: var(--whoop-dark) !important;
+    --bs-popover-border-color: var(--whoop-gray-dark) !important;
+    --bs-popover-header-bg: var(--whoop-gray-dark) !important;
+    --bs-popover-body-color: var(--whoop-white) !important;
+    --bs-popover-header-color: var(--whoop-white) !important;
+    background-color: var(--whoop-dark) !important;
+    border: 1px solid var(--whoop-gray-dark) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.popover-header {
+    background-color: var(--whoop-gray-dark) !important;
+    color: var(--whoop-white) !important;
+    border-bottom: 1px solid var(--whoop-gray) !important;
+}
+
+.popover-body {
+    background-color: var(--whoop-dark) !important;
+    color: var(--whoop-white) !important;
+}
+
+/* Modal enhancements */
+.modal-content {
+    background-color: var(--whoop-dark) !important;
+    border: 1px solid var(--whoop-gray-dark) !important;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.8) !important;
+}
+
+.modal-header {
+    background-color: var(--whoop-dark) !important;
+    border-bottom: 1px solid var(--whoop-gray-dark) !important;
+    color: var(--whoop-white) !important;
+}
+
+.modal-body {
+    background-color: var(--whoop-dark) !important;
+    color: var(--whoop-white) !important;
+}
+
+.modal-footer {
+    background-color: var(--whoop-dark) !important;
+    border-top: 1px solid var(--whoop-gray-dark) !important;
+}
+
+/* Toast notifications */
+.toast {
+    background-color: var(--whoop-dark) !important;
+    border: 1px solid var(--whoop-gray-dark) !important;
+    color: var(--whoop-white) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+}
+
+.toast-header {
+    background-color: var(--whoop-gray-dark) !important;
+    color: var(--whoop-white) !important;
+    border-bottom: 1px solid var(--whoop-gray) !important;
+}
+
+.toast-body {
+    background-color: var(--whoop-dark) !important;
+    color: var(--whoop-white) !important;
+}
+
+/* Offcanvas (sidebar) enhancements */
+.offcanvas {
+    background-color: var(--whoop-dark) !important;
+    border: 1px solid var(--whoop-gray-dark) !important;
+    color: var(--whoop-white) !important;
+}
+
+.offcanvas-header {
+    background-color: var(--whoop-dark) !important;
+    border-bottom: 1px solid var(--whoop-gray-dark) !important;
+    color: var(--whoop-white) !important;
+}
+
+.offcanvas-body {
+    background-color: var(--whoop-dark) !important;
+    color: var(--whoop-white) !important;
+}
+
+/* Activity state tooltip/popup specific styling */
+.activity-popup, .posture-popup {
+    background-color: var(--whoop-dark) !important;
+    border: 1px solid var(--whoop-gray-dark) !important;
+    border-radius: var(--button-radius) !important;
+    padding: 0.75rem 1rem !important;
+    color: var(--whoop-white) !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: blur(10px) !important;
+    opacity: 0.95 !important;
+}
+
+/* Time display overlay */
+.time-display {
+    background-color: var(--whoop-dark) !important;
+    border: 1px solid var(--whoop-gray-dark) !important;
+    color: var(--whoop-white) !important;
+    backdrop-filter: blur(10px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Custom overlay backgrounds */
+.overlay-background {
+    background-color: rgba(26, 26, 26, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+/* Ensure all Bootstrap overlay components have better visibility */
+.dropdown-menu, .tooltip, .popover, .modal, .toast, .offcanvas {
+    z-index: 1050 !important;
 }
