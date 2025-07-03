@@ -26,6 +26,9 @@ function initializeMonitoring() {
     // Test canvas accessibility
     testCanvas();
     
+    // Initialize sound therapy controls
+    initializeSoundTherapy();
+    
     // Start camera with the existing camera module
     if (typeof startCamera === 'function') {
         startCamera(captureAndAnalyzeFrame);
@@ -53,24 +56,80 @@ function initializeMonitoring() {
 function testCanvas() {
     console.log('Testing canvas...');
     const canvas = document.getElementById('annotation-canvas');
+    const video = document.getElementById('webcam');
+    
     if (!canvas) {
         console.error('Canvas not found!');
         return;
     }
     
-    console.log('Canvas found, dimensions:', canvas.width, 'x', canvas.height);
-    const ctx = canvas.getContext('2d');
+    // Wait for video to load and set canvas size to match
+    if (video && video.videoWidth > 0) {
+        setupCanvas();
+    } else {
+        // Wait for video to load
+        setTimeout(() => {
+            setupCanvas();
+        }, 2000);
+    }
+}
+
+function setupCanvas() {
+    const canvas = document.getElementById('annotation-canvas');
+    const video = document.getElementById('webcam');
     
-    // Draw a test rectangle
-    ctx.fillStyle = 'red';
-    ctx.fillRect(50, 50, 100, 100);
-    console.log('Test rectangle drawn');
+    if (!canvas || !video) return;
     
-    // Draw test text
-    ctx.fillStyle = 'white';
-    ctx.font = '20px Arial';
-    ctx.fillText('CANVAS TEST', 60, 180);
-    console.log('Test text drawn');
+    // Get the actual displayed video dimensions
+    const videoRect = video.getBoundingClientRect();
+    
+    // Set canvas size to match video display size
+    canvas.width = videoRect.width;
+    canvas.height = videoRect.height;
+    
+    console.log('Canvas sized to match video:', canvas.width, 'x', canvas.height);
+}
+
+// Initialize sound therapy controls
+function initializeSoundTherapy() {
+    console.log('Initializing sound therapy controls');
+    
+    // Wait for sound therapy system to be ready
+    const initSoundSystem = () => {
+        if (window.soundTherapy) {
+            setupSoundControls();
+        } else {
+            setTimeout(initSoundSystem, 500);
+        }
+    };
+    
+    initSoundSystem();
+}
+
+function setupSoundControls() {
+    const toggleSwitch = document.getElementById('toggle-sound-therapy');
+    const volumeSlider = document.getElementById('sound-volume');
+    
+    if (toggleSwitch) {
+        toggleSwitch.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                window.soundTherapy.enable();
+                console.log('Sound therapy enabled');
+            } else {
+                window.soundTherapy.disable();
+                console.log('Sound therapy disabled');
+            }
+        });
+    }
+    
+    if (volumeSlider) {
+        volumeSlider.addEventListener('input', (e) => {
+            const volume = e.target.value / 100;
+            window.soundTherapy.setVolume(volume);
+        });
+    }
+    
+    console.log('Sound therapy controls setup complete');
 }
 
 // Capture and analyze frames
@@ -346,6 +405,11 @@ function updateMetrics(data) {
             postureFeedback.textContent = 'Position yourself in front of the camera for analysis.';
         }
     }
+    
+    // Update sound therapy based on posture data
+    if (window.soundTherapy) {
+        window.soundTherapy.updatePostureState(data);
+    }
 }
 
 // Update activity metrics specifically
@@ -483,9 +547,23 @@ function updateActivityMetrics(data) {
 // Draw annotations on the canvas
 function drawAnnotations(data) {
     const canvas = document.getElementById('annotation-canvas');
+    const video = document.getElementById('webcam');
+    
     if (!canvas) {
         console.error('Annotation canvas not found');
         return;
+    }
+    
+    if (!video || video.videoWidth === 0) {
+        return;
+    }
+    
+    // Ensure canvas is properly sized to match video display
+    const videoRect = video.getBoundingClientRect();
+    if (canvas.width !== videoRect.width || canvas.height !== videoRect.height) {
+        canvas.width = videoRect.width;
+        canvas.height = videoRect.height;
+        console.log('Canvas resized to match video:', canvas.width, 'x', canvas.height);
     }
     
     const ctx = canvas.getContext('2d');
