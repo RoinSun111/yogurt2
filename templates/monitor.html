@@ -24,7 +24,24 @@
             <div class="card-body p-0 position-relative">
                 <div class="camera-container mb-0">
                     <video id="webcam" autoplay playsinline></video>
-                    <canvas id="annotation-canvas" width="640" height="480" class="position-absolute top-0 left-0 w-100 h-100"></canvas>
+                    <canvas id="annotation-canvas" width="640" height="480" class="position-absolute top-0 left-0 w-100 h-100" style="pointer-events: none; z-index: 10;"></canvas>
+                    <script>
+                        // Immediate canvas test
+                        setTimeout(() => {
+                            const canvas = document.getElementById('annotation-canvas');
+                            if (canvas) {
+                                const ctx = canvas.getContext('2d');
+                                ctx.fillStyle = 'red';
+                                ctx.fillRect(20, 20, 60, 60);
+                                ctx.fillStyle = 'white';
+                                ctx.font = '16px Arial';
+                                ctx.fillText('TEST', 25, 50);
+                                console.log('Canvas test: red square drawn');
+                            } else {
+                                console.log('Canvas test: canvas not found');
+                            }
+                        }, 1000);
+                    </script>
                     <div id="camera-placeholder" class="placeholder-container text-center py-4">
                         <i data-feather="camera-off" class="feather-icon-lg mb-2"></i>
                         <p>Camera feed not available</p>

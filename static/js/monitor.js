@@ -23,6 +23,9 @@ let landmarks = null;
 function initializeMonitoring() {
     console.log('Initializing monitoring view');
     
+    // Test canvas accessibility
+    testCanvas();
+    
     // Start camera with the existing camera module
     if (typeof startCamera === 'function') {
         startCamera(captureAndAnalyzeFrame);
@@ -44,6 +47,30 @@ function initializeMonitoring() {
     
     // Start periodic check for activity updates
     setInterval(updateActivityData, 1000);
+}
+
+// Test canvas functionality
+function testCanvas() {
+    console.log('Testing canvas...');
+    const canvas = document.getElementById('annotation-canvas');
+    if (!canvas) {
+        console.error('Canvas not found!');
+        return;
+    }
+    
+    console.log('Canvas found, dimensions:', canvas.width, 'x', canvas.height);
+    const ctx = canvas.getContext('2d');
+    
+    // Draw a test rectangle
+    ctx.fillStyle = 'red';
+    ctx.fillRect(50, 50, 100, 100);
+    console.log('Test rectangle drawn');
+    
+    // Draw test text
+    ctx.fillStyle = 'white';
+    ctx.font = '20px Arial';
+    ctx.fillText('CANVAS TEST', 60, 180);
+    console.log('Test text drawn');
 }
 
 // Capture and analyze frames
@@ -84,19 +111,45 @@ function captureAndAnalyzeFrame() {
         .then(response => response.json())
         .then(data => {
             console.log('Frame processed:', data);
-            // Store landmarks for annotation if available
-            if (data.activity && data.activity.landmarks) {
-                landmarks = data.activity.landmarks;
+            
+            try {
+                // Store landmarks for annotation if available
+                if (data.pose_landmarks && data.pose_landmarks.length > 0) {
+                    landmarks = data.pose_landmarks;
+                    console.log('Stored landmarks:', landmarks.length);
+                }
+                
+                console.log('About to update metrics...');
+                
+                // Update metrics display
+                try {
+                    updateMetrics(data);
+                    console.log('Metrics updated successfully');
+                } catch (error) {
+                    console.error('Error in updateMetrics:', error);
+                }
+                
+                // Draw annotations on the frame
+                try {
+                    console.log('About to draw annotations...');
+                    drawAnnotations(data);
+                    console.log('Annotations drawn successfully');
+                } catch (error) {
+                    console.error('Error in drawAnnotations:', error);
+                }
+                
+                // Track events for timeline
+                try {
+                    trackEvents(data);
+                    console.log('Events tracked successfully');
+                } catch (error) {
+                    console.error('Error in trackEvents:', error);
+                }
+                
+                console.log('Frame processing completed');
+            } catch (error) {
+                console.error('Error in frame processing:', error);
             }
-            
-            // Update metrics display
-            updateMetrics(data);
-            
-            // Draw annotations on the frame
-            drawAnnotations(data);
-            
-            // Track events for timeline
-            trackEvents(data);
         })
         .catch(error => {
             console.error('Error processing frame:', error);
@@ -430,15 +483,30 @@ function updateActivityMetrics(data) {
 // Draw annotations on the canvas
 function drawAnnotations(data) {
     const canvas = document.getElementById('annotation-canvas');
-    if (!canvas) return;
+    if (!canvas) {
+        console.error('Annotation canvas not found');
+        return;
+    }
     
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // Check if annotations are enabled
     if (!document.getElementById('toggle-annotations').checked) {
+        console.log('Annotations disabled');
         return;
     }
+    
+    console.log('Drawing annotations with data:', {
+        isPresent: data.is_present,
+        poseLandmarks: data.pose_landmarks ? data.pose_landmarks.length : 0,
+        canvasSize: { width: canvas.width, height: canvas.height }
+    });
+    
+    // Test: Draw a simple red rectangle to verify canvas is working
+    ctx.fillStyle = 'red';
+    ctx.fillRect(10, 10, 50, 50);
+    console.log('Test rectangle drawn');
     
     // Draw person detection box if present
     if (data.is_present) {

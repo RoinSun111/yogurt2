@@ -652,6 +652,8 @@ def process_frame():
         'spine_curvature': float(posture_results.get('spine_curvature', 0.0)),
         'symmetry_score': float(posture_results.get('symmetry_score', 0.0)),
         'feedback': posture_results.get('feedback', None),
+        # Include pose landmarks for frontend visualization
+        'pose_landmarks': posture_results.get('pose_landmarks', []),
         'activity': {
             'activity_state': str(activity_data['activity_state']),
             'working_substate': activity_data['working_substate'],
