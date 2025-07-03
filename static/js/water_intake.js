@@ -70,15 +70,9 @@ function updateWaterIntake() {
             // Update last drink time
             document.getElementById('last-drink-time').textContent = data.last_drink;
             
-            // Apply color based on percentage
+            // Apply light blue color consistently
             const waterLevel = document.getElementById('water-level');
-            if (percentage < 25) {
-                waterLevel.style.backgroundColor = 'rgba(220, 53, 69, 0.7)'; // Danger red
-            } else if (percentage < 50) {
-                waterLevel.style.backgroundColor = 'rgba(255, 193, 7, 0.7)'; // Warning yellow
-            } else {
-                waterLevel.style.backgroundColor = 'rgba(13, 110, 253, 0.7)'; // Primary blue
-            }
+            waterLevel.style.backgroundColor = '#87CEEB'; // Light blue color
         })
         .catch(error => {
             console.error('Error fetching water intake:', error);
