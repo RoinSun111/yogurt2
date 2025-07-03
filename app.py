@@ -560,9 +560,9 @@ def process_frame():
         }
     else:
         # User is present but analyze activity if pose landmarks are available
-        if posture_results.get('pose_landmarks'):
-            # Get the MediaPipe pose landmarks from posture analyzer's results
-            pose_landmarks = posture_results.get('pose_landmarks')
+        if posture_results.get('_raw_landmarks'):
+            # Get the raw MediaPipe pose landmarks from posture analyzer's results
+            pose_landmarks = posture_results.get('_raw_landmarks')
             
             # Analyze activity
             activity_data = activity_analyzer.analyze(
