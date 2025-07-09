@@ -287,7 +287,7 @@ header {
 
 .metric-label {
     font-size: 0.8125rem;
-    color: var(--flow-warm-600);
+    color: var(--flow-warm-800);
     font-weight: 500;
     letter-spacing: -0.01em;
     margin-bottom: 0.25rem;
@@ -296,7 +296,7 @@ header {
 .metric-value {
     font-weight: 600;
     font-size: 1.25rem;
-    color: var(--flow-black);
+    color: var(--flow-warm-900);
     line-height: 1.2;
 }
 
@@ -330,12 +330,12 @@ header {
     font-size: 2rem;
     font-weight: 600;
     line-height: 1;
-    color: var(--flow-black);
+    color: var(--flow-warm-900);
 }
 
 #focus-score + .small, #health-score-value + .small {
     font-size: 0.75rem;
-    color: var(--flow-warm-700);
+    color: var(--flow-warm-800);
     font-weight: 400;
 }
 
@@ -529,7 +529,7 @@ footer {
 
 .metric-card .metric-label {
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--flow-warm-800);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-size: 0.85rem;
@@ -538,6 +538,7 @@ footer {
 .metric-card .metric-value {
     font-weight: bold;
     font-size: 1.5rem;
+    color: var(--flow-warm-900);
 }
 
 /* Timeline */
