@@ -148,7 +148,7 @@
 }
 
 .mood-input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--flow-warm-600);
 }
 
 .mood-input:focus {
@@ -165,7 +165,7 @@
 
 .char-count {
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--flow-warm-600);
 }
 
 .mood-buttons {
@@ -526,7 +526,7 @@
 }
 
 .event-input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--flow-warm-600);
 }
 
 .event-input:focus {
@@ -702,17 +702,17 @@
 
 .stat-label {
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--flow-warm-700);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
 .add-todo-btn {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: var(--flow-warm-200);
+    border: 1px solid var(--flow-warm-300);
     border-radius: 12px;
-    color: white;
+    color: var(--flow-warm-800);
     padding: 10px 16px;
     font-size: 0.85rem;
     font-weight: 600;
@@ -754,7 +754,7 @@
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--flow-warm-800);
 }
 
 .customize-btn::before {
@@ -775,7 +775,7 @@
     background: rgba(255, 255, 255, 0.15);
     border-color: rgba(255, 107, 53, 0.4);
     box-shadow: 0 12px 40px rgba(255, 107, 53, 0.25);
-    color: white;
+    color: var(--flow-warm-800);
 }
 
 .customize-btn:hover::before {
@@ -1547,7 +1547,7 @@ function updateCharCount() {
         if (currentLength > 120) {
             charCount.style.color = '#ffcccb';
         } else {
-            charCount.style.color = 'rgba(255, 255, 255, 0.7)';
+            charCount.style.color = 'var(--flow-warm-600)';
         }
     }
 }

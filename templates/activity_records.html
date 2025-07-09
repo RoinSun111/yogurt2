@@ -73,7 +73,7 @@
                                 {% if summary.health_score < 95 %}
                                     <div class="d-flex align-items-center justify-content-center mt-2">
                                         <i class="fas fa-target me-2 text-warning"></i>
-                                        <span class="text-muted">{{ 95 - summary.health_score|round(1) }}% to Elite Status</span>
+                                        <span style="color: #4a4a4a;">{{ 95 - summary.health_score|round(1) }}% to Elite Status</span>
                                         {% if summary.elite_streak > 0 %}
                                             <span class="badge bg-secondary ms-2">
                                                 <i class="fas fa-fire me-1"></i>{{ summary.elite_streak }} streak lost
@@ -85,15 +85,15 @@
                             <div class="col-md-4">
                                 <div class="row text-center">
                                     <div class="col-4">
-                                        <div class="small text-muted">Focus</div>
+                                        <div class="small" style="color: #4a4a4a;">Focus</div>
                                         <div class="fw-bold text-primary">{{ summary.focus_score }}%</div>
                                     </div>
                                     <div class="col-4">
-                                        <div class="small text-muted">Posture</div>
+                                        <div class="small" style="color: #4a4a4a;">Posture</div>
                                         <div class="fw-bold text-success">{{ summary.posture_score }}%</div>
                                     </div>
                                     <div class="col-4">
-                                        <div class="small text-muted">Hydration</div>
+                                        <div class="small" style="color: #4a4a4a;">Hydration</div>
                                         <div class="fw-bold text-info">{{ summary.water_score }}%</div>
                                     </div>
                                 </div>
