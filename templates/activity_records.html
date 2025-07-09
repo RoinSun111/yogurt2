@@ -54,7 +54,7 @@
                     </div>
                 </div>
             {% else %}
-                <div class="card bg-dark text-white border-secondary">
+                <div class="card border-secondary" style="background-color: var(--flow-warm-white); color: var(--flow-warm-800);">
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col-md-8">
@@ -186,21 +186,21 @@
                         <div class="col-md-3">
                             <div class="text-center">
                                 <div class="h4 text-success">{{ summary.health_history|selectattr("is_elite")|list|length }}</div>
-                                <small class="text-muted">Elite Days</small>
+                                <small style="color: #4a4a4a;">Elite Days</small>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="text-center">
                                 {% set avg_score = (summary.health_history|map(attribute='health_score')|sum / summary.health_history|length)|round(1) %}
                                 <div class="h4 text-info">{{ avg_score }}%</div>
-                                <small class="text-muted">Average Score</small>
+                                <small style="color: #4a4a4a;">Average Score</small>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="text-center">
                                 {% set max_score = summary.health_history|map(attribute='health_score')|max %}
                                 <div class="h4 text-warning">{{ max_score }}%</div>
-                                <small class="text-muted">Best Score</small>
+                                <small style="color: #4a4a4a;">Best Score</small>
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -209,7 +209,7 @@
                                 <div class="h4 {{ 'text-success' if trend > 0 else 'text-danger' if trend < 0 else 'text-secondary' }}">
                                     {{ "+" if trend > 0 else "" }}{{ (trend/7)|round(1) }}%
                                 </div>
-                                <small class="text-muted">Weekly Trend</small>
+                                <small style="color: #4a4a4a;">Weekly Trend</small>
                             </div>
                         </div>
                     </div>
@@ -225,7 +225,7 @@
                                 {% for day in summary.health_history[-7:] %}
                                     <div class="flex-fill text-center p-2 rounded" 
                                          style="background: {% if day.is_elite %}rgba(40, 167, 69, 0.2){% elif day.health_score >= 70 %}rgba(255, 193, 7, 0.2){% else %}rgba(220, 53, 69, 0.2){% endif %};">
-                                        <div class="small text-muted">{{ day.date_short }}</div>
+                                        <div class="small" style="color: #4a4a4a;">{{ day.date_short }}</div>
                                         <div class="fw-bold">{{ day.health_score }}%</div>
                                         {% if day.is_elite %}
                                             <i class="fas fa-crown text-warning small"></i>
@@ -274,7 +274,7 @@
                                     {{ total_minutes }} mins
                                 </div>
                             </div>
-                            <small class="text-muted">Based on an 8-hour workday (480 minutes)</small>
+                            <small style="color: #4a4a4a;">Based on an 8-hour workday (480 minutes)</small>
                         </div>
                     </div>
                 </div>
@@ -490,7 +490,7 @@
                 plugins: {
                     legend: {
                         labels: {
-                            color: '#fff',
+                            color: '#4a4a4a',
                             font: {
                                 size: 12
                             }
@@ -525,10 +525,10 @@
                         beginAtZero: true,
                         max: 100,
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
+                            color: 'rgba(74, 74, 74, 0.2)'
                         },
                         ticks: {
-                            color: '#fff',
+                            color: '#4a4a4a',
                             callback: function(value) {
                                 return value + '%';
                             }
@@ -536,10 +536,10 @@
                     },
                     x: {
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
+                            color: 'rgba(74, 74, 74, 0.2)'
                         },
                         ticks: {
-                            color: '#fff'
+                            color: '#4a4a4a'
                         }
                     }
                 },
@@ -575,12 +575,12 @@
                         toast.style.zIndex = '1050';
                         toast.innerHTML = `
                             <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-                                <div class="toast-header bg-success text-white">
+                                <div class="toast-header bg-success" style="color: var(--flow-warm-800);">
                                     <i class="fas fa-check-circle me-2"></i>
                                     <strong class="me-auto">Success</strong>
                                     <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                                 </div>
-                                <div class="toast-body bg-dark text-white">
+                                <div class="toast-body" style="background-color: var(--flow-warm-white); color: var(--flow-warm-800);">
                                     <p>${data.message}</p>
                                     <p>Created ${data.event_count} demo events for today.</p>
                                     <div class="mt-2 pt-2 border-top">
