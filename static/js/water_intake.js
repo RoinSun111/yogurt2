@@ -72,7 +72,7 @@ function updateWaterIntake() {
             
             // Apply light blue color consistently
             const waterLevel = document.getElementById('water-level');
-            waterLevel.style.backgroundColor = '#87CEEB'; // Light blue color
+            waterLevel.style.backgroundColor = '#4682B4'; // Steel blue color - darker for Flow House theme
         })
         .catch(error => {
             console.error('Error fetching water intake:', error);

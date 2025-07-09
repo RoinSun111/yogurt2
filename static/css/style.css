@@ -444,7 +444,7 @@ h5, .h5 {
     bottom: 0;
     left: 0;
     width: 100%;
-    background: #87CEEB; /* Light blue color */
+    background: #4682B4; /* Steel blue color - darker for Flow House theme */
     border-radius: 0;
     transition: height 0.8s cubic-bezier(0.19, 1, 0.22, 1);
 }
