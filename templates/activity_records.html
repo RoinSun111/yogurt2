@@ -109,10 +109,10 @@
     {% if summary.recent_achievements %}
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card bg-dark text-white border-secondary">
+            <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">
-                        <i class="fas fa-medal me-2 text-warning"></i>
+                        <i class="fas fa-medal me-2" style="color: var(--flow-accent);"></i>
                         Recent Achievements
                         <span class="badge bg-warning text-dark ms-2">{{ summary.recent_achievements|length }}</span>
                     </h5>
@@ -121,7 +121,7 @@
                     <div class="row">
                         {% for achievement in summary.recent_achievements %}
                             <div class="col-md-6 mb-3">
-                                <div class="d-flex align-items-center p-3 rounded" style="background: rgba(255, 255, 255, 0.05);">
+                                <div class="d-flex align-items-center p-3 rounded" style="background: rgba(196, 156, 108, 0.1); border: 1px solid rgba(196, 156, 108, 0.2);">
                                     <div class="me-3">
                                         {% if achievement.achievement_type == 'elite_performer' %}
                                             <i class="fas fa-star fa-2x text-warning"></i>
@@ -151,7 +151,7 @@
                                                 {{ achievement.achievement_type|title }}
                                             {% endif %}
                                         </div>
-                                        <div class="small text-muted">
+                                        <div class="small" style="color: #4a4a4a;">
                                             {{ achievement.date_earned.strftime('%b %d, %Y') }}
                                             {% if achievement.score %}
                                                 • {{ achievement.score }}% score
