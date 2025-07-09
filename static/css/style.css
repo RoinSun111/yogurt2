@@ -1,22 +1,23 @@
-/* Flow.life-inspired styling - clean, minimal, spacious */
+/* Flow House-inspired styling - warm, creamy, minimal */
 :root {
-    --flow-white: #ffffff;
-    --flow-gray-50: #fafafa;
-    --flow-gray-100: #f5f5f5;
-    --flow-gray-200: #eeeeee;
-    --flow-gray-300: #e0e0e0;
-    --flow-gray-400: #bdbdbd;
-    --flow-gray-500: #9e9e9e;
-    --flow-gray-600: #757575;
-    --flow-gray-700: #616161;
-    --flow-gray-800: #424242;
-    --flow-gray-900: #212121;
-    --flow-black: #000000;
-    --flow-accent: #2563eb;
-    --flow-green: #10b981;
-    --flow-amber: #f59e0b;
-    --flow-red: #ef4444;
-    --flow-purple: #8b5cf6;
+    --flow-cream: #f5f1eb;
+    --flow-warm-white: #faf8f4;
+    --flow-warm-50: #f9f6f1;
+    --flow-warm-100: #f3ede5;
+    --flow-warm-200: #ebe2d6;
+    --flow-warm-300: #ddd1c0;
+    --flow-warm-400: #c4b69f;
+    --flow-warm-500: #a69580;
+    --flow-warm-600: #8a7865;
+    --flow-warm-700: #6d5f4d;
+    --flow-warm-800: #4a3f33;
+    --flow-warm-900: #2d241b;
+    --flow-black: #1a1511;
+    --flow-accent: #8b6914;
+    --flow-green: #4a7c59;
+    --flow-amber: #d97706;
+    --flow-red: #dc2626;
+    --flow-purple: #7c2d12;
     --card-radius: 16px;
     --button-radius: 12px;
     --spacing-xs: 0.5rem;
@@ -32,8 +33,8 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background-color: var(--flow-gray-50);
-    color: var(--flow-gray-800);
+    background-color: var(--flow-cream);
+    color: var(--flow-warm-800);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
     font-weight: 400;
     line-height: 1.6;
@@ -43,22 +44,22 @@ body {
 main {
     flex: 1;
     padding: var(--spacing-lg) 0;
-    background-color: var(--flow-gray-50);
+    background-color: var(--flow-cream);
 }
 
-/* Flow-style navigation */
+/* Flow House-style navigation */
 header {
-    background-color: var(--flow-white);
-    border-bottom: 1px solid var(--flow-gray-200);
+    background-color: var(--flow-warm-white);
+    border-bottom: 1px solid var(--flow-warm-200);
     padding: var(--spacing-md) 0 !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(139, 105, 20, 0.08);
 }
 
 .brand h1 {
     font-size: 1.75rem;
     font-weight: 600;
     letter-spacing: -0.025em;
-    color: var(--flow-gray-900);
+    color: var(--flow-warm-900);
     margin: 0;
 }
 
@@ -68,63 +69,63 @@ header {
 
 .hamburger-btn {
     background-color: transparent;
-    border: 1px solid var(--flow-gray-300);
-    color: var(--flow-gray-700);
+    border: 1px solid var(--flow-warm-300);
+    color: var(--flow-warm-700);
     padding: var(--spacing-xs);
     border-radius: var(--button-radius);
     transition: all 0.2s ease;
 }
 
 .hamburger-btn:hover {
-    background-color: var(--flow-gray-100);
-    border-color: var(--flow-gray-400);
-    color: var(--flow-gray-800);
+    background-color: var(--flow-warm-100);
+    border-color: var(--flow-warm-400);
+    color: var(--flow-warm-800);
 }
 
 .dropdown-menu {
-    background-color: var(--flow-white) !important;
-    border: 1px solid var(--flow-gray-200) !important;
+    background-color: var(--flow-warm-white) !important;
+    border: 1px solid var(--flow-warm-200) !important;
     border-radius: var(--button-radius) !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 8px 24px rgba(139, 105, 20, 0.15) !important;
     backdrop-filter: blur(10px);
 }
 
 .dropdown-item {
-    color: var(--flow-gray-700) !important;
+    color: var(--flow-warm-700) !important;
     padding: var(--spacing-sm) var(--spacing-md);
     background-color: transparent !important;
     font-weight: 500;
 }
 
 .dropdown-item:hover, .dropdown-item:focus {
-    background-color: var(--flow-gray-100) !important;
-    color: var(--flow-gray-900) !important;
+    background-color: var(--flow-warm-100) !important;
+    color: var(--flow-warm-900) !important;
 }
 
 .dropdown-item:active {
-    background-color: var(--flow-gray-200) !important;
-    color: var(--flow-gray-900) !important;
+    background-color: var(--flow-warm-200) !important;
+    color: var(--flow-warm-900) !important;
 }
 
-/* Flow-style cards - clean, spacious */
+/* Flow House-style cards - warm, clean, spacious */
 .card {
-    background-color: var(--flow-white);
-    border: 1px solid var(--flow-gray-200);
+    background-color: var(--flow-warm-white);
+    border: 1px solid var(--flow-warm-200);
     border-radius: var(--card-radius);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(139, 105, 20, 0.08);
     overflow: hidden;
     margin-bottom: var(--spacing-lg);
     transition: all 0.2s ease;
 }
 
 .card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(139, 105, 20, 0.12);
     transform: translateY(-1px);
 }
 
 .card-header {
     background-color: transparent;
-    border-bottom: 1px solid var(--flow-gray-200);
+    border-bottom: 1px solid var(--flow-warm-200);
     padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-md);
     font-weight: 600;
 }
@@ -133,14 +134,14 @@ header {
     font-size: 1.125rem;
     font-weight: 600;
     letter-spacing: -0.01em;
-    color: var(--flow-gray-900);
+    color: var(--flow-warm-900);
     margin: 0;
     line-height: 1.4;
 }
 
 .card-body {
     padding: var(--spacing-lg);
-    background-color: var(--flow-white);
+    background-color: var(--flow-warm-white);
 }
 
 /* Flow-style buttons */
@@ -223,10 +224,10 @@ header {
     color: var(--flow-white) !important;
 }
 
-/* Flow-style progress bars */
+/* Flow House-style progress bars */
 .progress {
     height: 10px;
-    background-color: var(--flow-gray-200);
+    background-color: var(--flow-warm-200);
     border-radius: 6px;
     overflow: hidden;
     box-shadow: none;
@@ -254,7 +255,7 @@ header {
     background-color: var(--flow-purple) !important;
 }
 
-/* Flow-style activity indicators */
+/* Flow House-style activity indicators */
 .activity-icon-container {
     width: 48px;
     height: 48px;
@@ -262,9 +263,9 @@ header {
     justify-content: center;
     align-items: center;
     border-radius: var(--button-radius);
-    background-color: var(--flow-gray-100);
+    background-color: var(--flow-warm-100);
     color: var(--flow-accent);
-    border: 1px solid var(--flow-gray-200);
+    border: 1px solid var(--flow-warm-200);
 }
 
 .activity-icon-container i {
@@ -286,7 +287,7 @@ header {
 
 .metric-label {
     font-size: 0.8125rem;
-    color: var(--flow-gray-600);
+    color: var(--flow-warm-600);
     font-weight: 500;
     letter-spacing: -0.01em;
     margin-bottom: 0.25rem;
@@ -295,7 +296,7 @@ header {
 .metric-value {
     font-weight: 600;
     font-size: 1.25rem;
-    color: var(--flow-gray-900);
+    color: var(--flow-warm-900);
     line-height: 1.2;
 }
 
@@ -382,19 +383,19 @@ header {
 h3, .h3 {
     font-weight: 600;
     font-size: 1.25rem;
-    color: var(--flow-gray-900);
+    color: var(--flow-warm-900);
     letter-spacing: -0.02em;
 }
 
 h5, .h5 {
     font-weight: 600;
     font-size: 1rem;
-    color: var(--flow-gray-700);
+    color: var(--flow-warm-700);
     letter-spacing: -0.01em;
 }
 
 .text-muted {
-    color: var(--flow-gray-600) !important;
+    color: var(--flow-warm-600) !important;
 }
 
 /* Feather icon styling */
