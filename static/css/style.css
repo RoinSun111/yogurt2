@@ -157,13 +157,13 @@ header {
 .btn-primary {
     background-color: var(--flow-accent);
     border-color: var(--flow-accent);
-    color: var(--flow-white);
+    color: var(--flow-warm-white);
 }
 
 .btn-primary:hover, .btn-primary:active, .btn-primary:focus {
     background-color: #1d4ed8 !important;
     border-color: #1d4ed8 !important;
-    color: var(--flow-white) !important;
+    color: var(--flow-warm-white) !important;
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
 }
@@ -196,32 +196,32 @@ header {
 
 .badge.bg-primary {
     background-color: var(--flow-accent) !important;
-    color: var(--flow-white) !important;
+    color: var(--flow-warm-white) !important;
 }
 
 .badge.bg-success {
     background-color: var(--flow-green) !important;
-    color: var(--flow-white) !important;
+    color: var(--flow-warm-white) !important;
 }
 
 .badge.bg-warning {
     background-color: var(--flow-amber) !important;
-    color: var(--flow-white) !important;
+    color: var(--flow-warm-white) !important;
 }
 
 .badge.bg-info {
     background-color: var(--flow-purple) !important;
-    color: var(--flow-white) !important;
+    color: var(--flow-warm-white) !important;
 }
 
 .badge.bg-secondary {
-    background-color: var(--flow-gray-500) !important;
-    color: var(--flow-white) !important;
+    background-color: var(--flow-warm-600) !important;
+    color: var(--flow-warm-white) !important;
 }
 
 .badge.bg-danger {
     background-color: var(--flow-red) !important;
-    color: var(--flow-white) !important;
+    color: var(--flow-warm-white) !important;
 }
 
 /* Flow House-style progress bars */
@@ -330,12 +330,12 @@ header {
     font-size: 2rem;
     font-weight: 600;
     line-height: 1;
-    color: var(--whoop-white);
+    color: var(--flow-black);
 }
 
 #focus-score + .small, #health-score-value + .small {
     font-size: 0.75rem;
-    color: var(--whoop-gray-light);
+    color: var(--flow-warm-700);
     font-weight: 400;
 }
 
