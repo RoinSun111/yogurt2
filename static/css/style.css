@@ -481,22 +481,25 @@ footer {
     border-top: 1px solid var(--nike-gray);
 }
 
-/* Icon sizes */
+/* Icon sizes and colors */
 .feather-icon {
     width: 20px;
     height: 20px;
     vertical-align: text-bottom;
-    stroke-width: a,5;
+    stroke-width: 2;
+    color: var(--flow-warm-700);
 }
 
 .feather-icon-sm {
     width: 16px;
     height: 16px;
+    color: var(--flow-warm-700);
 }
 
 .feather-icon-lg {
     width: 56px;
     height: 56px;
+    color: var(--flow-warm-600);
 }
 
 /* Toast styling */
@@ -514,31 +517,49 @@ footer {
     border-bottom: none;
 }
 
-/* Metric cards */
+/* Metric cards - optimized spacing */
 .metric-card {
-    background-color: var(--nike-gray);
-    border-radius: 16px;
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-    transition: transform 0.2s ease;
+    background-color: var(--flow-warm-white);
+    border: 1px solid var(--flow-warm-200);
+    border-radius: var(--card-radius);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(139, 105, 20, 0.08);
 }
 
 .metric-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 105, 20, 0.12);
 }
 
 .metric-card .metric-label {
     font-weight: 600;
-    color: #2d2d2d;
+    color: var(--flow-warm-700);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
 }
 
 .metric-card .metric-value {
-    font-weight: bold;
-    font-size: 1.5rem;
-    color: #1a1a1a;
+    font-weight: 700;
+    font-size: 1.75rem;
+    color: var(--flow-warm-900);
+    line-height: 1.2;
+}
+
+.metric-card .metric-sublabel {
+    font-weight: 500;
+    color: var(--flow-warm-600);
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.metric-card .metric-subvalue {
+    font-weight: 600;
+    color: var(--flow-warm-800);
+    font-size: 0.875rem;
 }
 
 /* Timeline */
@@ -628,6 +649,7 @@ footer {
 .hamburger-icon {
     width: 24px;
     height: 24px;
+    color: var(--flow-warm-700);
     stroke-width: 2.5;
 }
 
@@ -671,7 +693,7 @@ footer {
     width: 32px;
     height: 32px;
     stroke-width: 2;
-    color: var(--flow-accent);
+    color: var(--flow-warm-700);
     flex-shrink: 0;
 }
 
@@ -1079,4 +1101,53 @@ a:hover {
 /* Ensure all Bootstrap overlay components have better visibility */
 .dropdown-menu, .tooltip, .popover, .modal, .toast, .offcanvas {
     z-index: 1050 !important;
+}
+
+/* Scrollable Events - Flow House styling */
+.scrollable-events {
+    max-height: 300px;
+    overflow-y: auto;
+    border-radius: var(--card-radius);
+    background-color: var(--flow-warm-50);
+    border: 1px solid var(--flow-warm-200);
+}
+
+.scrollable-events::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scrollable-events::-webkit-scrollbar-track {
+    background: var(--flow-warm-100);
+    border-radius: 4px;
+}
+
+.scrollable-events::-webkit-scrollbar-thumb {
+    background: var(--flow-warm-300);
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.scrollable-events::-webkit-scrollbar-thumb:hover {
+    background: var(--flow-warm-400);
+}
+
+.scrollable-events .list-group-item {
+    background-color: transparent;
+    border-color: var(--flow-warm-200);
+    color: var(--flow-warm-800);
+    transition: all 0.2s ease;
+}
+
+.scrollable-events .list-group-item:hover {
+    background-color: var(--flow-warm-100);
+    border-color: var(--flow-warm-300);
+    transform: translateX(2px);
+}
+
+.scrollable-events .list-group-item:first-child {
+    border-top: none;
+}
+
+.scrollable-events .list-group-item:last-child {
+    border-bottom: none;
 }

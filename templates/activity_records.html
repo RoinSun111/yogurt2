@@ -290,28 +290,30 @@
                 </div>
                 <div class="card-body">
                     {% if events_by_type.phone_use %}
-                        <ul class="list-group list-group-flush">
-                            {% for event in events_by_type.phone_use %}
-                                <li class="list-group-item">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <i class="fas fa-mobile-alt me-2 text-danger"></i>
-                                            Phone check
+                        <div class="scrollable-events">
+                            <ul class="list-group list-group-flush">
+                                {% for event in events_by_type.phone_use %}
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <i class="fas fa-mobile-alt me-2 text-danger"></i>
+                                                Phone check
+                                            </div>
+                                            <div>
+                                                <span class="badge bg-secondary">
+                                                    {{ event.start_time.strftime('%H:%M') }}
+                                                </span>
+                                                {% if event.duration %}
+                                                    <span class="badge bg-danger">{{ (event.duration / 60)|round(1) }} mins</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">In progress</span>
+                                                {% endif %}
+                                            </div>
                                         </div>
-                                        <div>
-                                            <span class="badge bg-secondary">
-                                                {{ event.start_time.strftime('%H:%M') }}
-                                            </span>
-                                            {% if event.duration %}
-                                                <span class="badge bg-danger">{{ (event.duration / 60)|round(1) }} mins</span>
-                                            {% else %}
-                                                <span class="badge bg-warning">In progress</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     {% else %}
                         <div class="text-center py-4">
                             <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
@@ -329,28 +331,30 @@
                 </div>
                 <div class="card-body">
                     {% if events_by_type.away %}
-                        <ul class="list-group list-group-flush">
-                            {% for event in events_by_type.away %}
-                                <li class="list-group-item">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <i class="fas fa-walking me-2 text-primary"></i>
-                                            Left desk
+                        <div class="scrollable-events">
+                            <ul class="list-group list-group-flush">
+                                {% for event in events_by_type.away %}
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <i class="fas fa-walking me-2 text-primary"></i>
+                                                Left desk
+                                            </div>
+                                            <div>
+                                                <span class="badge bg-secondary">
+                                                    {{ event.start_time.strftime('%H:%M') }}
+                                                </span>
+                                                {% if event.duration %}
+                                                    <span class="badge bg-primary">{{ (event.duration / 60)|round(1) }} mins</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">In progress</span>
+                                                {% endif %}
+                                            </div>
                                         </div>
-                                        <div>
-                                            <span class="badge bg-secondary">
-                                                {{ event.start_time.strftime('%H:%M') }}
-                                            </span>
-                                            {% if event.duration %}
-                                                <span class="badge bg-primary">{{ (event.duration / 60)|round(1) }} mins</span>
-                                            {% else %}
-                                                <span class="badge bg-warning">In progress</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     {% else %}
                         <div class="text-center py-4">
                             <i class="fas fa-chair fa-3x text-success mb-3"></i>
@@ -370,28 +374,30 @@
                 </div>
                 <div class="card-body">
                     {% if events_by_type.talking %}
-                        <ul class="list-group list-group-flush">
-                            {% for event in events_by_type.talking %}
-                                <li class="list-group-item">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <i class="fas fa-comments me-2 text-info"></i>
-                                            Conversation
+                        <div class="scrollable-events">
+                            <ul class="list-group list-group-flush">
+                                {% for event in events_by_type.talking %}
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <i class="fas fa-comments me-2 text-info"></i>
+                                                Conversation
+                                            </div>
+                                            <div>
+                                                <span class="badge bg-secondary">
+                                                    {{ event.start_time.strftime('%H:%M') }}
+                                                </span>
+                                                {% if event.duration %}
+                                                    <span class="badge bg-info">{{ (event.duration / 60)|round(1) }} mins</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">In progress</span>
+                                                {% endif %}
+                                            </div>
                                         </div>
-                                        <div>
-                                            <span class="badge bg-secondary">
-                                                {{ event.start_time.strftime('%H:%M') }}
-                                            </span>
-                                            {% if event.duration %}
-                                                <span class="badge bg-info">{{ (event.duration / 60)|round(1) }} mins</span>
-                                            {% else %}
-                                                <span class="badge bg-warning">In progress</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     {% else %}
                         <div class="text-center py-4">
                             <i class="fas fa-user-secret fa-3x text-success mb-3"></i>
@@ -409,28 +415,30 @@
                 </div>
                 <div class="card-body">
                     {% if events_by_type.distraction %}
-                        <ul class="list-group list-group-flush">
-                            {% for event in events_by_type.distraction %}
-                                <li class="list-group-item">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
-                                            Distraction
+                        <div class="scrollable-events">
+                            <ul class="list-group list-group-flush">
+                                {% for event in events_by_type.distraction %}
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                                                Distraction
+                                            </div>
+                                            <div>
+                                                <span class="badge bg-secondary">
+                                                    {{ event.start_time.strftime('%H:%M') }}
+                                                </span>
+                                                {% if event.duration %}
+                                                    <span class="badge bg-warning">{{ (event.duration / 60)|round(1) }} mins</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">In progress</span>
+                                                {% endif %}
+                                            </div>
                                         </div>
-                                        <div>
-                                            <span class="badge bg-secondary">
-                                                {{ event.start_time.strftime('%H:%M') }}
-                                            </span>
-                                            {% if event.duration %}
-                                                <span class="badge bg-warning">{{ (event.duration / 60)|round(1) }} mins</span>
-                                            {% else %}
-                                                <span class="badge bg-warning">In progress</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     {% else %}
                         <div class="text-center py-4">
                             <i class="fas fa-thumbs-up fa-3x text-success mb-3"></i>
