@@ -273,16 +273,16 @@ header {
     height: 24px;
 }
 
-/* WHOOP-style metrics - clean data presentation */
+/* Flow House-style metrics - clean data presentation */
 .metric, .metric-card {
-    background-color: var(--whoop-gray-dark);
-    border-radius: var(--metric-radius);
+    background-color: var(--flow-warm-white);
+    border-radius: var(--card-radius);
     padding: 0.75rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    border: 1px solid var(--whoop-gray-dark);
+    border: 1px solid var(--flow-warm-200);
 }
 
 .metric-label {
@@ -599,13 +599,13 @@ footer {
     box-shadow: 0 0 0 4px rgba(19, 194, 194, 0.3);
 }
 
-/* Hamburger Menu Styling */
+/* Hamburger Menu Styling - Flow House */
 .hamburger-btn {
     background-color: transparent;
-    border: 2px solid var(--nike-accent);
-    border-radius: 12px;
+    border: 1px solid var(--flow-warm-300);
+    border-radius: var(--button-radius);
     padding: 10px 12px;
-    color: var(--nike-accent);
+    color: var(--flow-warm-700);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -617,11 +617,11 @@ footer {
 }
 
 .hamburger-btn:hover {
-    border-color: var(--nike-accent);
-    background-color: rgba(250, 84, 0, 0.1);
-    color: var(--nike-accent);
+    border-color: var(--flow-warm-400);
+    background-color: var(--flow-warm-100);
+    color: var(--flow-warm-800);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(250, 84, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(139, 105, 20, 0.15);
 }
 
 .hamburger-icon {
@@ -631,10 +631,10 @@ footer {
 }
 
 .hamburger-menu {
-    background-color: var(--nike-gray-dark);
-    border: 1px solid var(--nike-gray);
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    background-color: var(--flow-warm-white);
+    border: 1px solid var(--flow-warm-200);
+    border-radius: var(--card-radius);
+    box-shadow: 0 10px 30px rgba(139, 105, 20, 0.15);
     padding: 0.5rem 0;
     margin-top: 0.5rem;
     min-width: 280px;
@@ -645,18 +645,18 @@ footer {
     margin: 0;
     border: none;
     background: transparent;
-    color: var(--nike-white);
+    color: var(--flow-warm-800);
     transition: all 0.2s ease;
 }
 
 .hamburger-menu .dropdown-item:hover {
-    background-color: rgba(250, 84, 0, 0.1);
-    color: var(--nike-white);
+    background-color: var(--flow-warm-100);
+    color: var(--flow-warm-900);
 }
 
 .hamburger-menu .dropdown-item.active {
-    background-color: var(--nike-accent);
-    color: var(--nike-white);
+    background-color: var(--flow-accent);
+    color: var(--flow-warm-white);
 }
 
 .nav-item-content {
@@ -670,12 +670,12 @@ footer {
     width: 32px;
     height: 32px;
     stroke-width: 2;
-    color: var(--nike-accent);
+    color: var(--flow-accent);
     flex-shrink: 0;
 }
 
 .hamburger-menu .dropdown-item.active .nav-icon {
-    color: var(--nike-white);
+    color: var(--flow-warm-white);
 }
 
 .nav-text {
@@ -709,16 +709,16 @@ footer {
     opacity: 0.3;
 }
 
-/* Time display improvements */
+/* Time display improvements - Flow House */
 .time-display {
-    background-color: var(--nike-gray-dark);
+    background-color: var(--flow-warm-100);
     padding: 10px 16px;
     border-radius: 50px;
     font-weight: 600;
     font-size: 0.9rem;
     letter-spacing: 0.05em;
-    color: var(--nike-white);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--flow-warm-800);
+    border: 1px solid var(--flow-warm-300);
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
@@ -727,8 +727,8 @@ footer {
 }
 
 .time-display:hover {
-    border-color: var(--nike-accent);
-    box-shadow: 0 4px 12px rgba(250, 84, 0, 0.2);
+    border-color: var(--flow-accent);
+    box-shadow: 0 4px 12px rgba(139, 105, 20, 0.15);
 }
 
 /* Header responsive spacing */
