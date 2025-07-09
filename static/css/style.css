@@ -431,12 +431,24 @@ h5, .h5 {
 
 .water-bottle {
     position: relative;
-    width: 60px;
-    height: 140px;
-    background-color: var(--whoop-gray-dark);
-    border-radius: 30px;
+    width: 70px;
+    height: 120px;
+    background-color: var(--flow-warm-200);
+    border-radius: 15px;
     overflow: hidden;
-    border: 1px solid var(--whoop-gray);
+    border: 3px solid var(--flow-warm-500);
+    box-shadow: 0 4px 12px rgba(139, 105, 20, 0.2);
+}
+
+.water-bottle::before {
+    content: '💧';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    opacity: 0.3;
+    z-index: 1;
 }
 
 .water-level {
@@ -444,9 +456,11 @@ h5, .h5 {
     bottom: 0;
     left: 0;
     width: 100%;
-    background: #4682B4; /* Steel blue color - darker for Flow House theme */
-    border-radius: 0;
+    background: linear-gradient(180deg, #4A90E2 0%, #2E86AB 50%, #1C5F7A 100%);
+    border-radius: 0 0 12px 12px;
     transition: height 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+    opacity: 0.95;
+    z-index: 2;
 }
 
 /* Header and footer */
