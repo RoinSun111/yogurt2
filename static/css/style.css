@@ -678,8 +678,8 @@ footer {
 }
 
 .hamburger-menu .dropdown-item.active {
-    background-color: var(--flow-accent);
-    color: var(--flow-warm-white);
+    background-color: var(--flow-warm-200);
+    color: var(--flow-warm-800);
 }
 
 .nav-item-content {
@@ -698,7 +698,7 @@ footer {
 }
 
 .hamburger-menu .dropdown-item.active .nav-icon {
-    color: var(--flow-warm-white);
+    color: var(--flow-warm-800);
 }
 
 .nav-text {
@@ -716,14 +716,14 @@ footer {
 
 .nav-text small {
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--flow-warm-600);
     font-weight: 400;
     text-transform: none;
     letter-spacing: 0.02em;
 }
 
 .hamburger-menu .dropdown-item.active .nav-text small {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--flow-warm-700);
 }
 
 .hamburger-menu .dropdown-divider {
