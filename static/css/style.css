@@ -8,11 +8,11 @@
     --flow-warm-300: #ddd1c0;
     --flow-warm-400: #c4b69f;
     --flow-warm-500: #a69580;
-    --flow-warm-600: #8a7865;
-    --flow-warm-700: #6d5f4d;
+    --flow-warm-600: #6a6a6a;
+    --flow-warm-700: #4a4a4a;
     --flow-warm-800: #4a3f33;
-    --flow-warm-900: #2d241b;
-    --flow-black: #1a1511;
+    --flow-warm-900: #4a4a4a;
+    --flow-black: #4a4a4a;
     --flow-accent: #8b6914;
     --flow-green: #4a7c59;
     --flow-amber: #d97706;
@@ -34,7 +34,7 @@ body {
     display: flex;
     flex-direction: column;
     background-color: var(--flow-cream);
-    color: var(--flow-warm-800);
+    color: var(--flow-warm-900);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
     font-weight: 400;
     line-height: 1.6;
@@ -296,7 +296,7 @@ header {
 .metric-value {
     font-weight: 600;
     font-size: 1.25rem;
-    color: var(--flow-warm-900);
+    color: var(--flow-black);
     line-height: 1.2;
 }
 
@@ -383,14 +383,14 @@ header {
 h3, .h3 {
     font-weight: 600;
     font-size: 1.25rem;
-    color: var(--flow-warm-900);
+    color: var(--flow-black);
     letter-spacing: -0.02em;
 }
 
 h5, .h5 {
     font-weight: 600;
     font-size: 1rem;
-    color: var(--flow-warm-700);
+    color: var(--flow-black);
     letter-spacing: -0.01em;
 }
 
