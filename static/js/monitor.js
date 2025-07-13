@@ -295,15 +295,23 @@ function updateMetrics(data) {
         switch(data.posture) {
             case 'sitting_straight':
             case 'standing':
+            case 'upright_sitting':
+            case 'standing_good':
                 badgeClass = 'bg-success';
                 break;
             case 'leaning_forward':
             case 'left_sitting':
             case 'right_sitting':
+            case 'forward_leaning':
+            case 'leaning_left':
+            case 'leaning_right':
+            case 'standing_poor':
                 badgeClass = 'bg-warning';
                 break;
             case 'hunching_over':
             case 'lying':
+            case 'slouched_sitting':
+            case 'lying_down':
                 badgeClass = 'bg-danger';
                 break;
             default:
@@ -1191,14 +1199,25 @@ function formatPostureName(posture) {
     }
     
     const postureMap = {
+        // Original posture types
         'sitting_straight': 'Sitting Straight',
         'hunching_over': 'Hunching Over',
         'left_sitting': 'Leaning Left',
         'right_sitting': 'Leaning Right',
         'leaning_forward': 'Leaning Forward',
         'lying': 'Lying Down',
-        'standing': 'Standing'
+        'standing': 'Standing',
+        
+        // New advanced detector posture types
+        'upright_sitting': 'Upright Sitting',
+        'slouched_sitting': 'Slouched Sitting',
+        'leaning_left': 'Leaning Left',
+        'leaning_right': 'Leaning Right',
+        'forward_leaning': 'Forward Leaning',
+        'standing_good': 'Standing (Good)',
+        'standing_poor': 'Standing (Poor)',
+        'lying_down': 'Lying Down'
     };
     
-    return postureMap[posture] || posture.charAt(0).toUpperCase() + posture.slice(1);
+    return postureMap[posture] || posture.charAt(0).toUpperCase() + posture.slice(1).replace(/_/g, ' ');
 }
