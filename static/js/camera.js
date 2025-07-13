@@ -137,21 +137,80 @@ function captureAndProcessFrame() {
 function updatePostureStatusFromData(data) {
     const postureState = document.getElementById('posture-state');
     
-    if (data.is_present) {
-        if (data.posture === 'upright') {
-            postureState.textContent = 'Upright';
-            postureState.className = 'badge bg-success';
-        } else if (data.posture === 'slouched') {
-            postureState.textContent = 'Slouched';
-            postureState.className = 'badge bg-warning';
-        } else {
-            postureState.textContent = 'Present';
-            postureState.className = 'badge bg-primary';
+    if (data.is_present && data.posture && data.posture !== 'unknown') {
+        // Format posture name for display
+        const formattedPosture = formatPostureNameSimple(data.posture);
+        postureState.textContent = formattedPosture;
+        
+        // Set badge color based on posture classification
+        let badgeClass;
+        switch(data.posture) {
+            case 'sitting_straight':
+            case 'standing':
+            case 'upright_sitting':
+            case 'standing_good':
+            case 'upright':
+                badgeClass = 'badge bg-success';
+                break;
+            case 'leaning_forward':
+            case 'left_sitting':
+            case 'right_sitting':
+            case 'forward_leaning':
+            case 'leaning_left':
+            case 'leaning_right':
+            case 'standing_poor':
+                badgeClass = 'badge bg-warning';
+                break;
+            case 'hunching_over':
+            case 'lying':
+            case 'slouched_sitting':
+            case 'lying_down':
+            case 'slouched':
+                badgeClass = 'badge bg-danger';
+                break;
+            default:
+                badgeClass = 'badge bg-primary';
         }
+        postureState.className = badgeClass;
+    } else if (data.is_present) {
+        postureState.textContent = 'Present';
+        postureState.className = 'badge bg-primary';
     } else {
         postureState.textContent = 'Not Present';
         postureState.className = 'badge bg-secondary';
     }
+}
+
+// Simple posture name formatting for the basic status badge
+function formatPostureNameSimple(posture) {
+    if (!posture || posture === 'unknown') {
+        return 'Unknown';
+    }
+    
+    const postureMap = {
+        // Original posture types
+        'sitting_straight': 'Sitting Straight',
+        'hunching_over': 'Hunching Over',
+        'left_sitting': 'Leaning Left',
+        'right_sitting': 'Leaning Right',
+        'leaning_forward': 'Leaning Forward',
+        'lying': 'Lying Down',
+        'standing': 'Standing',
+        'upright': 'Upright',
+        'slouched': 'Slouched',
+        
+        // New advanced detector posture types
+        'upright_sitting': 'Upright Sitting',
+        'slouched_sitting': 'Slouched Sitting',
+        'leaning_left': 'Leaning Left',
+        'leaning_right': 'Leaning Right',
+        'forward_leaning': 'Forward Leaning',
+        'standing_good': 'Standing (Good)',
+        'standing_poor': 'Standing (Poor)',
+        'lying_down': 'Lying Down'
+    };
+    
+    return postureMap[posture] || posture.charAt(0).toUpperCase() + posture.slice(1).replace(/_/g, ' ');
 }
 
 // Event listener for page visibility change
