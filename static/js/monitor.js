@@ -50,6 +50,9 @@ function initializeMonitoring() {
     
     // Start periodic check for activity updates
     setInterval(updateActivityData, 1000);
+    
+    // Initial update
+    updateActivityData();
 }
 
 // Test canvas functionality
@@ -222,15 +225,53 @@ function captureAndAnalyzeFrame() {
 
 // Update activity data from the API
 function updateActivityData() {
-    fetch('/api/activity_status')
-        .then(response => response.json())
-        .then(data => {
-            // Update activity metrics
-            updateActivityMetrics(data);
-        })
-        .catch(error => {
-            console.error('Error fetching activity status:', error);
-        });
+    // Fetch both activity status and posture data
+    Promise.all([
+        fetch('/api/activity_status').then(response => response.json()),
+        fetch('/api/posture').then(response => response.json())
+    ])
+    .then(([activityData, postureData]) => {
+        // Update activity metrics
+        updateActivityMetrics(activityData);
+        
+        // Update posture badge with real data from backend
+        updatePostureBadge(postureData);
+    })
+    .catch(error => {
+        console.error('Error fetching status data:', error);
+    });
+}
+
+// Update posture badge with backend data
+function updatePostureBadge(postureData) {
+    const postureBadge = document.getElementById('posture-badge');
+    
+    if (postureBadge && postureData.posture) {
+        // Format the SitPose classification for display
+        const formattedPosture = formatPostureName(postureData.posture);
+        postureBadge.textContent = formattedPosture;
+        
+        // Set badge color based on posture classification
+        let badgeClass;
+        switch(postureData.posture) {
+            case 'sitting_straight':
+            case 'standing':
+                badgeClass = 'bg-success';
+                break;
+            case 'leaning_forward':
+            case 'left_sitting':
+            case 'right_sitting':
+                badgeClass = 'bg-warning';
+                break;
+            case 'hunching_over':
+            case 'lying':
+                badgeClass = 'bg-danger';
+                break;
+            default:
+                badgeClass = 'bg-secondary';
+        }
+        postureBadge.className = `badge ${badgeClass}`;
+    }
 }
 
 // Update metrics on the page
