@@ -1,19 +1,45 @@
-// Camera.js - Handle camera input and processing
+// Camera.js - Handle camera input and processing with pose landmarks visualization
+
+import {
+    PoseLandmarker,
+    FilesetResolver,
+    DrawingUtils
+} from "https://cdn.skypack.dev/@mediapipe/tasks-vision@0.10.0";
 
 let webcamElement;
 let webcamRunning = false;
 let captureInterval;
 let mediaStream = null;
 let isProcessing = false; // Prevent frame processing overlap
+let poseLandmarker = null;
+let canvasElement;
+let canvasCtx;
+let drawingUtils;
+let showAnnotations = true;
 
 document.addEventListener('DOMContentLoaded', function() {
     webcamElement = document.getElementById('webcam');
+    canvasElement = document.getElementById('annotation-canvas');
+    canvasCtx = canvasElement.getContext('2d');
     const startCameraButton = document.getElementById('start-camera');
     const cameraPlaceholder = document.getElementById('camera-placeholder');
+    const toggleAnnotations = document.getElementById('toggle-annotations');
+    
+    // Initialize MediaPipe PoseLandmarker
+    initializePoseLandmarker();
     
     // Start camera button event listener
     startCameraButton.addEventListener('click', function() {
         startCamera();
+    });
+    
+    // Toggle annotations checkbox
+    toggleAnnotations.addEventListener('change', function() {
+        showAnnotations = this.checked;
+        if (!showAnnotations) {
+            // Clear the canvas when annotations are disabled
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        }
     });
     
     // Check if camera access should be automatic
@@ -22,6 +48,27 @@ document.addEventListener('DOMContentLoaded', function() {
         startCamera();
     }
 });
+
+// Initialize MediaPipe PoseLandmarker
+async function initializePoseLandmarker() {
+    try {
+        const vision = await FilesetResolver.forVisionTasks(
+            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
+        );
+        poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
+            baseOptions: {
+                modelAssetPath: `https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task`,
+                delegate: "GPU"
+            },
+            runningMode: "VIDEO",
+            numPoses: 1
+        });
+        drawingUtils = new DrawingUtils(canvasCtx);
+        console.log('MediaPipe PoseLandmarker initialized');
+    } catch (error) {
+        console.error('Error initializing MediaPipe:', error);
+    }
+}
 
 // Start the webcam and begin processing
 function startCamera() {
@@ -88,11 +135,27 @@ function startFrameCapture() {
         clearInterval(captureInterval);
     }
     
+    // Set canvas size to match video
+    updateCanvasSize();
+    
     // Process frames at 8 FPS for real-time posture detection (125ms intervals)
     captureInterval = setInterval(captureAndProcessFrame, 125);
     
     // Do an initial capture immediately
     captureAndProcessFrame();
+}
+
+// Update canvas size to match video dimensions
+function updateCanvasSize() {
+    if (webcamElement.videoWidth > 0 && webcamElement.videoHeight > 0) {
+        canvasElement.width = webcamElement.videoWidth;
+        canvasElement.height = webcamElement.videoHeight;
+        
+        // Update canvas style to match video display size
+        const rect = webcamElement.getBoundingClientRect();
+        canvasElement.style.width = rect.width + 'px';
+        canvasElement.style.height = rect.height + 'px';
+    }
 }
 
 // Capture a frame from the webcam and process it
@@ -131,6 +194,11 @@ function captureAndProcessFrame() {
             
             // Update posture status based on response
             updatePostureStatusFromData(data);
+            
+            // Draw pose landmarks if available and annotations are enabled
+            if (showAnnotations && poseLandmarker) {
+                drawPoseLandmarks();
+            }
         })
         .catch(error => {
             console.error('Error processing frame:', error);
@@ -139,6 +207,46 @@ function captureAndProcessFrame() {
             isProcessing = false; // Allow next frame processing
         });
     }, 'image/jpeg', 0.8);
+}
+
+// Draw pose landmarks on the annotation canvas
+async function drawPoseLandmarks() {
+    if (!poseLandmarker || !webcamElement || !canvasElement || !showAnnotations) return;
+    
+    try {
+        // Clear the canvas
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        
+        // Detect pose landmarks directly from video element
+        const startTimeMs = performance.now();
+        const results = await poseLandmarker.detectForVideo(webcamElement, startTimeMs);
+        
+        if (results.landmarks && results.landmarks.length > 0) {
+            // Save canvas context
+            canvasCtx.save();
+            
+            // Draw landmarks and connections for each detected pose
+            for (const landmark of results.landmarks) {
+                // Draw landmarks as circles
+                drawingUtils.drawLandmarks(landmark, {
+                    radius: (data) => DrawingUtils.lerp(data.from.z, -0.15, 0.1, 10, 2),
+                    fillColor: 'rgba(255, 255, 255, 0.8)',
+                    color: 'rgba(0, 255, 0, 0.9)'
+                });
+                
+                // Draw connections between landmarks
+                drawingUtils.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS, {
+                    color: 'rgba(0, 255, 0, 0.6)',
+                    lineWidth: 2
+                });
+            }
+            
+            // Restore canvas context
+            canvasCtx.restore();
+        }
+    } catch (error) {
+        console.error('Error drawing pose landmarks:', error);
+    }
 }
 
 // Update the posture status based on processed frame data
