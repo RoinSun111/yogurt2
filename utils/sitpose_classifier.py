@@ -109,13 +109,21 @@ class SitPoseClassifier:
         body_lean = self._calculate_body_lean(landmarks)
         lateral_lean = self._calculate_lateral_lean(landmarks)
         
-        # Determine if sitting or standing
-        is_sitting = self._is_sitting(hip_knee_angle, landmarks)
+        # Get body proportions for better sitting detection
+        shoulder_mid_y = (left_shoulder.y + right_shoulder.y) / 2
+        hip_mid_y = (left_hip.y + right_hip.y) / 2
+        knee_mid_y = (left_knee.y + right_knee.y) / 2
         
-        # Classify posture
+        # More robust sitting detection based on body proportions
+        is_sitting = self._detect_sitting_by_proportions(landmarks, hip_knee_angle)
+        
+        # Classify posture with debug logging
         posture_type, confidence = self._classify_posture_type(
             is_sitting, spine_angle, shoulder_tilt, body_lean, lateral_lean, hip_knee_angle, landmarks
         )
+        
+        # Debug logging
+        self.logger.debug(f"Posture: {posture_type}, Sitting: {is_sitting}, Spine: {spine_angle:.1f}, Body lean: {body_lean:.3f}, Lateral: {lateral_lean:.3f}")
         
         # Generate feedback
         feedback = self._generate_feedback(posture_type, spine_angle, shoulder_tilt)
@@ -201,17 +209,77 @@ class SitPoseClassifier:
         return lean
     
     def _is_sitting(self, hip_knee_angle: float, landmarks) -> bool:
-        """Determine if person is sitting based on hip-knee angle and hip position"""
-        # Sitting typically has hip-knee angle < 120 degrees
-        # Also check if hips are lower than expected for standing
-        
+        """Determine if person is sitting based on hip-knee angle and relative positions"""
+        # Get key body positions
         hip_y = (landmarks[self.LEFT_HIP].y + landmarks[self.RIGHT_HIP].y) / 2
         knee_y = (landmarks[self.LEFT_KNEE].y + landmarks[self.RIGHT_KNEE].y) / 2
+        ankle_y = (landmarks[self.LEFT_ANKLE].y + landmarks[self.RIGHT_ANKLE].y) / 2
+        shoulder_y = (landmarks[self.LEFT_SHOULDER].y + landmarks[self.RIGHT_SHOULDER].y) / 2
         
-        # In sitting, hips and knees are at similar height
-        hip_knee_y_diff = abs(hip_y - knee_y)
+        # Multiple indicators for sitting:
+        # 1. Hip-knee angle (relaxed when sitting)
+        angle_indicates_sitting = hip_knee_angle < 140
         
-        return hip_knee_angle < 120 and hip_knee_y_diff < 0.15
+        # 2. Knees are below hips (when sitting normally)
+        knees_below_hips = knee_y > hip_y
+        
+        # 3. Hip-to-knee distance is small (legs bent)
+        hip_knee_distance = abs(hip_y - knee_y)
+        close_hip_knee = hip_knee_distance < 0.3
+        
+        # 4. Overall body compactness (sitting makes body more compact vertically)
+        body_height = abs(shoulder_y - ankle_y)
+        is_compact = body_height < 0.6  # Normalized height threshold
+        
+        # Consider sitting if at least 2 indicators are true
+        sitting_indicators = sum([
+            angle_indicates_sitting,
+            knees_below_hips,
+            close_hip_knee,
+            is_compact
+        ])
+        
+        return sitting_indicators >= 2
+    
+    def _detect_sitting_by_proportions(self, landmarks, hip_knee_angle: float) -> bool:
+        """Enhanced sitting detection using body proportions and landmark ratios"""
+        
+        # Get normalized coordinates
+        shoulder_y = (landmarks[self.LEFT_SHOULDER].y + landmarks[self.RIGHT_SHOULDER].y) / 2
+        hip_y = (landmarks[self.LEFT_HIP].y + landmarks[self.RIGHT_HIP].y) / 2
+        knee_y = (landmarks[self.LEFT_KNEE].y + landmarks[self.RIGHT_KNEE].y) / 2
+        ankle_y = (landmarks[self.LEFT_ANKLE].y + landmarks[self.RIGHT_ANKLE].y) / 2
+        
+        # Calculate body segment ratios
+        total_height = abs(shoulder_y - ankle_y)
+        torso_height = abs(shoulder_y - hip_y)
+        thigh_height = abs(hip_y - knee_y)
+        
+        # Avoid division by zero
+        if total_height < 0.1:
+            return False
+            
+        # In sitting: thigh segment becomes more horizontal, reducing apparent height
+        thigh_ratio = thigh_height / total_height if total_height > 0 else 0
+        
+        # Multiple sitting indicators
+        sitting_checks = []
+        
+        # 1. Hip-knee angle check (most reliable)
+        sitting_checks.append(hip_knee_angle < 130)
+        
+        # 2. Thigh ratio check (sitting compresses thigh visibility)
+        sitting_checks.append(thigh_ratio < 0.15)
+        
+        # 3. Hip position relative to total body
+        hip_position_ratio = abs(shoulder_y - hip_y) / total_height if total_height > 0 else 0
+        sitting_checks.append(hip_position_ratio > 0.35)  # Hip appears higher in frame when sitting
+        
+        # 4. Knee position check (knees should be visible and below hips when sitting)
+        sitting_checks.append(knee_y > hip_y and abs(knee_y - hip_y) < 0.25)
+        
+        # Consider sitting if majority of checks pass
+        return sum(sitting_checks) >= 2
     
     def _classify_posture_type(self, is_sitting: bool, spine_angle: float, 
                               shoulder_tilt: float, body_lean: float, 
@@ -233,31 +301,37 @@ class SitPoseClassifier:
         if not is_sitting:
             return SitPoseType.STANDING.value, confidence
         
-        # Sitting posture classification
+        # Sitting posture classification with more sensitive thresholds
         
-        # Left/Right sitting (lateral lean)
-        if abs(lateral_lean) > 0.05:  # Significant lateral lean
-            if lateral_lean < 0:
+        # Left/Right sitting (lateral lean) - more sensitive
+        if abs(lateral_lean) > 0.03:  # More sensitive lateral lean detection
+            if lateral_lean < -0.03:
                 return SitPoseType.LEFT_SITTING.value, confidence
-            else:
+            elif lateral_lean > 0.03:
                 return SitPoseType.RIGHT_SITTING.value, confidence
         
-        # Forward leaning vs hunching
-        if body_lean > 0.1:  # Significant forward lean
-            if spine_angle > 25:  # Large spine curvature
+        # Forward leaning vs hunching - more sensitive
+        if body_lean > 0.05:  # More sensitive forward lean detection
+            if spine_angle > 20:  # Hunching threshold
                 return SitPoseType.HUNCHING_OVER.value, confidence
             else:
                 return SitPoseType.LEANING_FORWARD.value, confidence
         
-        # Sitting straight (default good sitting posture)
-        if spine_angle < 15 and abs(shoulder_tilt) < 5:
+        # Check for hunching based on spine angle alone
+        if spine_angle > 25:
+            return SitPoseType.HUNCHING_OVER.value, 0.9
+        
+        # Sitting straight (good posture)
+        if spine_angle < 12 and abs(shoulder_tilt) < 8:
             return SitPoseType.SITTING_STRAIGHT.value, 0.95
         
-        # Default to hunching if spine angle is bad
-        if spine_angle > 20:
-            return SitPoseType.HUNCHING_OVER.value, 0.85
+        # Default classification based on spine angle
+        if spine_angle > 18:
+            return SitPoseType.HUNCHING_OVER.value, 0.8
+        elif spine_angle > 12:
+            return SitPoseType.LEANING_FORWARD.value, 0.75
         
-        return SitPoseType.SITTING_STRAIGHT.value, 0.8
+        return SitPoseType.SITTING_STRAIGHT.value, 0.7
     
     def _is_lying(self, landmarks) -> bool:
         """Check if person is lying down"""

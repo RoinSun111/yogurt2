@@ -1,5 +1,5 @@
 """
-New Posture Analyzer - Using SitPose Classifier for accurate posture detection
+New Posture Analyzer - Using Working Posture Detector for accurate posture detection
 Integrates with existing SmartDesk system while providing accurate detection of 7 posture types.
 """
 
@@ -7,7 +7,7 @@ import logging
 import numpy as np
 import mediapipe as mp
 from datetime import datetime, timedelta
-from .sitpose_classifier import SitPoseClassifier, SitPoseType
+from .working_posture_detector import WorkingPostureDetector
 
 class PostureAnalyzer:
     """
@@ -35,8 +35,8 @@ class PostureAnalyzer:
             min_tracking_confidence=0.5
         )
         
-        # Initialize the SitPose classifier
-        self.classifier = SitPoseClassifier()
+        # Initialize the Working Posture Detector
+        self.detector = WorkingPostureDetector()
         
         # Quality thresholds based on spine angle
         self.quality_thresholds = {
@@ -80,8 +80,8 @@ class PostureAnalyzer:
                     'is_present': False
                 }
             
-            # Use SitPose classifier
-            posture_result = self.classifier.classify_posture(results.pose_landmarks.landmark)
+            # Use Working Posture Detector
+            posture_result = self.detector.detect_posture(results.pose_landmarks.landmark)
             
             # Determine quality based on spine angle
             quality = self._determine_quality(posture_result.spine_angle)
