@@ -35,7 +35,7 @@ class PostureDetector:
             'lying_head_angle': 70,       # head-shoulder angle > 70° = lying
             'hunching_head_angle': 25,    # head forward angle > 25° = hunching
             'lean_forward_head': 15,      # head angle > 15° forward = leaning forward
-            'lateral_lean_head': 20,      # head tilt > 20° = side sitting
+            'lateral_lean_head': 10,      # head tilt > 10° = side sitting (more sensitive)
             'standing_body_ratio': 0.12   # body ratio indicator for standing
         }
         
@@ -170,16 +170,16 @@ class PostureDetector:
         if abs(head_tilt) > self.thresholds['lying_head_angle']:
             return 'lying'
         
-        # 2. Check for standing (body proportions indicate standing)
-        if hip_knee_distance > self.thresholds['standing_body_ratio']:
-            return 'standing'
-        
-        # 3. Check for left/right head tilt (primary method for side sitting)
+        # 2. Check for left/right head tilt FIRST (prioritize head position over body position)
         if abs(head_tilt) > self.thresholds['lateral_lean_head']:
             if head_tilt < 0:
-                return 'left_sitting'
+                return 'left_sitting' 
             else:
                 return 'right_sitting'
+        
+        # 3. Check for standing (only if head is relatively centered)
+        if hip_knee_distance > self.thresholds['standing_body_ratio']:
+            return 'standing'
         
         # 4. Check for hunching (forward head posture)
         if head_forward > self.thresholds['hunching_head_angle']:
