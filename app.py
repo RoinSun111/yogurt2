@@ -491,29 +491,33 @@ def process_frame():
     if frame is None:
         return jsonify({'error': 'Invalid frame'}), 400
     
-    # Analyze posture
-    posture_results = posture_analyzer.analyze(frame)
-    is_present = posture_results['is_present']
-    posture = posture_results['posture']
-    angle = posture_results['angle']
+    # Analyze posture and activity
+    analysis = posture_analyzer.analyze(frame)
+    is_present = analysis['is_present']
+    posture = analysis['posture']
+    angle = analysis['angle']
     
-    # Calculate focus
-    is_focused = focus_calculator.is_focused(is_present, posture)
+    # Get activity state and head angle from analysis
+    activity_state = analysis.get('activity', {}).get('activity_state', 'unknown')
+    head_angle = analysis.get('activity', {}).get('head_angle', 0)
+    
+    # Calculate focus with enhanced logic
+    is_focused = focus_calculator.is_focused(is_present, posture, activity_state, head_angle)
     
     # Save posture status
     try:
         # Try to save with all new attributes (in case migration has been done)
-        if isinstance(posture_results, dict) and posture_results.get('posture_quality'):
+        if isinstance(analysis, dict) and analysis.get('posture_quality'):
             new_posture = models.PostureStatus(
                 posture=posture,
-                posture_quality=posture_results.get('posture_quality', 'unknown'),
+                posture_quality=analysis.get('posture_quality', 'unknown'),
                 angle=angle,
-                neck_angle=posture_results.get('neck_angle', 0.0),
-                shoulder_alignment=posture_results.get('shoulder_alignment', 0.0),
-                head_forward_position=posture_results.get('head_forward_position', 0.0),
-                spine_curvature=posture_results.get('spine_curvature', 0.0),
-                symmetry_score=posture_results.get('symmetry_score', 0.0),
-                feedback=posture_results.get('feedback', None),
+                neck_angle=analysis.get('neck_angle', 0.0),
+                shoulder_alignment=analysis.get('shoulder_alignment', 0.0),
+                head_forward_position=analysis.get('head_forward_position', 0.0),
+                spine_curvature=analysis.get('spine_curvature', 0.0),
+                symmetry_score=analysis.get('symmetry_score', 0.0),
+                feedback=analysis.get('feedback', None),
                 timestamp=datetime.now()
             )
         else:
@@ -547,39 +551,15 @@ def process_frame():
     )
     db.session.add(new_focus)
     
-    # Initialize default activity data based on presence status
-    if not is_present:
-        # User is not at the desk
-        activity_data = {
-            'activity_state': 'not_at_desk',
-            'working_substate': None,
-            'head_angle': 0.0,
-            'movement_level': 0.0,
-            'people_detected': 0,
-            'time_in_state': 0
-        }
-    else:
-        # User is present but analyze activity if pose landmarks are available
-        if posture_results.get('_raw_landmarks'):
-            # Get the raw MediaPipe pose landmarks from posture analyzer's results
-            pose_landmarks = posture_results.get('_raw_landmarks')
-            
-            # Analyze activity
-            activity_data = activity_analyzer.analyze(
-                image=frame, 
-                pose_landmarks=pose_landmarks,
-                face_detections=None  # Currently not implementing face detection
-            )
-        else:
-            # User is detected but no reliable pose landmarks
-            activity_data = {
-                'activity_state': 'unknown',
-                'working_substate': None,
-                'head_angle': 0.0,
-                'movement_level': 0.0,
-                'people_detected': 1,
-                'time_in_state': 0
-            }
+    # Get activity data from analysis (already calculated in posture_analyzer.analyze)
+    activity_data = analysis.get('activity', {
+        'activity_state': 'unknown',
+        'working_substate': None,
+        'head_angle': 0.0,
+        'movement_level': 0.0,
+        'people_detected': 1 if is_present else 0,
+        'time_in_state': 0
+    })
     
     # Save activity status
     new_activity = models.ActivityStatus(
@@ -645,15 +625,15 @@ def process_frame():
         'angle': float(angle),
         'is_present': bool(is_present),
         # Include advanced posture metrics if available
-        'posture_quality': posture_results.get('posture_quality', 'unknown'),
-        'neck_angle': float(posture_results.get('neck_angle', 0.0)),
-        'shoulder_alignment': float(posture_results.get('shoulder_alignment', 0.0)),
-        'head_forward_position': float(posture_results.get('head_forward_position', 0.0)),
-        'spine_curvature': float(posture_results.get('spine_curvature', 0.0)),
-        'symmetry_score': float(posture_results.get('symmetry_score', 0.0)),
-        'feedback': posture_results.get('feedback', None),
+        'posture_quality': analysis.get('posture_quality', 'unknown'),
+        'neck_angle': float(analysis.get('neck_angle', 0.0)),
+        'shoulder_alignment': float(analysis.get('shoulder_alignment', 0.0)),
+        'head_forward_position': float(analysis.get('head_forward_position', 0.0)),
+        'spine_curvature': float(analysis.get('spine_curvature', 0.0)),
+        'symmetry_score': float(analysis.get('symmetry_score', 0.0)),
+        'feedback': analysis.get('feedback', None),
         # Include pose landmarks for frontend visualization
-        'pose_landmarks': posture_results.get('pose_landmarks', []),
+        'pose_landmarks': analysis.get('pose_landmarks', []),
         'activity': {
             'activity_state': str(activity_data['activity_state']),
             'working_substate': activity_data['working_substate'],

@@ -724,69 +724,43 @@ class ActivityAnalyzer:
             
     def _update_state(self, head_angle, movement_level, people_detected):
         """
-        Update the current activity state based on metrics
+        Enhanced activity state detection focused on working vs distracted states
         """
         current_time = time.time()
         
-        # If coming back from "on_break", reset to appropriate state
-        if self.current_state == "on_break" and movement_level > self.movement_threshold:
-            if movement_level > 5.0:  # Significant movement
-                self._transition_state("working")
-            else:
-                self._transition_state("not_working")
-            return
+        # Simple and effective state logic:
+        # 1. Head angle < 30° + user present = working
+        # 2. Head angle > 30° = distracted/not working  
+        # 3. Multiple people = distracted by others
+        # 4. No people = on break
         
-        # Check for multiple people -> distracted by others
-        if people_detected > 1 and self.current_state != "distracted_by_others":
+        # User not present - on break
+        if people_detected == 0:
+            self._transition_state("on_break")
+            return
+            
+        # Multiple people detected - distracted by others  
+        if people_detected > 1:
             self._transition_state("distracted_by_others")
             return
-            
-        # Check head angle for distraction (head turned significantly)
-        if head_angle > 60 and self.current_state != "distracted_by_others":
-            if self.previous_timestamp and (current_time - self.previous_timestamp) > self.distraction_threshold:
-                self._transition_state("distracted_by_others")
+        
+        # Single person present - check head angle for focus
+        # Looking at screen (head angle < 30°) = working
+        if abs(head_angle) < 30:
+            # User is looking at screen, assume working
+            self._transition_state("working")
             return
-                
-        # State transitions based on current state
-        if self.current_state == "working":
-            # Transition to not working if no movement for threshold period
-            if movement_level < self.movement_threshold and len(self.hand_positions) == 0:
-                time_inactive = 0
-                if self.previous_timestamp:
-                    time_inactive = current_time - self.previous_timestamp
-                if time_inactive > self.working_to_not_working_threshold:
-                    self._transition_state("not_working")
-            
-        elif self.current_state == "not_working":
-            # Transition to working if movement detected
-            if movement_level > self.movement_threshold and len(self.hand_positions) > 2:
-                self._transition_state("working")
-            # Transition to idle if inactive for long period
-            elif movement_level < self.movement_threshold:
-                time_inactive = current_time - self.state_start_time
-                if time_inactive > self.not_working_to_idle_threshold:
-                    self._transition_state("idle")
-                    
-        elif self.current_state == "idle":
-            # Transition to working if significant movement detected
-            if movement_level > 2 * self.movement_threshold:
-                self._transition_state("working")
-            # Transition to not_working if some movement detected
-            elif movement_level > self.movement_threshold:
+        
+        # Looking away significantly (head angle >= 30°) = not working/distracted
+        else:
+            # Check if using phone or just distracted
+            if hasattr(self, 'current_substate') and self.current_substate == "phone_use":
+                # Phone use detected, stay in distracted state
                 self._transition_state("not_working")
-                
-        elif self.current_state == "distracted_by_others":
-            # Transition back to working if head angle returns to normal
-            # and no multiple people detected
-            if head_angle < 30 and people_detected <= 1 and movement_level > self.movement_threshold:
-                self._transition_state("working")
-            
-        # If state is still unknown, initialize based on current metrics
-        if self.current_state == "unknown":
-            if movement_level > self.movement_threshold:
-                self._transition_state("working")
             else:
+                # General distraction (looking away from screen)
                 self._transition_state("not_working")
+            return
     
     def _detect_working_activity(self, movement_level, head_angle):
         """
