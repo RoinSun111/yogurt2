@@ -41,7 +41,20 @@ class PostureAnalyzer:
             'right_eye_corner': 362,
             'left_mouth_corner': 61,
             'right_mouth_corner': 291,
-            'forehead': 10
+            'forehead': 10,
+            'left_temple': 162,
+            'right_temple': 389,
+            'nose_bridge': 6,
+            'left_eyebrow': 70,
+            'right_eyebrow': 300
+        }
+        
+        # Define regions for head lowering detection (hair vs eye area)
+        self.face_regions = {
+            'forehead_top': [10, 151, 9, 8],  # Top forehead area (hair region)
+            'forehead_mid': [151, 9, 8, 107], # Mid forehead 
+            'eye_region': [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246],  # Around eyes
+            'lower_face': [18, 175, 199, 200, 9, 10, 151, 377, 400, 378, 379, 365, 397, 288, 361, 323]  # Lower face
         }
         
         # Store historical posture data for trend analysis
@@ -55,8 +68,11 @@ class PostureAnalyzer:
         self.fair_threshold = 22.0     # Acceptable posture
         # Anything above fair_threshold is considered poor
         
-        # Threshold for neck angle (head tilt) - more forgiving
-        self.neck_angle_threshold = 25.0  # Degree threshold for neck angle
+        # Enhanced thresholds for head orientation detection
+        self.neck_angle_threshold = 20.0  # Degree threshold for neck angle (more sensitive)
+        self.head_rotation_threshold = 15.0  # Degree threshold for head yaw (left/right turn)
+        self.head_tilt_threshold = 12.0  # Degree threshold for head pitch (up/down)
+        self.forehead_eye_ratio_threshold = 1.8  # Ratio threshold for head lowering detection
         
         # Thresholds for shoulder alignment (more realistic for real-world conditions)
         self.shoulder_alignment_excellent = 0.90
@@ -128,11 +144,16 @@ class PostureAnalyzer:
             angle = self._calculate_posture_angle(landmarks)
             posture_data['angle'] = angle
             
-            # Enhanced neck angle calculation using Face Mesh if available
+            # Enhanced head orientation analysis using Face Mesh if available
+            head_orientation = {}
             if self.face_mesh_available and face_results and face_results.multi_face_landmarks:
-                neck_angle = self._calculate_precise_neck_angle_face_mesh(face_results.multi_face_landmarks[0], landmarks)
+                head_orientation = self._analyze_head_orientation_comprehensive(face_results.multi_face_landmarks[0], landmarks)
+                neck_angle = head_orientation.get('neck_angle', 0)
+                posture_data.update(head_orientation)
             else:
                 neck_angle = self._calculate_neck_angle(landmarks)
+                head_orientation = {'neck_angle': neck_angle, 'head_yaw': 0, 'head_pitch': 0, 'forehead_eye_ratio': 1.0}
+                posture_data.update(head_orientation)
             posture_data['neck_angle'] = neck_angle
             
             # Calculate shoulder alignment score
@@ -151,20 +172,20 @@ class PostureAnalyzer:
             symmetry_score = self._calculate_symmetry_score(landmarks)
             posture_data['symmetry_score'] = symmetry_score
             
-            # Classify posture based on angle
-            if angle < self.upright_threshold:
-                posture_data['posture'] = 'upright'
-            else:
-                posture_data['posture'] = 'slouched'
+            # Enhanced posture classification considering head orientation
+            posture_data['posture'] = self._classify_comprehensive_posture(
+                angle, head_orientation.get('head_yaw', 0), head_orientation.get('head_pitch', 0), 
+                head_orientation.get('forehead_eye_ratio', 1.0)
+            )
             
             # Determine posture quality (finer-grained classification)
-            posture_data['posture_quality'] = self._assess_posture_quality(
-                angle, neck_angle, shoulder_alignment, head_forward, spine_curvature, symmetry_score
+            posture_data['posture_quality'] = self._assess_posture_quality_enhanced(
+                angle, neck_angle, shoulder_alignment, head_forward, spine_curvature, symmetry_score, head_orientation
             )
             
             # Generate specific feedback based on metrics
-            posture_data['feedback'] = self._generate_posture_feedback(
-                angle, neck_angle, shoulder_alignment, head_forward, spine_curvature, symmetry_score
+            posture_data['feedback'] = self._generate_posture_feedback_enhanced(
+                angle, neck_angle, shoulder_alignment, head_forward, spine_curvature, symmetry_score, head_orientation
             )
             
             # Store posture data in history for trend analysis
@@ -438,6 +459,325 @@ class PostureAnalyzer:
         # If no specific issues, give positive reinforcement based on quality
         if not feedback:
             quality = self._assess_posture_quality(angle, neck_angle, shoulder_alignment, head_forward, spine_curvature, symmetry)
+            if quality == 'excellent':
+                feedback.append("Excellent posture! Keep it up.")
+            elif quality == 'good':
+                feedback.append("Good posture - minor adjustments could make it excellent.")
+            else:
+                feedback.append("Your posture could use some small improvements.")
+        
+        return " ".join(feedback)
+    
+    def _analyze_head_orientation_comprehensive(self, face_landmarks, pose_landmarks):
+        """
+        Comprehensive head orientation analysis using Face Mesh
+        Returns detailed head pose information including yaw, pitch, and face region analysis
+        """
+        try:
+            # Convert face landmarks to numpy array
+            face_points = np.array([[lm.x, lm.y, lm.z] for lm in face_landmarks.landmark])
+            
+            # Calculate head rotation (yaw - left/right turn)
+            head_yaw = self._calculate_head_yaw(face_points)
+            
+            # Calculate head pitch (up/down tilt) with improved sensitivity  
+            head_pitch = self._calculate_head_pitch_enhanced(face_points)
+            
+            # Calculate forehead to eye area ratio for head lowering detection
+            forehead_eye_ratio = self._calculate_forehead_eye_ratio(face_points)
+            
+            # Calculate precise neck angle using face mesh
+            neck_angle = self._calculate_precise_neck_angle_face_mesh(face_landmarks, pose_landmarks)
+            
+            return {
+                'head_yaw': head_yaw,
+                'head_pitch': head_pitch, 
+                'forehead_eye_ratio': forehead_eye_ratio,
+                'neck_angle': neck_angle,
+                'head_orientation_score': self._calculate_head_orientation_score(head_yaw, head_pitch, forehead_eye_ratio)
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error in comprehensive head orientation analysis: {e}")
+            return {
+                'head_yaw': 0,
+                'head_pitch': 0,
+                'forehead_eye_ratio': 1.0,
+                'neck_angle': 0,
+                'head_orientation_score': 1.0
+            }
+    
+    def _calculate_head_yaw(self, face_points):
+        """
+        Calculate head yaw (left/right rotation) using facial landmarks
+        """
+        try:
+            # Get key landmarks for yaw calculation
+            left_eye = face_points[self.face_landmarks_3d['left_eye_corner']]
+            right_eye = face_points[self.face_landmarks_3d['right_eye_corner']]
+            nose_tip = face_points[self.face_landmarks_3d['nose_tip']]
+            
+            # Calculate the vector from left eye to right eye
+            eye_vector = right_eye - left_eye
+            eye_center = (left_eye + right_eye) / 2
+            
+            # Calculate nose offset from eye center line
+            nose_offset = nose_tip - eye_center
+            
+            # Project onto horizontal plane and calculate angle
+            eye_vector_2d = eye_vector[:2]  # x, y only
+            nose_offset_2d = nose_offset[:2]
+            
+            # Calculate yaw angle using cross product
+            cross_product = eye_vector_2d[0] * nose_offset_2d[1] - eye_vector_2d[1] * nose_offset_2d[0]
+            eye_vector_length = np.linalg.norm(eye_vector_2d)
+            nose_offset_length = np.linalg.norm(nose_offset_2d)
+            
+            if eye_vector_length > 0 and nose_offset_length > 0:
+                sin_yaw = cross_product / (eye_vector_length * nose_offset_length)
+                sin_yaw = np.clip(sin_yaw, -1.0, 1.0)
+                yaw_rad = np.arcsin(sin_yaw)
+                yaw_deg = np.degrees(yaw_rad)
+                return float(yaw_deg)
+            
+            return 0.0
+            
+        except Exception as e:
+            self.logger.error(f"Error calculating head yaw: {e}")
+            return 0.0
+    
+    def _calculate_head_pitch_enhanced(self, face_points):
+        """
+        Calculate head pitch (up/down tilt) with enhanced sensitivity
+        """
+        try:
+            # Get key landmarks for pitch calculation
+            nose_tip = face_points[self.face_landmarks_3d['nose_tip']]
+            nose_bridge = face_points[self.face_landmarks_3d['nose_bridge']]
+            forehead = face_points[self.face_landmarks_3d['forehead']]
+            chin = face_points[self.face_landmarks_3d['chin']]
+            
+            # Calculate face vertical vector
+            face_vertical = chin - forehead
+            
+            # Calculate the angle of the face relative to vertical
+            # Positive pitch = head tilted up, negative = head tilted down
+            vertical_ref = np.array([0, 1, 0])  # Downward pointing vector
+            
+            face_vertical_norm = face_vertical / np.linalg.norm(face_vertical)
+            
+            dot_product = np.dot(face_vertical_norm, vertical_ref)
+            dot_product = np.clip(dot_product, -1.0, 1.0)
+            
+            pitch_rad = np.arccos(dot_product)
+            pitch_deg = np.degrees(pitch_rad)
+            
+            # Adjust for head orientation (negative if head tilted back)
+            if face_vertical[1] < 0:  # Head tilted back
+                pitch_deg = -pitch_deg
+                
+            return float(pitch_deg - 90)  # Normalize to 0 = neutral
+            
+        except Exception as e:
+            self.logger.error(f"Error calculating head pitch: {e}")
+            return 0.0
+    
+    def _calculate_forehead_eye_ratio(self, face_points):
+        """
+        Calculate forehead to eye area ratio for head lowering detection
+        Higher ratio indicates head is lowered (more forehead visible, less eye area)
+        """
+        try:
+            # Calculate forehead area (approximate)
+            forehead_landmarks = [10, 151, 9, 8, 107]
+            forehead_points = face_points[forehead_landmarks]
+            forehead_area = self._calculate_polygon_area(forehead_points[:, :2])  # Use x,y only
+            
+            # Calculate eye region area (approximate)
+            eye_landmarks = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246]
+            eye_points = face_points[eye_landmarks]
+            eye_area = self._calculate_polygon_area(eye_points[:, :2])
+            
+            # Calculate ratio
+            if eye_area > 0:
+                ratio = forehead_area / eye_area
+                return float(ratio)
+            
+            return 1.0
+            
+        except Exception as e:
+            self.logger.error(f"Error calculating forehead/eye ratio: {e}")
+            return 1.0
+    
+    def _calculate_polygon_area(self, points):
+        """
+        Calculate area of a polygon using shoelace formula
+        """
+        try:
+            n = len(points)
+            if n < 3:
+                return 0.0
+                
+            area = 0.0
+            for i in range(n):
+                j = (i + 1) % n
+                area += points[i][0] * points[j][1]
+                area -= points[j][0] * points[i][1]
+            
+            return abs(area) / 2.0
+            
+        except Exception:
+            return 0.0
+    
+    def _calculate_head_orientation_score(self, yaw, pitch, forehead_eye_ratio):
+        """
+        Calculate overall head orientation score (0-1, where 1 is optimal)
+        """
+        score = 1.0
+        
+        # Penalize for head rotation (yaw)
+        if abs(yaw) > self.head_rotation_threshold:
+            score -= min(0.4, abs(yaw) / 45.0)  # Max penalty 0.4 for 45° rotation
+        
+        # Penalize for head tilt (pitch)
+        if abs(pitch) > self.head_tilt_threshold:
+            score -= min(0.3, abs(pitch) / 30.0)  # Max penalty 0.3 for 30° tilt
+        
+        # Penalize for head lowering (forehead/eye ratio)
+        if forehead_eye_ratio > self.forehead_eye_ratio_threshold:
+            score -= min(0.3, (forehead_eye_ratio - self.forehead_eye_ratio_threshold) / 2.0)
+        
+        return max(0.0, score)
+    
+    def _classify_comprehensive_posture(self, back_angle, head_yaw, head_pitch, forehead_eye_ratio):
+        """
+        Comprehensive posture classification considering back angle and head orientation
+        """
+        # Check for head-related posture issues first
+        if abs(head_yaw) > self.head_rotation_threshold:
+            return 'head_turned'
+        
+        if abs(head_pitch) > self.head_tilt_threshold or forehead_eye_ratio > self.forehead_eye_ratio_threshold:
+            return 'head_down'
+        
+        # Then check back posture
+        if back_angle < self.upright_threshold:
+            return 'upright'
+        else:
+            return 'slouched'
+    
+    def _assess_posture_quality_enhanced(self, angle, neck_angle, shoulder_alignment, head_forward, spine_curvature, symmetry, head_orientation):
+        """
+        Enhanced posture quality assessment considering head orientation
+        """
+        # Start with base score
+        score = 100
+        
+        # Deduct points based on back angle
+        if angle <= self.excellent_threshold:
+            pass
+        elif angle <= self.good_threshold:
+            score -= 5
+        elif angle <= self.fair_threshold:
+            score -= 12
+        else:
+            score -= 25
+        
+        # Enhanced head orientation penalties
+        head_yaw = head_orientation.get('head_yaw', 0)
+        head_pitch = head_orientation.get('head_pitch', 0)
+        forehead_eye_ratio = head_orientation.get('forehead_eye_ratio', 1.0)
+        
+        # Penalize head rotation (left/right)
+        if abs(head_yaw) > self.head_rotation_threshold:
+            score -= min(20, int(abs(head_yaw) * 1.5))
+        
+        # Penalize head tilt (up/down)
+        if abs(head_pitch) > self.head_tilt_threshold:
+            score -= min(15, int(abs(head_pitch) * 1.2))
+        
+        # Penalize head lowering
+        if forehead_eye_ratio > self.forehead_eye_ratio_threshold:
+            score -= min(18, int((forehead_eye_ratio - self.forehead_eye_ratio_threshold) * 15))
+        
+        # Existing penalties (reduced impact since head orientation is more important)
+        if neck_angle > self.neck_angle_threshold:
+            score -= min(15, int((neck_angle - self.neck_angle_threshold) * 0.8))
+        
+        if shoulder_alignment < self.shoulder_alignment_fair:
+            score -= min(12, int((1 - shoulder_alignment) * 20))
+        
+        if head_forward > 0.15:
+            score -= min(10, int(head_forward * 40))
+        
+        if spine_curvature > 155:
+            score -= 3
+        elif spine_curvature > 145:
+            score -= 8
+        elif spine_curvature > 135:
+            score -= 15
+        
+        if symmetry < 0.7:
+            score -= min(10, int((1 - symmetry) * 25))
+        
+        # Map score to quality categories (adjusted for stricter head orientation)
+        if score >= 75:
+            return 'excellent'
+        elif score >= 55:
+            return 'good'
+        elif score >= 35:
+            return 'fair'
+        else:
+            return 'poor'
+    
+    def _generate_posture_feedback_enhanced(self, angle, neck_angle, shoulder_alignment, head_forward, spine_curvature, symmetry, head_orientation):
+        """
+        Enhanced feedback generation considering head orientation
+        """
+        feedback = []
+        
+        head_yaw = head_orientation.get('head_yaw', 0)
+        head_pitch = head_orientation.get('head_pitch', 0)
+        forehead_eye_ratio = head_orientation.get('forehead_eye_ratio', 1.0)
+        
+        # Priority feedback for head orientation issues (concise)
+        if abs(head_yaw) > self.head_rotation_threshold:
+            if head_yaw > 0:
+                feedback.append("Turn head back to center - looking too far right.")
+            else:
+                feedback.append("Turn head back to center - looking too far left.")
+        
+        if abs(head_pitch) > self.head_tilt_threshold:
+            if head_pitch > 0:
+                feedback.append("Lift head up - looking down too much.")
+            else:
+                feedback.append("Lower head slightly - tilting back too far.")
+        
+        if forehead_eye_ratio > self.forehead_eye_ratio_threshold:
+            feedback.append("Raise head - looking down at screen.")
+        
+        # Existing feedback for other posture issues (shortened)
+        if angle > self.fair_threshold:
+            feedback.append("Sit up straighter.")
+        
+        if neck_angle > self.neck_angle_threshold:
+            feedback.append("Align head with shoulders.")
+        
+        if shoulder_alignment < self.shoulder_alignment_fair:
+            feedback.append("Level shoulders.")
+        
+        if head_forward > 0.1:
+            feedback.append("Don't lean forward toward screen.")
+        
+        if spine_curvature < 150:
+            feedback.append("Maintain natural spine curve.")
+        
+        if symmetry < 0.8:
+            feedback.append("Balance posture evenly.")
+        
+        # Positive feedback if no major issues
+        if not feedback:
+            quality = self._assess_posture_quality_enhanced(angle, neck_angle, shoulder_alignment, head_forward, spine_curvature, symmetry, head_orientation)
             if quality == 'excellent':
                 feedback.append("Excellent posture! Keep it up.")
             elif quality == 'good':
