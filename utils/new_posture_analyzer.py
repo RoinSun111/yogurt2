@@ -7,7 +7,7 @@ import logging
 import numpy as np
 import mediapipe as mp
 from datetime import datetime, timedelta
-from .working_posture_detector import WorkingPostureDetector
+from .working_posture_detector import PostureAnalyzer as WorkingPostureDetector
 
 class PostureAnalyzer:
     """
@@ -81,10 +81,25 @@ class PostureAnalyzer:
                 }
             
             # Use Working Posture Detector
-            posture_result = self.detector.detect_posture(results.pose_landmarks.landmark)
+            posture_result = self.detector.analyze(image_rgb)
+            
+            # Handle the case where posture_result is a dictionary
+            if posture_result['posture'] == 'unknown':
+                return {
+                    'posture': 'unknown',
+                    'posture_quality': 'unknown',
+                    'angle': 160,
+                    'neck_angle': 0,
+                    'shoulder_alignment': 0,
+                    'head_forward_position': 0,
+                    'spine_curvature': 180,
+                    'symmetry_score': 0,
+                    'feedback': 'No person detected in frame',
+                    'is_present': False
+                }
             
             # Determine quality based on spine angle
-            quality = self._determine_quality(posture_result.spine_angle)
+            quality = self._determine_quality(posture_result['spine_angle'])
             
             # Calculate additional metrics for compatibility
             shoulder_alignment = self._calculate_shoulder_alignment(results.pose_landmarks.landmark)
@@ -92,27 +107,30 @@ class PostureAnalyzer:
             head_forward = self._calculate_head_forward(results.pose_landmarks.landmark)
             
             # Convert spine angle to curvature (180 - angle for compatibility)
-            spine_curvature = 180 - posture_result.spine_angle
+            spine_curvature = 180 - posture_result['spine_angle']
+            
+            # Generate feedback based on posture
+            feedback = self._generate_feedback(posture_result['posture'], posture_result['spine_angle'])
             
             result = {
-                'posture': posture_result.posture_type,
+                'posture': posture_result['posture'],
                 'posture_quality': quality,
-                'angle': posture_result.spine_angle,
+                'angle': posture_result['spine_angle'],
                 'neck_angle': neck_angle,
                 'shoulder_alignment': shoulder_alignment,
                 'head_forward_position': head_forward,
                 'spine_curvature': spine_curvature,
                 'symmetry_score': shoulder_alignment,  # Use shoulder alignment as symmetry
-                'feedback': posture_result.feedback,
+                'feedback': feedback,
                 'is_present': True
             }
             
             # Add to history for trend tracking
             self.posture_history.append({
                 'timestamp': datetime.now(),
-                'posture': posture_result.posture_type,
+                'posture': posture_result['posture'],
                 'posture_quality': quality,
-                'angle': posture_result.spine_angle
+                'angle': posture_result['spine_angle']
             })
             
             # Keep only last 2 hours of history
@@ -187,14 +205,29 @@ class PostureAnalyzer:
             left_shoulder = landmarks[11]
             right_shoulder = landmarks[12]
             
+            # Get shoulder midpoint
             shoulder_mid_x = (left_shoulder.x + right_shoulder.x) / 2
             
-            # Forward position relative to shoulders
-            forward_distance = nose.x - shoulder_mid_x
-            
-            return abs(forward_distance)
+            # Calculate forward distance
+            forward_distance = abs(nose.x - shoulder_mid_x)
+            return forward_distance
         except:
             return 0
+    
+    def _generate_feedback(self, posture: str, spine_angle: float) -> str:
+        """Generate feedback based on posture type and spine angle"""
+        feedback_map = {
+            'sitting_straight': 'Excellent sitting posture! Keep it up.',
+            'hunching_over': 'Try to straighten your back and shoulders.',
+            'lying': 'Lying position detected. Consider sitting up for better work posture.',
+            'leaning_forward': 'Leaning forward detected. Try to sit back and align your spine.',
+            'left_sitting': 'Leaning to the left. Try to center yourself in your chair.',
+            'right_sitting': 'Leaning to the right. Try to center yourself in your chair.',
+            'standing': 'Good standing posture!',
+            'unknown': 'Unable to detect posture clearly.'
+        }
+        
+        return feedback_map.get(posture, 'Posture detected, keep monitoring your position.')
     
     def get_posture_trend(self, minutes=60):
         """
