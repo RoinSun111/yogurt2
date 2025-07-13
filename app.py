@@ -31,7 +31,7 @@ db.init_app(app)
 
 # Import utils after app initialization
 from utils.camera_processor import CameraProcessor
-from utils.new_posture_analyzer import PostureAnalyzer
+from utils.posture_analyzer import PostureAnalyzer
 from utils.focus_calculator import FocusCalculator
 from utils.activity_analyzer import ActivityAnalyzer
 
