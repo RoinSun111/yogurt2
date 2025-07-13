@@ -20,20 +20,47 @@ class PostureDetector:
         self.logger = logging.getLogger(__name__)
         self.logger.info("PostureDetector initialized for real-time detection")
         
-        # MediaPipe pose setup optimized for real-time processing
+        # MediaPipe pose setup with custom model integration
         self.mp_pose = mp.solutions.pose
-        self.pose = self.mp_pose.Pose(
-            static_image_mode=False,
-            model_complexity=1,
-            enable_segmentation=False,
-            min_detection_confidence=0.5,  # Lower threshold for better detection
-            min_tracking_confidence=0.3    # Lower for continuous tracking
-        )
         
-        # Refined thresholds for stable detection (shoulder-based hunching)
+        # Try to use the provided pose landmarker model
+        model_path = "attached_assets/pose_landmarker_lite_1752403272406.task"
+        try:
+            import os
+            if os.path.exists(model_path):
+                # Use MediaPipe tasks for more accurate pose detection
+                from mediapipe.tasks import python
+                from mediapipe.tasks.python import vision
+                
+                base_options = python.BaseOptions(model_asset_path=model_path)
+                options = vision.PoseLandmarkerOptions(
+                    base_options=base_options,
+                    output_segmentation_masks=False,
+                    min_pose_detection_confidence=0.5,
+                    min_pose_presence_confidence=0.5,
+                    min_tracking_confidence=0.3
+                )
+                self.pose_landmarker = vision.PoseLandmarker.create_from_options(options)
+                self.use_custom_model = True
+                self.logger.info(f"Using custom MediaPipe pose landmarker model: {model_path}")
+            else:
+                raise FileNotFoundError("Custom model not found")
+                
+        except Exception as e:
+            self.logger.warning(f"Could not load custom model ({e}), falling back to standard MediaPipe Pose")
+            self.pose = self.mp_pose.Pose(
+                static_image_mode=False,
+                model_complexity=1,
+                enable_segmentation=False,
+                min_detection_confidence=0.5,
+                min_tracking_confidence=0.3
+            )
+            self.use_custom_model = False
+        
+        # Refined thresholds for stable detection (enhanced hunching detection)
         self.thresholds = {
             'lying_head_angle': 75,           # head-shoulder angle > 75° = lying 
-            'hunching_shoulder_angle': 30,    # shoulder angle deviation > 30° = hunching (curved shoulders)
+            'hunching_indicator': 35,         # combined shoulder + head metric > 35 = hunching
             'lean_forward_head': 20,          # head angle > 20° forward = leaning forward
             'lateral_lean_head': 15,          # head tilt > 15° = side sitting
             'standing_spine_angle': 25        # spine angle < 25° = standing
@@ -54,17 +81,30 @@ class PostureDetector:
     
     def detect_posture(self, image):
         """
-        Detect posture from RGB image
+        Detect posture from RGB image using either custom or standard MediaPipe model
         Returns: dict with posture type, angles, confidence, and feedback
         """
         try:
-            # Process image with MediaPipe
-            results = self.pose.process(image)
-            
-            if not results.pose_landmarks:
-                return self._no_person_detected()
-            
-            landmarks = results.pose_landmarks.landmark
+            # Process image with appropriate MediaPipe model
+            if hasattr(self, 'use_custom_model') and self.use_custom_model:
+                # Use custom pose landmarker model for better accuracy
+                import mediapipe as mp
+                mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
+                detection_result = self.pose_landmarker.detect(mp_image)
+                
+                if not detection_result.pose_landmarks:
+                    return self._no_person_detected()
+                
+                # Extract landmarks from first detected pose
+                landmarks = detection_result.pose_landmarks[0]
+            else:
+                # Use standard MediaPipe Pose
+                results = self.pose.process(image)
+                
+                if not results.pose_landmarks:
+                    return self._no_person_detected()
+                
+                landmarks = results.pose_landmarks.landmark
             
             # Calculate key metrics
             metrics = self._calculate_metrics(landmarks)
@@ -104,10 +144,17 @@ class PostureDetector:
     def _calculate_metrics(self, landmarks):
         """Calculate posture metrics using only head and shoulder landmarks"""
         
-        # Get key landmark positions (no hip/knee needed)
-        nose = np.array([landmarks[self.NOSE].x, landmarks[self.NOSE].y])
-        left_shoulder = np.array([landmarks[self.LEFT_SHOULDER].x, landmarks[self.LEFT_SHOULDER].y])
-        right_shoulder = np.array([landmarks[self.RIGHT_SHOULDER].x, landmarks[self.RIGHT_SHOULDER].y])
+        # Get key landmark positions (handle both custom and standard model formats)
+        if hasattr(self, 'use_custom_model') and self.use_custom_model:
+            # Custom model returns landmarks as list
+            nose = np.array([landmarks[self.NOSE].x, landmarks[self.NOSE].y])
+            left_shoulder = np.array([landmarks[self.LEFT_SHOULDER].x, landmarks[self.LEFT_SHOULDER].y])
+            right_shoulder = np.array([landmarks[self.RIGHT_SHOULDER].x, landmarks[self.RIGHT_SHOULDER].y])
+        else:
+            # Standard model returns landmarks with .landmark attribute
+            nose = np.array([landmarks[self.NOSE].x, landmarks[self.NOSE].y])
+            left_shoulder = np.array([landmarks[self.LEFT_SHOULDER].x, landmarks[self.LEFT_SHOULDER].y])
+            right_shoulder = np.array([landmarks[self.RIGHT_SHOULDER].x, landmarks[self.RIGHT_SHOULDER].y])
         
         # Calculate shoulder midpoint
         shoulder_mid = (left_shoulder + right_shoulder) / 2
@@ -116,8 +163,14 @@ class PostureDetector:
         shoulder_vector = right_shoulder - left_shoulder
         shoulder_angle = abs(math.degrees(math.atan2(shoulder_vector[1], shoulder_vector[0])))
         
-        # 1b. Shoulder curvature (how much shoulders deviate from straight line)
+        # 1b. Shoulder curvature (detect hunching by shoulder alignment and head position)
+        # When hunching, shoulders curve forward creating asymmetry and head moves forward
         shoulder_curvature = abs(180 - shoulder_angle)  # Deviation from straight horizontal line
+        
+        # Enhanced hunching detection: combine shoulder angle with head forward position
+        # When hunching, the shoulder line tilts AND head moves significantly forward
+        head_forward_distance = abs(nose[1] - shoulder_mid[1])  # Vertical distance indicates forward lean
+        hunching_indicator = shoulder_curvature + (head_forward_distance * 100)  # Combined metric
         
         # 2. Head to shoulder angle (primary metric for posture detection)
         head_shoulder_vector = nose - shoulder_mid
@@ -144,6 +197,7 @@ class PostureDetector:
         return {
             'spine_angle': shoulder_angle,           # Shoulder line angle
             'shoulder_curvature': shoulder_curvature, # Key metric for hunching detection
+            'hunching_indicator': hunching_indicator, # Enhanced hunching metric
             'head_tilt_angle': head_tilt_angle,      # Key metric for left/right detection
             'head_forward_angle': head_forward_angle, # Key metric for forward lean
             'neck_angle': neck_angle,
@@ -161,7 +215,8 @@ class PostureDetector:
         head_forward = metrics['head_forward_angle']
         
         # Debug logging for angle analysis
-        self.logger.debug(f"Angles - Shoulder: {shoulder_angle:.1f}°, Curvature: {shoulder_curvature:.1f}°, Head Tilt: {head_tilt:.1f}°, Head Forward: {head_forward:.1f}°")
+        hunching_indicator = metrics['hunching_indicator']
+        self.logger.debug(f"Angles - Shoulder: {shoulder_angle:.1f}°, Curvature: {shoulder_curvature:.1f}°, Hunching: {hunching_indicator:.1f}, Head Tilt: {head_tilt:.1f}°, Head Forward: {head_forward:.1f}°")
         
         # 1. Check for lying down (head very tilted indicates lying)
         if abs(head_tilt) > self.thresholds['lying_head_angle']:
@@ -178,8 +233,9 @@ class PostureDetector:
         if shoulder_angle < self.thresholds['standing_spine_angle']:
             return 'standing'
         
-        # 4. Check for hunching (curved shoulders - key difference from sitting straight)
-        if shoulder_curvature > self.thresholds['hunching_shoulder_angle']:
+        # 4. Check for hunching (enhanced detection using combined metric)
+        hunching_indicator = metrics['hunching_indicator']
+        if hunching_indicator > self.thresholds['hunching_indicator']:
             return 'hunching_over'
         
         # 5. Check for leaning forward (moderate forward head angle)
