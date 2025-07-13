@@ -30,14 +30,18 @@ class PostureDetector:
             min_tracking_confidence=0.3    # Lower for continuous tracking
         )
         
-        # Refined thresholds based on head-to-shoulder angle analysis
+        # Refined thresholds for stable detection
         self.thresholds = {
-            'lying_head_angle': 70,       # head-shoulder angle > 70° = lying
-            'hunching_head_angle': 25,    # head forward angle > 25° = hunching
-            'lean_forward_head': 15,      # head angle > 15° forward = leaning forward
-            'lateral_lean_head': 10,      # head tilt > 10° = side sitting (more sensitive)
+            'lying_head_angle': 75,       # head-shoulder angle > 75° = lying (less sensitive)
+            'hunching_head_angle': 30,    # head forward angle > 30° = hunching (less sensitive)
+            'lean_forward_head': 20,      # head angle > 20° forward = leaning forward (less sensitive)
+            'lateral_lean_head': 15,      # head tilt > 15° = side sitting (less sensitive)
             'standing_body_ratio': 0.12   # body ratio indicator for standing
         }
+        
+        # Stability tracking for consistent detection
+        self.recent_detections = []
+        self.stability_window = 3  # Number of frames to consider for stability
         
         # MediaPipe landmark indices
         self.NOSE = 0
@@ -66,7 +70,10 @@ class PostureDetector:
             metrics = self._calculate_metrics(landmarks)
             
             # Classify posture based on metrics
-            posture_type = self._classify_posture(metrics)
+            raw_posture = self._classify_posture(metrics)
+            
+            # Apply stability filtering
+            posture_type = self._apply_stability_filter(raw_posture)
             
             # Generate feedback
             feedback = self._generate_feedback(posture_type, metrics)
@@ -247,6 +254,36 @@ class PostureDetector:
         }
         
         return feedback_map.get(posture_type, 'Monitor your posture regularly.')
+    
+    def _apply_stability_filter(self, raw_posture):
+        """Apply stability filtering to reduce rapid posture changes"""
+        
+        # Add current detection to recent detections
+        self.recent_detections.append(raw_posture)
+        
+        # Keep only the last N detections
+        if len(self.recent_detections) > self.stability_window:
+            self.recent_detections.pop(0)
+        
+        # If we don't have enough data yet, return the raw detection
+        if len(self.recent_detections) < self.stability_window:
+            return raw_posture
+        
+        # Count occurrences of each posture in recent detections
+        posture_counts = {}
+        for posture in self.recent_detections:
+            posture_counts[posture] = posture_counts.get(posture, 0) + 1
+        
+        # Find the most common posture
+        most_common_posture = max(posture_counts, key=posture_counts.get)
+        most_common_count = posture_counts[most_common_posture]
+        
+        # Require majority consensus for posture change
+        if most_common_count >= 2:  # At least 2 out of 3 frames agree
+            return most_common_posture
+        else:
+            # No consensus, return the previous stable detection or current
+            return self.recent_detections[-2] if len(self.recent_detections) >= 2 else raw_posture
     
     def _no_person_detected(self):
         """Return response when no person is detected"""
