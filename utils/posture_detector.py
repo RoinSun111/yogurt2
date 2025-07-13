@@ -57,11 +57,11 @@ class PostureDetector:
             )
             self.use_custom_model = False
         
-        # Refined thresholds for stable detection (enhanced hunching detection)
+        # Refined thresholds for stable detection (more accurate for normal sitting)
         self.thresholds = {
             'lying_head_angle': 75,           # head-shoulder angle > 75° = lying 
-            'hunching_indicator': 35,         # combined shoulder + head metric > 35 = hunching
-            'lean_forward_head': 20,          # head angle > 20° forward = leaning forward
+            'hunching_indicator': 45,         # combined shoulder + head metric > 45 = hunching (increased threshold)
+            'lean_forward_head': 15,          # head angle > 15° forward = leaning forward (reduced from 20°)
             'lateral_lean_head': 15,          # head tilt > 15° = side sitting
             'standing_spine_angle': 25        # spine angle < 25° = standing
         }
@@ -170,7 +170,10 @@ class PostureDetector:
         # Enhanced hunching detection: combine shoulder angle with head forward position
         # When hunching, the shoulder line tilts AND head moves significantly forward
         head_forward_distance = abs(nose[1] - shoulder_mid[1])  # Vertical distance indicates forward lean
-        hunching_indicator = shoulder_curvature + (head_forward_distance * 100)  # Combined metric
+        
+        # More conservative hunching detection - only trigger on severe cases
+        # Require both significant shoulder curvature AND head forward position
+        hunching_indicator = (shoulder_curvature * 1.5) + (head_forward_distance * 80)  # Reduced sensitivity
         
         # 2. Head to shoulder angle (primary metric for posture detection)
         head_shoulder_vector = nose - shoulder_mid
@@ -238,8 +241,9 @@ class PostureDetector:
         if hunching_indicator > self.thresholds['hunching_indicator']:
             return 'hunching_over'
         
-        # 5. Check for leaning forward (moderate forward head angle)
-        if head_forward > self.thresholds['lean_forward_head']:
+        # 5. Check for leaning forward (be more restrictive - require both head forward AND shoulder curvature)
+        # The head forward angle can be high even for normal sitting, so add shoulder curvature requirement
+        if head_forward > 25 and shoulder_curvature > 4.0:  # More restrictive: need both indicators
             return 'leaning_forward'
         
         # 6. Default to sitting straight (good alignment)
