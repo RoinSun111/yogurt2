@@ -30,13 +30,13 @@ class PostureDetector:
             min_tracking_confidence=0.3    # Lower for continuous tracking
         )
         
-        # Refined thresholds for stable detection
+        # Refined thresholds for stable detection (hip logic removed)
         self.thresholds = {
-            'lying_head_angle': 75,       # head-shoulder angle > 75° = lying (less sensitive)
-            'hunching_head_angle': 30,    # head forward angle > 30° = hunching (less sensitive)
-            'lean_forward_head': 20,      # head angle > 20° forward = leaning forward (less sensitive)
-            'lateral_lean_head': 15,      # head tilt > 15° = side sitting (less sensitive)
-            'standing_body_ratio': 0.12   # body ratio indicator for standing
+            'lying_head_angle': 75,       # head-shoulder angle > 75° = lying 
+            'hunching_head_angle': 30,    # head forward angle > 30° = hunching
+            'lean_forward_head': 20,      # head angle > 20° forward = leaning forward
+            'lateral_lean_head': 15,      # head tilt > 15° = side sitting
+            'standing_spine_angle': 25    # spine angle < 25° = standing (new logic)
         }
         
         # Stability tracking for consistent detection
@@ -102,25 +102,19 @@ class PostureDetector:
             return self._error_response()
     
     def _calculate_metrics(self, landmarks):
-        """Calculate all posture-related metrics from landmarks"""
+        """Calculate posture metrics using only head and shoulder landmarks"""
         
-        # Get key landmark positions
+        # Get key landmark positions (no hip/knee needed)
         nose = np.array([landmarks[self.NOSE].x, landmarks[self.NOSE].y])
         left_shoulder = np.array([landmarks[self.LEFT_SHOULDER].x, landmarks[self.LEFT_SHOULDER].y])
         right_shoulder = np.array([landmarks[self.RIGHT_SHOULDER].x, landmarks[self.RIGHT_SHOULDER].y])
-        left_hip = np.array([landmarks[self.LEFT_HIP].x, landmarks[self.LEFT_HIP].y])
-        right_hip = np.array([landmarks[self.RIGHT_HIP].x, landmarks[self.RIGHT_HIP].y])
-        left_knee = np.array([landmarks[self.LEFT_KNEE].x, landmarks[self.LEFT_KNEE].y])
-        right_knee = np.array([landmarks[self.RIGHT_KNEE].x, landmarks[self.RIGHT_KNEE].y])
         
-        # Calculate midpoints
+        # Calculate shoulder midpoint
         shoulder_mid = (left_shoulder + right_shoulder) / 2
-        hip_mid = (left_hip + right_hip) / 2
-        knee_mid = (left_knee + right_knee) / 2
         
-        # 1. Spine angle (shoulder-hip line vs vertical)
-        spine_vector = shoulder_mid - hip_mid
-        spine_angle = abs(math.degrees(math.atan2(abs(spine_vector[0]), abs(spine_vector[1]))))
+        # 1. Shoulder angle (shoulder line vs horizontal - indicates standing/sitting)
+        shoulder_vector = right_shoulder - left_shoulder
+        shoulder_angle = abs(math.degrees(math.atan2(shoulder_vector[1], shoulder_vector[0])))
         
         # 2. Head to shoulder angle (primary metric for posture detection)
         head_shoulder_vector = nose - shoulder_mid
@@ -134,58 +128,49 @@ class PostureDetector:
         neck_vector = nose - shoulder_mid
         neck_angle = abs(math.degrees(math.atan2(neck_vector[0], neck_vector[1] + 0.001)))
         
-        # 4. Shoulder alignment (how level shoulders are)
+        # 5. Shoulder alignment (how level shoulders are)
         shoulder_diff = abs(left_shoulder[1] - right_shoulder[1])
         shoulder_alignment = max(0, 1 - (shoulder_diff * 10))  # 0-1 score
         
-        # 5. Head forward position
+        # 6. Head forward position
         head_forward = abs(nose[0] - shoulder_mid[0])
         
-        # 6. Lateral lean (side-to-side position)
-        lateral_lean = hip_mid[0] - shoulder_mid[0]
-        
-        # 7. Standing indicator (hip-knee distance)
-        hip_knee_distance = abs(hip_mid[1] - knee_mid[1])
-        
-        # 8. Confidence based on landmark visibility and consistency
+        # 7. Confidence based on landmark visibility and consistency
         confidence = self._calculate_confidence(landmarks)
         
         return {
-            'spine_angle': spine_angle,
+            'spine_angle': shoulder_angle,           # Now based on shoulder line
             'head_tilt_angle': head_tilt_angle,      # Key metric for left/right detection
             'head_forward_angle': head_forward_angle, # Key metric for forward lean
             'neck_angle': neck_angle,
             'shoulder_alignment': shoulder_alignment,
             'head_forward': head_forward,
-            'lateral_lean': lateral_lean,
-            'hip_knee_distance': hip_knee_distance,
             'confidence': confidence
         }
     
     def _classify_posture(self, metrics):
-        """Classify posture using head-to-shoulder angle analysis"""
+        """Classify posture using head-to-shoulder angle analysis (no hip logic)"""
         
-        spine_angle = metrics['spine_angle']
+        shoulder_angle = metrics['spine_angle']  # Now represents shoulder line angle
         head_tilt = metrics['head_tilt_angle']
         head_forward = metrics['head_forward_angle']
-        hip_knee_distance = metrics['hip_knee_distance']
         
-        # Debug logging for angle analysis
-        self.logger.debug(f"Angles - Spine: {spine_angle:.1f}°, Head Tilt: {head_tilt:.1f}°, Head Forward: {head_forward:.1f}°, Hip-Knee: {hip_knee_distance:.3f}")
+        # Debug logging for angle analysis (removed hip-knee)
+        self.logger.debug(f"Angles - Shoulder: {shoulder_angle:.1f}°, Head Tilt: {head_tilt:.1f}°, Head Forward: {head_forward:.1f}°")
         
         # 1. Check for lying down (head very tilted indicates lying)
         if abs(head_tilt) > self.thresholds['lying_head_angle']:
             return 'lying'
         
-        # 2. Check for left/right head tilt FIRST (prioritize head position over body position)
+        # 2. Check for left/right head tilt FIRST (prioritize head position)
         if abs(head_tilt) > self.thresholds['lateral_lean_head']:
             if head_tilt < 0:
                 return 'left_sitting' 
             else:
                 return 'right_sitting'
         
-        # 3. Check for standing (only if head is relatively centered)
-        if hip_knee_distance > self.thresholds['standing_body_ratio']:
+        # 3. Check for standing (based on shoulder line angle)
+        if shoulder_angle < self.thresholds['standing_spine_angle']:
             return 'standing'
         
         # 4. Check for hunching (forward head posture)
@@ -200,11 +185,10 @@ class PostureDetector:
         return 'sitting_straight'
     
     def _calculate_confidence(self, landmarks):
-        """Calculate confidence score based on landmark quality"""
+        """Calculate confidence score based on landmark quality (head/shoulders only)"""
         try:
-            # Check visibility of key landmarks
-            key_landmarks = [self.NOSE, self.LEFT_SHOULDER, self.RIGHT_SHOULDER, 
-                           self.LEFT_HIP, self.RIGHT_HIP, self.LEFT_KNEE, self.RIGHT_KNEE]
+            # Check visibility of key landmarks (removed hip/knee)
+            key_landmarks = [self.NOSE, self.LEFT_SHOULDER, self.RIGHT_SHOULDER]
             
             visible_count = 0
             total_visibility = 0
