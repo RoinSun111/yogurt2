@@ -4,6 +4,7 @@ let webcamElement;
 let webcamRunning = false;
 let captureInterval;
 let mediaStream = null;
+let isProcessing = false; // Prevent frame processing overlap
 
 document.addEventListener('DOMContentLoaded', function() {
     webcamElement = document.getElementById('webcam');
@@ -87,8 +88,8 @@ function startFrameCapture() {
         clearInterval(captureInterval);
     }
     
-    // Process frame every 6 seconds (10 frames per minute as specified)
-    captureInterval = setInterval(captureAndProcessFrame, 6000);
+    // Process frames at 8 FPS for real-time posture detection (125ms intervals)
+    captureInterval = setInterval(captureAndProcessFrame, 125);
     
     // Do an initial capture immediately
     captureAndProcessFrame();
@@ -96,15 +97,19 @@ function startFrameCapture() {
 
 // Capture a frame from the webcam and process it
 function captureAndProcessFrame() {
-    if (!webcamRunning) return;
+    if (!webcamRunning || isProcessing) return;
+    
+    isProcessing = true;
     
     // Create a canvas element to capture the frame
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
     
-    // Set canvas dimensions to match video
-    canvas.width = webcamElement.videoWidth;
-    canvas.height = webcamElement.videoHeight;
+    // Optimize canvas size for real-time processing
+    const targetWidth = 640;
+    const aspectRatio = webcamElement.videoHeight / webcamElement.videoWidth;
+    canvas.width = targetWidth;
+    canvas.height = targetWidth * aspectRatio;
     
     // Draw the current video frame to the canvas
     context.drawImage(webcamElement, 0, 0, canvas.width, canvas.height);
@@ -129,6 +134,9 @@ function captureAndProcessFrame() {
         })
         .catch(error => {
             console.error('Error processing frame:', error);
+        })
+        .finally(() => {
+            isProcessing = false; // Allow next frame processing
         });
     }, 'image/jpeg', 0.8);
 }
