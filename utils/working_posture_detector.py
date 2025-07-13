@@ -77,7 +77,7 @@ class WorkingPostureDetector:
             # Head position
             head_position = self._get_head_position(landmarks)
             
-            self.logger.debug(f"Detected: {posture_type} (sitting: {is_sitting}, spine: {spine_angle:.1f}°)")
+            self.logger.debug(f"Detected: {posture_type} (sitting: {is_sitting}, spine: {spine_angle:.1f}°, shoulder_tilt: {shoulder_tilt:.1f}°, body_lean: {body_lean:.3f}, lateral: {lateral_lean:.3f})")
             
             return PostureResult(
                 posture_type=posture_type,
@@ -109,48 +109,62 @@ class WorkingPostureDetector:
             hip_y = (landmarks[self.LEFT_HIP].y + landmarks[self.RIGHT_HIP].y) / 2
             knee_y = (landmarks[self.LEFT_KNEE].y + landmarks[self.RIGHT_KNEE].y) / 2
             
-            # Key indicator: in sitting, torso is more prominent in frame
-            # and legs are less visible/compressed
+            # In a typical webcam view, if someone is sitting at a desk:
+            # - Their shoulders will be higher in the frame (lower y value)
+            # - Hips will be visible but lower
+            # - Knees may be partially visible or at frame edge
+            
+            # Key indicator: body proportions and positioning
             torso_height = abs(shoulder_y - hip_y)
-            leg_height = abs(hip_y - knee_y)
             
-            # In sitting: torso is more visible, legs are compressed
-            if torso_height > 0 and leg_height >= 0:
-                torso_to_leg_ratio = torso_height / (leg_height + 0.1)  # Avoid division by zero
-                
-                # Sitting indicators:
-                # 1. High torso-to-leg ratio (legs compressed when sitting)
-                sitting_ratio = torso_to_leg_ratio > 1.5
-                
-                # 2. Knees are close to or below hips (typical sitting posture)
-                knee_position = knee_y >= hip_y - 0.1
-                
-                # 3. Body appears more compact vertically
-                total_body = abs(shoulder_y - knee_y)
-                is_compact = total_body < 0.7  # Normalized coordinate threshold
-                
-                # Consider sitting if multiple indicators match
-                return sum([sitting_ratio, knee_position, is_compact]) >= 2
+            # More relaxed sitting detection - focus on key indicators
+            # 1. Torso is visible and prominent in frame
+            prominent_torso = shoulder_y < 0.5  # Shoulders in upper half of frame
             
-            return False
+            # 2. Hip position is reasonable for sitting
+            hip_position_ok = 0.2 < hip_y < 0.9  # More lenient hip positioning
+            
+            # 3. Good torso visibility
+            good_torso_proportion = torso_height > 0.12  # More lenient torso requirement
+            
+            # 4. Body composition suggests sitting (more compact)
+            total_visible_body = abs(shoulder_y - knee_y)
+            compact_body = total_visible_body < 0.8  # Person appears more compact
+            
+            # Consider sitting if multiple indicators match (more lenient)
+            sitting_indicators = [
+                prominent_torso,
+                hip_position_ok, 
+                good_torso_proportion,
+                compact_body
+            ]
+            
+            return sum(sitting_indicators) >= 2  # Only need 2 out of 4 indicators
             
         except Exception:
             return False
     
     def _get_spine_angle(self, landmarks) -> float:
-        """Calculate spine angle from vertical"""
+        """Calculate spine angle from vertical (0 = perfectly upright)"""
         try:
             shoulder_mid_x = (landmarks[self.LEFT_SHOULDER].x + landmarks[self.RIGHT_SHOULDER].x) / 2
             shoulder_mid_y = (landmarks[self.LEFT_SHOULDER].y + landmarks[self.RIGHT_SHOULDER].y) / 2
             hip_mid_x = (landmarks[self.LEFT_HIP].x + landmarks[self.RIGHT_HIP].x) / 2
             hip_mid_y = (landmarks[self.LEFT_HIP].y + landmarks[self.RIGHT_HIP].y) / 2
             
-            # Calculate angle from vertical
+            # Calculate the vector from hip to shoulder
             dx = shoulder_mid_x - hip_mid_x
-            dy = shoulder_mid_y - hip_mid_y
+            dy = hip_mid_y - shoulder_mid_y  # Note: y coordinates are inverted (smaller y = higher)
             
-            angle = math.degrees(math.atan2(abs(dx), abs(dy)))
-            return angle
+            # Calculate angle from vertical (90 degrees minus the angle from horizontal)
+            if abs(dy) < 0.001:  # Avoid division by zero
+                return 90.0  # Completely horizontal
+            
+            # Angle from horizontal
+            angle_from_horizontal = math.degrees(math.atan2(abs(dx), abs(dy)))
+            
+            # Convert to angle from vertical (0 = perfectly upright, 90 = horizontal)
+            return angle_from_horizontal
             
         except Exception:
             return 0.0
@@ -197,8 +211,8 @@ class WorkingPostureDetector:
                          shoulder_tilt: float, body_lean: float, lateral_lean: float) -> Tuple[str, float]:
         """Classify posture with practical thresholds"""
         
-        # Check for lying (extreme horizontal position)
-        if abs(shoulder_tilt) > 60:  # Very tilted shoulders indicate lying
+        # Lying detection: spine should be very horizontal (close to 90 degrees from vertical)
+        if spine_angle > 70:  # Very horizontal spine indicates lying
             return "lying", 0.9
         
         # Standing postures
@@ -208,32 +222,32 @@ class WorkingPostureDetector:
             else:
                 return "standing", 0.9
         
-        # Sitting postures - use more practical thresholds
+        # Sitting postures - focus on practical distinctions
         
-        # Strong lateral lean
-        if abs(lateral_lean) > 0.08:  # Increased sensitivity
-            if lateral_lean < -0.08:
+        # Strong lateral lean (side sitting)
+        if abs(lateral_lean) > 0.15:  # Even more restrictive
+            if lateral_lean < -0.15:
                 return "left_sitting", 0.85
             else:
                 return "right_sitting", 0.85
         
-        # Forward postures
-        if body_lean > 0.15:  # Strong forward lean
-            if spine_angle > 30:  # Poor posture
+        # Forward postures (hunching and leaning)
+        if body_lean > 0.25:  # Very restrictive for forward lean
+            if spine_angle > 40:  # Very high threshold for hunching
                 return "hunching_over", 0.9
             else:
                 return "leaning_forward", 0.85
         
-        # Moderate forward lean or poor spine angle
-        if spine_angle > 25 or body_lean > 0.08:
+        # Moderate poor posture
+        if spine_angle > 35 or body_lean > 0.20:
             return "hunching_over", 0.8
         
-        # Good sitting posture
-        if spine_angle <= 15 and abs(lateral_lean) <= 0.05:
+        # Good sitting posture (quite lenient)
+        if spine_angle <= 25 and abs(lateral_lean) <= 0.10:
             return "sitting_straight", 0.95
         
-        # Default moderate posture
-        return "sitting_straight", 0.7
+        # Default to sitting straight for normal positions
+        return "sitting_straight", 0.8
     
     def _get_feedback(self, posture_type: str, spine_angle: float) -> str:
         """Generate feedback based on posture"""
