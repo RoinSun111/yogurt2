@@ -245,8 +245,30 @@ function updateMetrics(data) {
     }
     
     if (postureBadge && data.posture) {
-        postureBadge.textContent = data.posture.charAt(0).toUpperCase() + data.posture.slice(1);
-        postureBadge.className = `badge ${data.posture === 'upright' ? 'bg-success' : data.posture === 'slouched' ? 'bg-warning' : 'bg-secondary'}`;
+        // Format the SitPose classification for display
+        const formattedPosture = formatPostureName(data.posture);
+        postureBadge.textContent = formattedPosture;
+        
+        // Set badge color based on posture classification
+        let badgeClass;
+        switch(data.posture) {
+            case 'sitting_straight':
+            case 'standing':
+                badgeClass = 'bg-success';
+                break;
+            case 'leaning_forward':
+            case 'left_sitting':
+            case 'right_sitting':
+                badgeClass = 'bg-warning';
+                break;
+            case 'hunching_over':
+            case 'lying':
+                badgeClass = 'bg-danger';
+                break;
+            default:
+                badgeClass = 'bg-secondary';
+        }
+        postureBadge.className = `badge ${badgeClass}`;
     }
     
     // Update posture angle
@@ -1119,4 +1141,23 @@ function captureScreenshot() {
     a.href = imageUrl;
     a.download = `posture-monitor-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.png`;
     a.click();
+}
+
+// Format posture names for display
+function formatPostureName(posture) {
+    if (!posture || posture === 'unknown') {
+        return 'Unknown';
+    }
+    
+    const postureMap = {
+        'sitting_straight': 'Sitting Straight',
+        'hunching_over': 'Hunching Over',
+        'left_sitting': 'Leaning Left',
+        'right_sitting': 'Leaning Right',
+        'leaning_forward': 'Leaning Forward',
+        'lying': 'Lying Down',
+        'standing': 'Standing'
+    };
+    
+    return postureMap[posture] || posture.charAt(0).toUpperCase() + posture.slice(1);
 }
