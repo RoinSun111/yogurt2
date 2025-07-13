@@ -61,18 +61,26 @@ class PostureAnalyzer:
         self.posture_history = []
         self.history_max_size = 300  # Store ~5 minutes of data at 1 Hz
         
-        # Threshold angles for posture assessment (more realistic thresholds)
-        self.upright_threshold = 20.0  # Angle for basic upright vs slouched classification
-        self.excellent_threshold = 8.0  # Very upright posture
-        self.good_threshold = 15.0     # Good posture
-        self.fair_threshold = 22.0     # Acceptable posture
-        # Anything above fair_threshold is considered poor
+        # SitPose-inspired thresholds for 7 posture classifications
+        # Based on research paper: "SitPose: Real-Time Detection of Sitting Posture and Sedentary Behavior"
         
-        # Enhanced thresholds for head orientation detection
-        self.neck_angle_threshold = 20.0  # Degree threshold for neck angle (more sensitive)
-        self.head_rotation_threshold = 15.0  # Degree threshold for head yaw (left/right turn)
-        self.head_tilt_threshold = 12.0  # Degree threshold for head pitch (up/down)
-        self.forehead_eye_ratio_threshold = 1.8  # Ratio threshold for head lowering detection
+        # Main posture classification thresholds
+        self.sitting_straight_threshold = 12.0  # Angle for straight sitting
+        self.hunching_threshold = 35.0  # Forward lean angle for hunching
+        self.leaning_forward_threshold = 25.0  # Moderate forward lean
+        self.lateral_lean_threshold = 15.0  # Side lean angle (left/right)
+        self.lying_threshold = 70.0  # Extreme angle indicating lying position
+        self.standing_threshold = 0.6  # Hip height ratio for standing detection
+        
+        # Joint angle thresholds for posture analysis
+        self.spine_angle_threshold = 30.0  # Spine deviation from vertical
+        self.shoulder_imbalance_threshold = 0.15  # Shoulder height difference
+        self.hip_shoulder_ratio_threshold = 0.8  # Hip to shoulder distance ratio
+        
+        # Enhanced head orientation detection
+        self.head_rotation_threshold = 15.0  # Head yaw (left/right turn)
+        self.head_tilt_threshold = 12.0  # Head pitch (up/down)
+        self.forehead_eye_ratio_threshold = 1.8  # Head lowering detection
         
         # Thresholds for shoulder alignment (more realistic for real-world conditions)
         self.shoulder_alignment_excellent = 0.90
@@ -172,20 +180,17 @@ class PostureAnalyzer:
             symmetry_score = self._calculate_symmetry_score(landmarks)
             posture_data['symmetry_score'] = symmetry_score
             
-            # Enhanced posture classification considering head orientation
-            posture_data['posture'] = self._classify_comprehensive_posture(
-                angle, head_orientation.get('head_yaw', 0), head_orientation.get('head_pitch', 0), 
-                head_orientation.get('forehead_eye_ratio', 1.0)
+            # SitPose-style comprehensive posture classification
+            posture_data['posture'] = self._classify_sitpose_posture(landmarks, head_orientation)
+            
+            # Assess posture quality for the classified posture
+            posture_data['posture_quality'] = self._assess_sitpose_quality(
+                posture_data['posture'], angle, neck_angle, shoulder_alignment, head_forward, spine_curvature, symmetry_score
             )
             
-            # Determine posture quality (finer-grained classification)
-            posture_data['posture_quality'] = self._assess_posture_quality_enhanced(
-                angle, neck_angle, shoulder_alignment, head_forward, spine_curvature, symmetry_score, head_orientation
-            )
-            
-            # Generate specific feedback based on metrics
-            posture_data['feedback'] = self._generate_posture_feedback_enhanced(
-                angle, neck_angle, shoulder_alignment, head_forward, spine_curvature, symmetry_score, head_orientation
+            # Generate posture-specific feedback
+            posture_data['feedback'] = self._generate_sitpose_feedback(
+                posture_data['posture'], angle, neck_angle, shoulder_alignment, head_forward, spine_curvature, symmetry_score, head_orientation
             )
             
             # Store posture data in history for trend analysis
@@ -465,6 +470,205 @@ class PostureAnalyzer:
                 feedback.append("Good posture - minor adjustments could make it excellent.")
             else:
                 feedback.append("Your posture could use some small improvements.")
+        
+        return " ".join(feedback)
+    
+    def _classify_sitpose_posture(self, landmarks, head_orientation):
+        """
+        SitPose-style posture classification into 7 categories:
+        sitting_straight, hunching_over, left_sitting, right_sitting, leaning_forward, lying, standing
+        Based on joint angles and body geometry analysis
+        """
+        try:
+            # Calculate key geometric measurements
+            left_shoulder = landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER]
+            right_shoulder = landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER]
+            left_hip = landmarks[self.mp_pose.PoseLandmark.LEFT_HIP]
+            right_hip = landmarks[self.mp_pose.PoseLandmark.RIGHT_HIP]
+            nose = landmarks[self.mp_pose.PoseLandmark.NOSE]
+            
+            # 1. Check for standing posture first (hip height relative to screen)
+            avg_hip_y = (left_hip.y + right_hip.y) / 2
+            avg_shoulder_y = (left_shoulder.y + right_shoulder.y) / 2
+            hip_shoulder_ratio = avg_hip_y / avg_shoulder_y if avg_shoulder_y > 0 else 1.0
+            
+            if hip_shoulder_ratio < self.standing_threshold:
+                return 'standing'
+            
+            # 2. Calculate spine angle (forward/backward lean)
+            spine_angle = self._calculate_spine_angle(landmarks)
+            
+            # 3. Calculate lateral lean (left/right tilt)
+            lateral_lean_angle, lean_direction = self._calculate_lateral_lean(landmarks)
+            
+            # 4. Check for lying position (extreme forward lean + low position)
+            if spine_angle > self.lying_threshold and avg_hip_y > 0.7:
+                return 'lying'
+            
+            # 5. Check for hunching (extreme forward lean)
+            if spine_angle > self.hunching_threshold:
+                return 'hunching_over'
+            
+            # 6. Check for moderate forward lean
+            if spine_angle > self.leaning_forward_threshold:
+                return 'leaning_forward'
+            
+            # 7. Check for lateral lean (left/right sitting)
+            if lateral_lean_angle > self.lateral_lean_threshold:
+                if lean_direction == 'left':
+                    return 'left_sitting'
+                else:
+                    return 'right_sitting'
+            
+            # 8. Default to sitting straight if within normal ranges
+            if spine_angle <= self.sitting_straight_threshold:
+                return 'sitting_straight'
+            else:
+                return 'leaning_forward'  # Slight forward lean
+                
+        except Exception as e:
+            self.logger.error(f"Error in SitPose classification: {e}")
+            return 'sitting_straight'  # Default fallback
+    
+    def _calculate_spine_angle(self, landmarks):
+        """Calculate the forward/backward lean angle of the spine"""
+        try:
+            # Get key points for spine calculation
+            left_shoulder = landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER]
+            right_shoulder = landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER]
+            left_hip = landmarks[self.mp_pose.PoseLandmark.LEFT_HIP]
+            right_hip = landmarks[self.mp_pose.PoseLandmark.RIGHT_HIP]
+            
+            # Calculate average shoulder and hip positions
+            avg_shoulder_x = (left_shoulder.x + right_shoulder.x) / 2
+            avg_shoulder_y = (left_shoulder.y + right_shoulder.y) / 2
+            avg_hip_x = (left_hip.x + right_hip.x) / 2
+            avg_hip_y = (left_hip.y + right_hip.y) / 2
+            
+            # Calculate spine vector
+            spine_dx = avg_shoulder_x - avg_hip_x
+            spine_dy = avg_shoulder_y - avg_hip_y
+            
+            # Calculate angle from vertical (negative means forward lean)
+            if spine_dy != 0:
+                spine_angle = math.degrees(math.atan2(abs(spine_dx), abs(spine_dy)))
+                if spine_dx > 0:  # Forward lean
+                    return spine_angle
+                else:  # Backward lean (less common)
+                    return -spine_angle
+            return 0.0
+            
+        except Exception as e:
+            self.logger.error(f"Error calculating spine angle: {e}")
+            return 0.0
+    
+    def _calculate_lateral_lean(self, landmarks):
+        """Calculate the lateral (left/right) lean angle and direction"""
+        try:
+            left_shoulder = landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER]
+            right_shoulder = landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER]
+            left_hip = landmarks[self.mp_pose.PoseLandmark.LEFT_HIP]
+            right_hip = landmarks[self.mp_pose.PoseLandmark.RIGHT_HIP]
+            
+            # Calculate shoulder and hip tilt angles
+            shoulder_tilt = math.degrees(math.atan2(
+                right_shoulder.y - left_shoulder.y,
+                right_shoulder.x - left_shoulder.x
+            ))
+            
+            hip_tilt = math.degrees(math.atan2(
+                right_hip.y - left_hip.y,
+                right_hip.x - left_hip.x
+            ))
+            
+            # Average tilt indicates overall lateral lean
+            avg_tilt = (abs(shoulder_tilt) + abs(hip_tilt)) / 2
+            
+            # Determine lean direction based on shoulder position
+            if left_shoulder.y < right_shoulder.y:
+                direction = 'left'
+            else:
+                direction = 'right'
+                
+            return avg_tilt, direction
+            
+        except Exception as e:
+            self.logger.error(f"Error calculating lateral lean: {e}")
+            return 0.0, 'none'
+    
+    def _assess_sitpose_quality(self, posture, angle, neck_angle, shoulder_alignment, head_forward, spine_curvature, symmetry):
+        """Assess quality of the classified posture"""
+        if posture == 'sitting_straight':
+            if angle <= 8.0 and neck_angle <= 20.0 and shoulder_alignment >= 0.85:
+                return 'excellent'
+            elif angle <= 12.0 and neck_angle <= 25.0 and shoulder_alignment >= 0.75:
+                return 'good'
+            else:
+                return 'fair'
+        elif posture == 'standing':
+            return 'excellent'  # Standing is generally good
+        elif posture in ['leaning_forward', 'left_sitting', 'right_sitting']:
+            if angle <= 20.0:
+                return 'fair'
+            else:
+                return 'poor'
+        elif posture in ['hunching_over', 'lying']:
+            return 'poor'  # These are always poor postures
+        else:
+            return 'fair'  # Default
+    
+    def _generate_sitpose_feedback(self, posture, angle, neck_angle, shoulder_alignment, head_forward, spine_curvature, symmetry, head_orientation):
+        """Generate specific feedback based on classified posture"""
+        feedback = []
+        
+        if posture == 'sitting_straight':
+            if angle > 8.0:
+                feedback.append("Sit up slightly straighter.")
+            if neck_angle > 20.0:
+                feedback.append("Align head with shoulders.")
+            if shoulder_alignment < 0.8:
+                feedback.append("Level your shoulders.")
+            if not feedback:
+                feedback.append("Great posture! Keep it up.")
+                
+        elif posture == 'hunching_over':
+            feedback.append("You're hunching over - sit back and straighten your spine.")
+            feedback.append("Pull shoulders back and lift chest.")
+            
+        elif posture == 'leaning_forward':
+            feedback.append("You're leaning forward - sit back in your chair.")
+            feedback.append("Keep your back against the chair.")
+            
+        elif posture == 'left_sitting':
+            feedback.append("You're leaning to the left - center your body.")
+            feedback.append("Distribute weight evenly on both hips.")
+            
+        elif posture == 'right_sitting':
+            feedback.append("You're leaning to the right - center your body.")
+            feedback.append("Distribute weight evenly on both hips.")
+            
+        elif posture == 'lying':
+            feedback.append("Please sit up - you appear to be lying down.")
+            feedback.append("Maintain an upright sitting position.")
+            
+        elif posture == 'standing':
+            feedback.append("Standing detected - great for breaking up sitting time!")
+            
+        else:
+            feedback.append("Check your posture and sit up straight.")
+        
+        # Add head orientation feedback if needed
+        head_yaw = head_orientation.get('head_yaw', 0)
+        head_pitch = head_orientation.get('head_pitch', 0)
+        
+        if abs(head_yaw) > self.head_rotation_threshold:
+            if head_yaw > 0:
+                feedback.append("Turn head back to center - looking too far right.")
+            else:
+                feedback.append("Turn head back to center - looking too far left.")
+        
+        if abs(head_pitch) > self.head_tilt_threshold:
+            feedback.append("Adjust head position - avoid looking up or down too much.")
         
         return " ".join(feedback)
     
