@@ -30,13 +30,13 @@ class PostureDetector:
             min_tracking_confidence=0.3    # Lower for continuous tracking
         )
         
-        # Refined thresholds for stable detection (hip logic removed)
+        # Refined thresholds for stable detection (shoulder-based hunching)
         self.thresholds = {
-            'lying_head_angle': 75,       # head-shoulder angle > 75° = lying 
-            'hunching_head_angle': 30,    # head forward angle > 30° = hunching
-            'lean_forward_head': 20,      # head angle > 20° forward = leaning forward
-            'lateral_lean_head': 15,      # head tilt > 15° = side sitting
-            'standing_spine_angle': 25    # spine angle < 25° = standing (new logic)
+            'lying_head_angle': 75,           # head-shoulder angle > 75° = lying 
+            'hunching_shoulder_angle': 30,    # shoulder angle deviation > 30° = hunching (curved shoulders)
+            'lean_forward_head': 20,          # head angle > 20° forward = leaning forward
+            'lateral_lean_head': 15,          # head tilt > 15° = side sitting
+            'standing_spine_angle': 25        # spine angle < 25° = standing
         }
         
         # Stability tracking for consistent detection
@@ -112,9 +112,12 @@ class PostureDetector:
         # Calculate shoulder midpoint
         shoulder_mid = (left_shoulder + right_shoulder) / 2
         
-        # 1. Shoulder angle (shoulder line vs horizontal - indicates standing/sitting)
+        # 1. Shoulder angle (shoulder line vs horizontal)
         shoulder_vector = right_shoulder - left_shoulder
         shoulder_angle = abs(math.degrees(math.atan2(shoulder_vector[1], shoulder_vector[0])))
+        
+        # 1b. Shoulder curvature (how much shoulders deviate from straight line)
+        shoulder_curvature = abs(180 - shoulder_angle)  # Deviation from straight horizontal line
         
         # 2. Head to shoulder angle (primary metric for posture detection)
         head_shoulder_vector = nose - shoulder_mid
@@ -139,7 +142,8 @@ class PostureDetector:
         confidence = self._calculate_confidence(landmarks)
         
         return {
-            'spine_angle': shoulder_angle,           # Now based on shoulder line
+            'spine_angle': shoulder_angle,           # Shoulder line angle
+            'shoulder_curvature': shoulder_curvature, # Key metric for hunching detection
             'head_tilt_angle': head_tilt_angle,      # Key metric for left/right detection
             'head_forward_angle': head_forward_angle, # Key metric for forward lean
             'neck_angle': neck_angle,
@@ -149,14 +153,15 @@ class PostureDetector:
         }
     
     def _classify_posture(self, metrics):
-        """Classify posture using head-to-shoulder angle analysis (no hip logic)"""
+        """Classify posture using shoulder curvature and head position"""
         
-        shoulder_angle = metrics['spine_angle']  # Now represents shoulder line angle
+        shoulder_angle = metrics['spine_angle']
+        shoulder_curvature = metrics['shoulder_curvature']
         head_tilt = metrics['head_tilt_angle']
         head_forward = metrics['head_forward_angle']
         
-        # Debug logging for angle analysis (removed hip-knee)
-        self.logger.debug(f"Angles - Shoulder: {shoulder_angle:.1f}°, Head Tilt: {head_tilt:.1f}°, Head Forward: {head_forward:.1f}°")
+        # Debug logging for angle analysis
+        self.logger.debug(f"Angles - Shoulder: {shoulder_angle:.1f}°, Curvature: {shoulder_curvature:.1f}°, Head Tilt: {head_tilt:.1f}°, Head Forward: {head_forward:.1f}°")
         
         # 1. Check for lying down (head very tilted indicates lying)
         if abs(head_tilt) > self.thresholds['lying_head_angle']:
@@ -173,8 +178,8 @@ class PostureDetector:
         if shoulder_angle < self.thresholds['standing_spine_angle']:
             return 'standing'
         
-        # 4. Check for hunching (forward head posture)
-        if head_forward > self.thresholds['hunching_head_angle']:
+        # 4. Check for hunching (curved shoulders - key difference from sitting straight)
+        if shoulder_curvature > self.thresholds['hunching_shoulder_angle']:
             return 'hunching_over'
         
         # 5. Check for leaning forward (moderate forward head angle)
