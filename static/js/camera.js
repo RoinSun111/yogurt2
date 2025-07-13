@@ -1,39 +1,19 @@
-// Camera.js - Handle camera input and processing with pose landmarks visualization
+// Camera.js - Handle camera input and processing
 
 let webcamElement;
 let webcamRunning = false;
 let captureInterval;
 let mediaStream = null;
 let isProcessing = false; // Prevent frame processing overlap
-let poseLandmarker = null;
-let canvasElement;
-let canvasCtx;
-let drawingUtils;
-let showAnnotations = true;
 
 document.addEventListener('DOMContentLoaded', function() {
     webcamElement = document.getElementById('webcam');
-    canvasElement = document.getElementById('annotation-canvas');
-    canvasCtx = canvasElement.getContext('2d');
     const startCameraButton = document.getElementById('start-camera');
     const cameraPlaceholder = document.getElementById('camera-placeholder');
-    const toggleAnnotations = document.getElementById('toggle-annotations');
-    
-    // Initialize MediaPipe PoseLandmarker
-    initializePoseLandmarker();
     
     // Start camera button event listener
     startCameraButton.addEventListener('click', function() {
         startCamera();
-    });
-    
-    // Toggle annotations checkbox
-    toggleAnnotations.addEventListener('change', function() {
-        showAnnotations = this.checked;
-        if (!showAnnotations) {
-            // Clear the canvas when annotations are disabled
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-        }
     });
     
     // Check if camera access should be automatic
@@ -42,21 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
         startCamera();
     }
 });
-
-// Initialize MediaPipe PoseLandmarker using legacy API
-async function initializePoseLandmarker() {
-    try {
-        // Check if MediaPipe vision tasks are available
-        if (typeof window.mediapipe === 'undefined') {
-            console.log('MediaPipe not available, pose landmarks disabled');
-            return;
-        }
-        
-        console.log('MediaPipe PoseLandmarker initialized (legacy mode)');
-    } catch (error) {
-        console.error('Error initializing MediaPipe:', error);
-    }
-}
 
 // Start the webcam and begin processing
 function startCamera() {
@@ -123,27 +88,11 @@ function startFrameCapture() {
         clearInterval(captureInterval);
     }
     
-    // Set canvas size to match video
-    updateCanvasSize();
-    
     // Process frames at 8 FPS for real-time posture detection (125ms intervals)
     captureInterval = setInterval(captureAndProcessFrame, 125);
     
     // Do an initial capture immediately
     captureAndProcessFrame();
-}
-
-// Update canvas size to match video dimensions
-function updateCanvasSize() {
-    if (webcamElement.videoWidth > 0 && webcamElement.videoHeight > 0) {
-        canvasElement.width = webcamElement.videoWidth;
-        canvasElement.height = webcamElement.videoHeight;
-        
-        // Update canvas style to match video display size
-        const rect = webcamElement.getBoundingClientRect();
-        canvasElement.style.width = rect.width + 'px';
-        canvasElement.style.height = rect.height + 'px';
-    }
 }
 
 // Capture a frame from the webcam and process it
@@ -182,11 +131,6 @@ function captureAndProcessFrame() {
             
             // Update posture status based on response
             updatePostureStatusFromData(data);
-            
-            // Draw pose landmarks if available and annotations are enabled
-            if (showAnnotations && poseLandmarker) {
-                drawPoseLandmarks();
-            }
         })
         .catch(error => {
             console.error('Error processing frame:', error);
@@ -195,33 +139,6 @@ function captureAndProcessFrame() {
             isProcessing = false; // Allow next frame processing
         });
     }, 'image/jpeg', 0.8);
-}
-
-// Draw pose landmarks on the annotation canvas
-async function drawPoseLandmarks() {
-    if (!showAnnotations || !canvasElement) return;
-    
-    try {
-        // Clear the canvas
-        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-        
-        // For now, just draw a simple overlay indicating pose detection is active
-        if (showAnnotations) {
-            canvasCtx.save();
-            canvasCtx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
-            canvasCtx.lineWidth = 2;
-            canvasCtx.setLineDash([5, 5]);
-            canvasCtx.strokeRect(10, 10, canvasElement.width - 20, canvasElement.height - 20);
-            
-            // Add text indicator
-            canvasCtx.fillStyle = 'rgba(0, 255, 0, 0.9)';
-            canvasCtx.font = '14px Inter, sans-serif';
-            canvasCtx.fillText('Pose Detection Active', 15, 30);
-            canvasCtx.restore();
-        }
-    } catch (error) {
-        console.error('Error drawing pose landmarks:', error);
-    }
 }
 
 // Update the posture status based on processed frame data
