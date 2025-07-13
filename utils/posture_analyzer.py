@@ -4,6 +4,7 @@ import numpy as np
 import math
 import cv2
 from datetime import datetime, timedelta
+from .sitpose_trainer import SitPoseTrainer
 
 class PostureAnalyzer:
     def __init__(self):
@@ -17,6 +18,10 @@ class PostureAnalyzer:
             min_tracking_confidence=0.5,
             model_complexity=1  # Use the medium model for better posture analysis
         )
+        
+        # Initialize SitPose trainer for ML-based classification
+        self.sitpose_trainer = SitPoseTrainer()
+        self.use_ml_classification = True  # Flag to enable ML-based classification
         
         # Initialize MediaPipe Face Mesh for precise neck angle detection
         try:
@@ -180,8 +185,16 @@ class PostureAnalyzer:
             symmetry_score = self._calculate_symmetry_score(landmarks)
             posture_data['symmetry_score'] = symmetry_score
             
-            # SitPose-style comprehensive posture classification
-            posture_data['posture'] = self._classify_sitpose_posture(landmarks, head_orientation)
+            # Use trained SitPose model for classification
+            if self.use_ml_classification:
+                ml_posture, ml_confidence = self.sitpose_trainer.predict_posture(landmarks)
+                posture_data['posture'] = ml_posture
+                posture_data['ml_confidence'] = ml_confidence
+                self.logger.debug(f"ML Posture: {ml_posture} (confidence: {ml_confidence:.3f})")
+            else:
+                # Fallback to rule-based classification
+                posture_data['posture'] = self._classify_sitpose_posture(landmarks, head_orientation)
+                posture_data['ml_confidence'] = 0.0
             
             # Assess posture quality for the classified posture
             posture_data['posture_quality'] = self._assess_sitpose_quality(
