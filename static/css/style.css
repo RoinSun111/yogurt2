@@ -1328,3 +1328,349 @@ footer p {
 .mt-2 { margin-top: var(--spacing-sm) !important; }
 .mt-3 { margin-top: var(--spacing-md) !important; }
 .mt-4 { margin-top: var(--spacing-lg) !important; }
+
+/* Clean Dashboard Design - Dieter Rams inspired */
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.time-hero {
+    margin-bottom: var(--spacing-2xl);
+    padding: var(--spacing-xl) 0;
+}
+
+.current-time-large {
+    font-size: 4rem;
+    font-weight: var(--font-weight-light);
+    color: var(--color-gray-900);
+    line-height: var(--line-height-tight);
+    letter-spacing: -0.03em;
+    margin-bottom: var(--spacing-sm);
+}
+
+.current-date {
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-gray-600);
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.metric-card-large {
+    background-color: var(--color-white);
+    border: var(--border-width) solid var(--color-gray-200);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-xl);
+    transition: box-shadow 0.2s ease;
+}
+
+.metric-card-large:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.metric-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    gap: var(--spacing-sm);
+}
+
+.metric-icon {
+    color: var(--color-orange-500);
+    width: 20px;
+    height: 20px;
+}
+
+.metric-title {
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-gray-700);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.metric-display {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-md);
+}
+
+.metric-number {
+    font-size: 3rem;
+    font-weight: var(--font-weight-light);
+    color: var(--color-gray-900);
+    line-height: var(--line-height-tight);
+}
+
+.metric-unit {
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-normal);
+    color: var(--color-gray-600);
+}
+
+.metric-subtitle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.metric-label {
+    font-size: 0.6875rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.metric-comparison {
+    font-size: 0.6875rem;
+    font-weight: var(--font-weight-normal);
+    color: var(--color-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Activity Status */
+.activity-status {
+    margin-bottom: var(--spacing-lg);
+}
+
+.activity-state {
+    font-size: 1.25rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-xs);
+}
+
+.activity-timer {
+    font-size: 0.875rem;
+    color: var(--color-gray-600);
+}
+
+.activity-progress-container {
+    margin-top: var(--spacing-md);
+}
+
+/* Posture Status */
+.posture-status {
+    margin-bottom: var(--spacing-lg);
+}
+
+.posture-state {
+    font-size: 1.25rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-xs);
+}
+
+.posture-feedback {
+    font-size: 0.875rem;
+    color: var(--color-gray-600);
+}
+
+.posture-angle-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.angle-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+}
+
+.angle-value {
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-light);
+    color: var(--color-gray-900);
+    line-height: var(--line-height-tight);
+}
+
+.angle-label {
+    font-size: 0.625rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* Camera Display */
+.camera-card {
+    min-height: 240px;
+}
+
+.camera-display {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    background-color: var(--color-gray-800);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.camera-display video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.camera-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-600);
+    gap: var(--spacing-sm);
+}
+
+.camera-placeholder-icon {
+    width: 32px;
+    height: 32px;
+    color: var(--color-gray-400);
+}
+
+.camera-placeholder-text {
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Hydration Display */
+.hydration-display {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.water-amount {
+    font-size: 1.125rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-gray-900);
+}
+
+.water-level-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.water-bottle-simple {
+    width: 60px;
+    height: 80px;
+    background-color: var(--color-gray-100);
+    border: 2px solid var(--color-gray-300);
+    border-radius: var(--border-radius);
+    position: relative;
+    overflow: hidden;
+}
+
+.water-level {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--color-orange-400);
+    transition: height 0.3s ease;
+}
+
+.water-controls {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.water-controls .btn {
+    flex: 1;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+}
+
+/* Health Summary */
+.health-summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.health-score-display {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-xs);
+}
+
+.health-score-number {
+    font-size: 3rem;
+    font-weight: var(--font-weight-light);
+    color: var(--color-gray-900);
+    line-height: var(--line-height-tight);
+}
+
+.health-score-unit {
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-normal);
+    color: var(--color-gray-600);
+}
+
+.health-breakdown {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+}
+
+.health-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.health-metric-label {
+    font-size: 0.625rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: var(--spacing-xs);
+}
+
+.health-metric-value {
+    font-size: 1.25rem;
+    font-weight: var(--font-weight-light);
+    color: var(--color-gray-900);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .current-time-large {
+        font-size: 3rem;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .metric-card-large {
+        padding: var(--spacing-lg);
+    }
+    
+    .health-breakdown {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+}

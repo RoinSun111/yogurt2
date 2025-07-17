@@ -1,206 +1,274 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<div class="row">
-    <!-- Activity Monitor Card -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i data-feather="eye" class="feather-icon"></i>
-                    Activity Monitor
-                </h5>
-                <span class="badge bg-secondary" id="activity-state">Unknown</span>
+<!-- Clean Dashboard following Dieter Rams principles -->
+<div class="dashboard-container">
+    <!-- Large time display -->
+    <div class="time-hero text-center mb-5">
+        <div class="current-time-large" id="dashboard-time">00:00 PM</div>
+        <div class="current-date text-muted" id="dashboard-date">LOADING DATE</div>
+    </div>
+
+    <!-- Clean metric cards grid -->
+    <div class="metrics-grid">
+        <!-- Focus Score -->
+        <div class="metric-card-large">
+            <div class="metric-header">
+                <i data-feather="target" class="metric-icon"></i>
+                <span class="metric-title">FOCUS SCORE</span>
             </div>
-            <div class="card-body">
-                <div class="d-flex align-items-center mb-3">
-                    <div id="activity-icon" class="activity-icon-container me-3">
-                        <i data-feather="help-circle"></i>
-                    </div>
-                    <div class="flex-grow-1">
-                        <h5 id="activity-description" class="mb-1">Monitoring your activity...</h5>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted">Time in current state: <span id="activity-timer">0m 0s</span></span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="progress mb-3">
-                    <div id="activity-progress" class="progress-bar" role="progressbar" style="width: 0%" 
-                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                
-                <div id="activity-metrics" class="d-flex flex-wrap gap-3">
-                    <!-- Metrics will be populated by JS -->
+            <div class="metric-display">
+                <div class="metric-number" id="focus-score-display">--</div>
+                <div class="metric-unit">%</div>
+            </div>
+            <div class="metric-subtitle">
+                <span class="metric-label">TODAY</span>
+                <span class="metric-comparison" id="focus-comparison">85% AVERAGE</span>
+            </div>
+        </div>
+
+        <!-- Activity Status -->
+        <div class="metric-card-large">
+            <div class="metric-header">
+                <i data-feather="activity" class="metric-icon"></i>
+                <span class="metric-title">ACTIVITY</span>
+            </div>
+            <div class="activity-status">
+                <div class="activity-state" id="activity-state-display">MONITORING</div>
+                <div class="activity-timer text-muted" id="activity-timer-display">0m 0s</div>
+            </div>
+            <div class="activity-progress-container">
+                <div class="progress">
+                    <div id="activity-progress" class="progress-bar" style="width: 0%"></div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Focus Score Card -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i data-feather="activity" class="feather-icon"></i>
-                    Focus Score
-                </h5>
-                <span class="badge bg-primary" id="focus-state">Calculating...</span>
+        <!-- Posture Monitor -->
+        <div class="metric-card-large">
+            <div class="metric-header">
+                <i data-feather="user" class="metric-icon"></i>
+                <span class="metric-title">POSTURE</span>
             </div>
-            <div class="card-body text-center">
-                <div class="score-display mb-3">
-                    <div class="progress-ring">
-                        <div class="ring-container">
-                            <canvas id="focus-chart" width="150" height="150"></canvas>
-                            <div class="ring-center">
-                                <span id="focus-score">--</span>
-                                <span class="small">%</span>
-                            </div>
-                        </div>
-                    </div>
+            <div class="posture-status">
+                <div class="posture-state" id="posture-state-display">CHECKING</div>
+                <div class="posture-feedback text-muted" id="posture-feedback-display">Sit upright for optimal focus</div>
+            </div>
+            <div class="posture-angle-container">
+                <div class="angle-display">
+                    <span class="angle-value" id="spine-angle-display">0°</span>
+                    <span class="angle-label">SPINE</span>
                 </div>
-                <div class="mt-3">
-                    <p class="mb-1">Working Time Today</p>
-                    <h3 id="working-time">0m</h3>
+                <div class="progress">
+                    <div id="angle-indicator" class="progress-bar" style="width: 0%"></div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Posture Card -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i data-feather="user" class="feather-icon"></i>
-                    Posture Monitor
-                </h5>
-                <span class="badge bg-secondary" id="posture-state">Unknown</span>
+        <!-- Camera Feed -->
+        <div class="metric-card-large camera-card">
+            <div class="metric-header">
+                <i data-feather="camera" class="metric-icon"></i>
+                <span class="metric-title">MONITOR</span>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="camera-container mb-3">
-                            <video id="webcam" autoplay playsinline></video>
-                            <canvas id="output-canvas" class="d-none"></canvas>
-                            <div id="camera-placeholder" class="placeholder-container text-center py-4">
-                                <i data-feather="camera-off" class="feather-icon-lg mb-2"></i>
-                                <p>Camera feed not available</p>
-                                <button id="start-camera" class="btn btn-sm btn-primary">Start Camera</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="posture-feedback mt-2">
-                            <h5 id="posture-feedback">Checking posture...</h5>
-                            <p id="posture-advice" class="text-muted">Please sit upright for optimal focus.</p>
-                            <div class="posture-angle mt-3">
-                                <p class="mb-1">Spine Angle</p>
-                                <div class="progress">
-                                    <div id="angle-indicator" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="30">0°</div>
-                                </div>
-                                <small class="text-muted">Target: Less than 15°</small>
-                            </div>
-                        </div>
-                    </div>
+            <div class="camera-display">
+                <video id="webcam" autoplay playsinline></video>
+                <canvas id="output-canvas" class="d-none"></canvas>
+                <div id="camera-placeholder" class="camera-placeholder">
+                    <i data-feather="camera-off" class="camera-placeholder-icon"></i>
+                    <p class="camera-placeholder-text">Camera not available</p>
+                    <button id="start-camera" class="btn btn-primary">Start Camera</button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Water Intake Card -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i data-feather="coffee" class="feather-icon"></i>
-                    Water Intake
-                </h5>
+        <!-- Water Intake -->
+        <div class="metric-card-large hydration-card">
+            <div class="metric-header">
+                <i data-feather="droplet" class="metric-icon"></i>
+                <span class="metric-title">HYDRATION</span>
             </div>
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-6 text-center">
-                        <div class="water-container mb-3">
-                            <div class="water-bottle">
-                                <div id="water-level" class="water-level" style="height: 0%"></div>
-                            </div>
-                            <p id="water-amount" class="mt-2">0 / 2000 ml</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="mb-2">Add water intake:</p>
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-outline-primary water-btn" data-amount="250">
-                                <i data-feather="plus-circle" class="feather-icon-sm"></i> 250ml
-                            </button>
-                            <button class="btn btn-outline-primary water-btn" data-amount="500">
-                                <i data-feather="plus-circle" class="feather-icon-sm"></i> 500ml
-                            </button>
-                        </div>
-                        <p class="mt-3 mb-1">Last drink:</p>
-                        <p id="last-drink-time" class="text-muted">No drinks today</p>
+            <div class="hydration-display">
+                <div class="water-amount" id="water-amount-display">0 / 2000 ml</div>
+                <div class="water-level-container">
+                    <div class="water-bottle-simple">
+                        <div id="water-level" class="water-level" style="height: 0%"></div>
                     </div>
                 </div>
+            </div>
+            <div class="water-controls">
+                <button class="btn btn-outline-primary water-btn" data-amount="250">250ml</button>
+                <button class="btn btn-outline-primary water-btn" data-amount="500">500ml</button>
             </div>
         </div>
-    </div>
 
-    <!-- Health Score Card -->
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i data-feather="heart" class="feather-icon"></i>
-                    Health Score
-                </h5>
-                <span class="badge bg-primary" id="health-score-badge">Calculating...</span>
+        <!-- Health Summary -->
+        <div class="metric-card-large health-card">
+            <div class="metric-header">
+                <i data-feather="heart" class="metric-icon"></i>
+                <span class="metric-title">HEALTH SCORE</span>
             </div>
-            <div class="card-body">
-                <div class="text-center mb-3">
-                    <div class="score-display">
-                        <div class="progress-ring">
-                            <div class="ring-container">
-                                <canvas id="health-score-chart" width="150" height="150"></canvas>
-                                <div class="ring-center">
-                                    <span id="health-score-value">--</span>
-                                    <span class="small">%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="health-summary">
+                <div class="health-score-display">
+                    <div class="health-score-number" id="health-score-value">--</div>
+                    <div class="health-score-unit">%</div>
                 </div>
-                
-                <div class="row text-center">
-                    <div class="col-4">
-                        <div class="metric-card">
-                            <div class="metric-label">Focus</div>
-                            <div class="metric-value" id="health-focus-score">--</div>
-                        </div>
+                <div class="health-breakdown">
+                    <div class="health-metric">
+                        <span class="health-metric-label">FOCUS</span>
+                        <span class="health-metric-value" id="health-focus-score">--</span>
                     </div>
-                    <div class="col-4">
-                        <div class="metric-card">
-                            <div class="metric-label">Posture</div>
-                            <div class="metric-value" id="health-posture-score">--</div>
-                        </div>
+                    <div class="health-metric">
+                        <span class="health-metric-label">POSTURE</span>
+                        <span class="health-metric-value" id="health-posture-score">--</span>
                     </div>
-                    <div class="col-4">
-                        <div class="metric-card">
-                            <div class="metric-label">Hydration</div>
-                            <div class="metric-value" id="health-hydration-score">--</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mt-3 text-center">
-                    <p class="mb-1" id="health-status-text">Building healthy habits...</p>
-                    <div class="achievement-status" id="achievement-display" style="display: none;">
-                        <span class="badge bg-warning">🏆 Elite Performer</span>
+                    <div class="health-metric">
+                        <span class="health-metric-label">HYDRATION</span>
+                        <span class="health-metric-value" id="health-hydration-score">--</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+// Dashboard-specific JavaScript for Dieter Rams design
+document.addEventListener('DOMContentLoaded', function() {
+    // Update time display
+    function updateTime() {
+        const now = new Date();
+        const timeOptions = { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true 
+        };
+        const dateOptions = { 
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        };
+        
+        document.getElementById('dashboard-time').textContent = now.toLocaleTimeString('en-US', timeOptions);
+        document.getElementById('dashboard-date').textContent = now.toLocaleDateString('en-US', dateOptions).toUpperCase();
+    }
+    
+    // Initial time update and interval
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    // Map old IDs to new dashboard IDs
+    const idMapping = {
+        'focus-score': 'focus-score-display',
+        'activity-description': 'activity-state-display',
+        'activity-timer': 'activity-timer-display',
+        'posture-feedback': 'posture-state-display',
+        'posture-advice': 'posture-feedback-display',
+        'angle-indicator': 'angle-indicator',
+        'water-amount': 'water-amount-display',
+        'health-score-value': 'health-score-value',
+        'health-focus-score': 'health-focus-score',
+        'health-posture-score': 'health-posture-score',
+        'health-hydration-score': 'health-hydration-score'
+    };
+
+    // Update focus score display
+    function updateFocusScore(score) {
+        const element = document.getElementById('focus-score-display');
+        if (element) {
+            element.textContent = score !== null ? Math.round(score) : '--';
+        }
+    }
+
+    // Update activity status
+    function updateActivityStatus(data) {
+        const stateElement = document.getElementById('activity-state-display');
+        const timerElement = document.getElementById('activity-timer-display');
+        
+        if (stateElement && data.activity_state) {
+            stateElement.textContent = data.activity_state.toUpperCase().replace('_', ' ');
+        }
+        
+        if (timerElement && data.time_in_state !== undefined) {
+            const minutes = Math.floor(data.time_in_state / 60);
+            const seconds = data.time_in_state % 60;
+            timerElement.textContent = `${minutes}m ${seconds}s`;
+        }
+    }
+
+    // Update posture status
+    function updatePostureStatus(data) {
+        const stateElement = document.getElementById('posture-state-display');
+        const feedbackElement = document.getElementById('posture-feedback-display');
+        const angleElement = document.getElementById('spine-angle-display');
+        
+        if (stateElement && data.posture) {
+            stateElement.textContent = data.posture.toUpperCase().replace('_', ' ');
+        }
+        
+        if (feedbackElement && data.feedback) {
+            feedbackElement.textContent = data.feedback;
+        }
+        
+        if (angleElement && data.angle !== undefined) {
+            angleElement.textContent = Math.round(data.angle) + '°';
+        }
+    }
+
+    // Update water amount
+    function updateWaterAmount(amount, target = 2000) {
+        const element = document.getElementById('water-amount-display');
+        if (element) {
+            element.textContent = `${amount} / ${target} ml`;
+        }
+        
+        // Update water level
+        const levelElement = document.getElementById('water-level');
+        if (levelElement) {
+            const percentage = Math.min((amount / target) * 100, 100);
+            levelElement.style.height = percentage + '%';
+        }
+    }
+
+    // Add water intake button handlers
+    document.querySelectorAll('.water-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const amount = parseInt(this.dataset.amount);
+            fetch('/api/water', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ amount: amount })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateWaterAmount(data.total_intake);
+                }
+            })
+            .catch(error => console.error('Error adding water:', error));
+        });
+    });
+
+    // Start camera functionality
+    const startCameraBtn = document.getElementById('start-camera');
+    if (startCameraBtn) {
+        startCameraBtn.addEventListener('click', function() {
+            // This will integrate with existing camera logic
+            if (window.startCamera) {
+                window.startCamera();
+            }
+        });
+    }
+
+    // Existing monitoring functions integration
+    if (window.startMonitoring) {
+        window.startMonitoring();
+    }
+});
+</script>
 
 <!-- Notification Toast -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
