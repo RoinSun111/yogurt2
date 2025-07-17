@@ -1,271 +1,299 @@
-/* Flow House-inspired styling - warm, creamy, minimal */
+/* Dieter Rams inspired design - clean, functional, minimal with orange warmth */
 :root {
-    --flow-cream: #f5f1eb;
-    --flow-warm-white: #faf8f4;
-    --flow-warm-50: #f9f6f1;
-    --flow-warm-100: #f3ede5;
-    --flow-warm-200: #ebe2d6;
-    --flow-warm-300: #ddd1c0;
-    --flow-warm-400: #c4b69f;
-    --flow-warm-500: #a69580;
-    --flow-warm-600: #6a6a6a;
-    --flow-warm-700: #4a4a4a;
-    --flow-warm-800: #4a3f33;
-    --flow-warm-900: #4a4a4a;
-    --flow-black: #4a4a4a;
-    --flow-accent: #8b6914;
-    --flow-green: #4a7c59;
-    --flow-amber: #d97706;
-    --flow-red: #dc2626;
-    --flow-purple: #7c2d12;
-    --card-radius: 16px;
-    --button-radius: 12px;
-    --spacing-xs: 0.5rem;
-    --spacing-sm: 1rem;
-    --spacing-md: 1.5rem;
-    --spacing-lg: 2rem;
-    --spacing-xl: 3rem;
-    --spacing-2xl: 4rem;
+    /* Core neutral colors */
+    --color-white: #ffffff;
+    --color-gray-50: #f8f8f8;
+    --color-gray-100: #f0f0f0;
+    --color-gray-200: #e8e8e8;
+    --color-gray-300: #d0d0d0;
+    --color-gray-400: #a8a8a8;
+    --color-gray-500: #808080;
+    --color-gray-600: #666666;
+    --color-gray-700: #4a4a4a;
+    --color-gray-800: #333333;
+    --color-gray-900: #1a1a1a;
+    
+    /* Orange accent for warmth */
+    --color-orange-50: #fff7ed;
+    --color-orange-100: #ffedd5;
+    --color-orange-200: #fed7aa;
+    --color-orange-300: #fdba74;
+    --color-orange-400: #fb923c;
+    --color-orange-500: #f97316;
+    --color-orange-600: #ea580c;
+    --color-orange-700: #c2410c;
+    --color-orange-800: #9a3412;
+    --color-orange-900: #7c2d12;
+    
+    /* System colors */
+    --color-success: #22c55e;
+    --color-warning: #f59e0b;
+    --color-error: #ef4444;
+    --color-info: #3b82f6;
+    
+    /* Design system */
+    --border-radius: 4px;
+    --border-radius-lg: 8px;
+    --border-width: 1px;
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-2xl: 48px;
+    
+    /* Typography */
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
 }
 
-/* Main layout styles */
+/* Main layout - Dieter Rams inspired clean foundation */
 body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background-color: var(--flow-cream);
-    color: #2d2d2d;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
-    font-weight: 400;
-    line-height: 1.6;
+    background-color: var(--color-gray-50);
+    color: var(--color-gray-900);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height-normal);
     letter-spacing: -0.01em;
+    font-size: 14px;
 }
 
 main {
     flex: 1;
-    padding: var(--spacing-lg) 0;
-    background-color: var(--flow-cream);
+    padding: var(--spacing-xl) 0;
+    background-color: var(--color-gray-50);
 }
 
-/* Flow House-style navigation */
+/* Clean header design */
 header {
-    background-color: var(--flow-warm-white);
-    border-bottom: 1px solid var(--flow-warm-200);
-    padding: var(--spacing-md) 0 !important;
-    box-shadow: 0 1px 3px rgba(139, 105, 20, 0.08);
+    background-color: var(--color-white);
+    border-bottom: var(--border-width) solid var(--color-gray-200);
+    padding: var(--spacing-lg) 0 !important;
+    box-shadow: none;
 }
 
 .brand h1 {
-    font-size: 1.75rem;
-    font-weight: 600;
-    letter-spacing: -0.025em;
-    color: #2d2d2d;
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.02em;
+    color: var(--color-gray-900);
     margin: 0;
 }
 
 .brand .logo svg {
-    color: var(--flow-accent);
+    color: var(--color-orange-500);
 }
 
 .hamburger-btn {
-    background-color: transparent;
-    border: 1px solid var(--flow-warm-300);
-    color: var(--flow-warm-700);
-    padding: var(--spacing-xs);
-    border-radius: var(--button-radius);
+    background-color: var(--color-white);
+    border: var(--border-width) solid var(--color-gray-300);
+    color: var(--color-gray-700);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius);
     transition: all 0.2s ease;
 }
 
 .hamburger-btn:hover {
-    background-color: var(--flow-warm-100);
-    border-color: var(--flow-warm-400);
-    color: var(--flow-warm-800);
+    background-color: var(--color-gray-100);
+    border-color: var(--color-gray-400);
+    color: var(--color-gray-900);
 }
 
 .dropdown-menu {
-    background-color: var(--flow-warm-white) !important;
-    border: 1px solid var(--flow-warm-200) !important;
-    border-radius: var(--button-radius) !important;
-    box-shadow: 0 8px 24px rgba(139, 105, 20, 0.15) !important;
-    backdrop-filter: blur(10px);
+    background-color: var(--color-white) !important;
+    border: var(--border-width) solid var(--color-gray-200) !important;
+    border-radius: var(--border-radius-lg) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    margin-top: var(--spacing-sm) !important;
 }
 
 .dropdown-item {
-    color: var(--flow-warm-700) !important;
-    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--color-gray-700) !important;
+    padding: var(--spacing-md) var(--spacing-lg);
     background-color: transparent !important;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
+    font-size: 14px;
 }
 
 .dropdown-item:hover, .dropdown-item:focus {
-    background-color: var(--flow-warm-100) !important;
-    color: var(--flow-warm-900) !important;
+    background-color: var(--color-gray-100) !important;
+    color: var(--color-gray-900) !important;
 }
 
-.dropdown-item:active {
-    background-color: var(--flow-warm-200) !important;
-    color: var(--flow-warm-900) !important;
+.dropdown-item.active {
+    background-color: var(--color-orange-50) !important;
+    color: var(--color-orange-700) !important;
+    border-left: 3px solid var(--color-orange-500);
+    padding-left: calc(var(--spacing-lg) - 3px);
 }
 
-/* Flow House-style cards - warm, clean, spacious */
+/* Clean card design following good design principles */
 .card {
-    background-color: var(--flow-warm-white);
-    border: 1px solid var(--flow-warm-200);
-    border-radius: var(--card-radius);
-    box-shadow: 0 1px 3px rgba(139, 105, 20, 0.08);
+    background-color: var(--color-white);
+    border: var(--border-width) solid var(--color-gray-200);
+    border-radius: var(--border-radius);
+    box-shadow: none;
     overflow: hidden;
     margin-bottom: var(--spacing-lg);
-    transition: all 0.2s ease;
+    transition: box-shadow 0.2s ease;
 }
 
 .card:hover {
-    box-shadow: 0 4px 12px rgba(139, 105, 20, 0.12);
-    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .card-header {
-    background-color: transparent;
-    border-bottom: 1px solid var(--flow-warm-200);
-    padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-md);
-    font-weight: 600;
+    background-color: var(--color-white);
+    border-bottom: var(--border-width) solid var(--color-gray-200);
+    padding: var(--spacing-lg);
+    font-weight: var(--font-weight-semibold);
 }
 
 .card-header h5 {
-    font-size: 1.125rem;
-    font-weight: 600;
+    font-size: 16px;
+    font-weight: var(--font-weight-semibold);
     letter-spacing: -0.01em;
-    color: #2d2d2d;
+    color: var(--color-gray-900);
     margin: 0;
-    line-height: 1.4;
+    line-height: var(--line-height-tight);
 }
 
 .card-body {
     padding: var(--spacing-lg);
-    background-color: var(--flow-warm-white);
+    background-color: var(--color-white);
 }
 
-/* Flow-style buttons */
+/* Clean button design */
 .btn {
-    border-radius: var(--button-radius);
-    font-weight: 500;
+    border-radius: var(--border-radius);
+    font-weight: var(--font-weight-medium);
     padding: var(--spacing-sm) var(--spacing-md);
     transition: all 0.2s ease;
-    border: 1px solid transparent;
-    font-size: 0.875rem;
+    border: var(--border-width) solid transparent;
+    font-size: 14px;
+    line-height: var(--line-height-tight);
 }
 
 .btn-primary {
-    background-color: var(--flow-accent);
-    border-color: var(--flow-accent);
-    color: var(--flow-warm-white);
+    background-color: var(--color-orange-500);
+    border-color: var(--color-orange-500);
+    color: var(--color-white);
 }
 
 .btn-primary:hover, .btn-primary:active, .btn-primary:focus {
-    background-color: #1d4ed8 !important;
-    border-color: #1d4ed8 !important;
-    color: var(--flow-warm-white) !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+    background-color: var(--color-orange-600) !important;
+    border-color: var(--color-orange-600) !important;
+    color: var(--color-white) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-outline-primary {
-    border-color: var(--flow-accent);
-    color: var(--flow-accent);
-    background-color: transparent;
+    border-color: var(--color-orange-500);
+    color: var(--color-orange-500);
+    background-color: var(--color-white);
 }
 
 .btn-outline-primary:hover {
-    background-color: var(--flow-accent);
-    border-color: var(--flow-accent);
-    color: var(--flow-white);
+    background-color: var(--color-orange-500);
+    border-color: var(--color-orange-500);
+    color: var(--color-white);
 }
 
 .btn-sm {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: 0.8125rem;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 12px;
 }
 
-/* Flow-style badges */
+/* Simple badge design */
 .badge {
     padding: var(--spacing-xs) var(--spacing-sm);
-    font-weight: 500;
-    border-radius: 8px;
-    font-size: 0.75rem;
-    letter-spacing: 0.025em;
+    font-weight: var(--font-weight-medium);
+    border-radius: var(--border-radius);
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
 }
 
 .badge.bg-primary {
-    background-color: var(--flow-accent) !important;
-    color: var(--flow-warm-white) !important;
+    background-color: var(--color-orange-500) !important;
+    color: var(--color-white) !important;
 }
 
 .badge.bg-success {
-    background-color: var(--flow-green) !important;
-    color: var(--flow-warm-white) !important;
+    background-color: var(--color-success) !important;
+    color: var(--color-white) !important;
 }
 
 .badge.bg-warning {
-    background-color: var(--flow-amber) !important;
-    color: var(--flow-warm-white) !important;
+    background-color: var(--color-warning) !important;
+    color: var(--color-white) !important;
 }
 
 .badge.bg-info {
-    background-color: var(--flow-purple) !important;
-    color: var(--flow-warm-white) !important;
+    background-color: var(--color-info) !important;
+    color: var(--color-white) !important;
 }
 
 .badge.bg-secondary {
-    background-color: var(--flow-warm-600) !important;
-    color: var(--flow-warm-white) !important;
+    background-color: var(--color-gray-500) !important;
+    color: var(--color-white) !important;
 }
 
 .badge.bg-danger {
-    background-color: var(--flow-red) !important;
-    color: var(--flow-warm-white) !important;
+    background-color: var(--color-error) !important;
+    color: var(--color-white) !important;
 }
 
-/* Flow House-style progress bars */
+/* Clean progress bars */
 .progress {
-    height: 10px;
-    background-color: var(--flow-warm-200);
-    border-radius: 6px;
+    height: 8px;
+    background-color: var(--color-gray-200);
+    border-radius: var(--border-radius);
     overflow: hidden;
     box-shadow: none;
 }
 
 .progress-bar {
-    background-color: var(--flow-accent);
+    background-color: var(--color-orange-500);
     transition: width 0.3s ease;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
 }
 
 .progress-bar.bg-success {
-    background-color: var(--flow-green) !important;
+    background-color: var(--color-success) !important;
 }
 
 .progress-bar.bg-warning {
-    background-color: var(--flow-amber) !important;
+    background-color: var(--color-warning) !important;
 }
 
 .progress-bar.bg-danger {
-    background-color: var(--flow-red) !important;
+    background-color: var(--color-error) !important;
 }
 
 .progress-bar.bg-info {
-    background-color: var(--flow-purple) !important;
+    background-color: var(--color-info) !important;
 }
 
-/* Flow House-style activity indicators */
+/* Clean activity indicators */
 .activity-icon-container {
     width: 48px;
     height: 48px;
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: var(--button-radius);
-    background-color: var(--flow-warm-100);
-    color: var(--flow-accent);
-    border: 1px solid var(--flow-warm-200);
+    border-radius: var(--border-radius);
+    background-color: var(--color-orange-50);
+    color: var(--color-orange-600);
+    border: var(--border-width) solid var(--color-orange-200);
 }
 
 .activity-icon-container i {
@@ -273,31 +301,32 @@ header {
     height: 24px;
 }
 
-/* Flow House-style metrics - clean data presentation */
+/* Clean metrics design */
 .metric, .metric-card {
-    background-color: var(--flow-warm-white);
-    border-radius: var(--card-radius);
-    padding: 0.75rem;
+    background-color: var(--color-gray-50);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-    border: 1px solid var(--flow-warm-200);
+    align-items: flex-start;
+    text-align: left;
+    border: var(--border-width) solid var(--color-gray-200);
 }
 
 .metric-label {
-    font-size: 0.8125rem;
-    color: #2d2d2d;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    margin-bottom: 0.25rem;
+    font-size: 12px;
+    color: var(--color-gray-600);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: 0.02em;
+    margin-bottom: var(--spacing-xs);
+    text-transform: uppercase;
 }
 
 .metric-value {
-    font-weight: 700;
-    font-size: 1.25rem;
-    color: #1a1a1a;
-    line-height: 1.2;
+    font-weight: var(--font-weight-light);
+    font-size: 1.75rem;
+    color: var(--color-gray-900);
+    line-height: var(--line-height-tight);
 }
 
 /* WHOOP-style score displays */
@@ -328,26 +357,26 @@ header {
 
 #focus-score, #health-score-value {
     font-size: 2rem;
-    font-weight: 700;
-    line-height: 1;
-    color: #1a1a1a;
+    font-weight: var(--font-weight-light);
+    line-height: var(--line-height-tight);
+    color: var(--color-gray-900);
 }
 
 #focus-score + .small, #health-score-value + .small {
     font-size: 0.75rem;
-    color: #2d2d2d;
-    font-weight: 500;
+    color: var(--color-gray-600);
+    font-weight: var(--font-weight-medium);
 }
 
-/* Flow-style camera container */
+/* Clean camera container */
 .camera-container {
     position: relative;
     width: 100%;
     aspect-ratio: 4/3;
-    background-color: var(--flow-gray-900);
-    border-radius: var(--card-radius);
+    background-color: var(--color-gray-800);
+    border-radius: var(--border-radius);
     overflow: hidden;
-    border: 1px solid var(--flow-gray-200);
+    border: var(--border-width) solid var(--color-gray-300);
 }
 
 #webcam {
@@ -375,32 +404,18 @@ header {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: var(--whoop-gray-dark);
-    color: var(--whoop-gray-light);
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-600);
 }
 
-/* WHOOP-style text and content refinements */
-h3, .h3 {
-    font-weight: 600;
-    font-size: 1.25rem;
-    color: #2d2d2d;
-    letter-spacing: -0.02em;
-}
-
-h5, .h5 {
-    font-weight: 600;
-    font-size: 1rem;
-    color: #2d2d2d;
-    letter-spacing: -0.01em;
-}
-
+/* Clean text styling overrides */
 .text-muted {
-    color: #666666 !important;
+    color: var(--color-gray-600) !important;
 }
 
-/* Feather icon styling */
+/* Icon styling with orange accent */
 .feather-icon, .feather-icon-sm, .feather-icon-lg {
-    color: var(--whoop-accent);
+    color: var(--color-orange-500);
 }
 
 /* Container spacing adjustments for WHOOP look */
@@ -1165,3 +1180,151 @@ a:hover {
 .scrollable-events .list-group-item:last-child {
     border-bottom: none;
 }
+
+/* Dieter Rams finishing touches */
+
+/* Typography hierarchy - clean and functional */
+h1, .h1 { 
+    font-size: 2rem; 
+    font-weight: var(--font-weight-light); 
+    color: var(--color-gray-900);
+    line-height: var(--line-height-tight);
+    letter-spacing: -0.02em;
+}
+
+h2, .h2 { 
+    font-size: 1.5rem; 
+    font-weight: var(--font-weight-normal); 
+    color: var(--color-gray-900);
+    line-height: var(--line-height-tight);
+}
+
+h3, .h3 { 
+    font-size: 1.25rem; 
+    font-weight: var(--font-weight-medium); 
+    color: var(--color-gray-900);
+}
+
+h4, .h4 { 
+    font-size: 1.125rem; 
+    font-weight: var(--font-weight-medium); 
+    color: var(--color-gray-800);
+}
+
+h5, .h5 { 
+    font-size: 1rem; 
+    font-weight: var(--font-weight-semibold); 
+    color: var(--color-gray-800);
+}
+
+/* Clean footer design */
+footer {
+    background-color: var(--color-white);
+    border-top: var(--border-width) solid var(--color-gray-200);
+    color: var(--color-gray-600);
+    font-size: 12px;
+    padding: var(--spacing-xl) 0;
+}
+
+footer p {
+    margin: 0;
+    font-weight: var(--font-weight-normal);
+}
+
+/* Time display refinement */
+.time-display {
+    background-color: var(--color-white) !important;
+    border: var(--border-width) solid var(--color-gray-300) !important;
+    color: var(--color-gray-700) !important;
+    font-size: 14px;
+    font-weight: var(--font-weight-medium);
+}
+
+/* Clean form controls */
+.form-control, .form-select {
+    border-radius: var(--border-radius);
+    border: var(--border-width) solid var(--color-gray-300);
+    font-size: 14px;
+    padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--color-orange-500);
+    box-shadow: 0 0 0 3px rgba(247, 115, 22, 0.1);
+}
+
+/* Camera and video styling */
+.camera-container {
+    background-color: var(--color-gray-800);
+    border-radius: var(--border-radius);
+    border: var(--border-width) solid var(--color-gray-300);
+}
+
+.placeholder-container {
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-600);
+}
+
+/* Score displays - minimal ring design */
+#focus-score, #health-score-value {
+    font-size: 2rem;
+    font-weight: var(--font-weight-light);
+    color: var(--color-gray-900);
+}
+
+#focus-score + .small, #health-score-value + .small {
+    font-size: 0.75rem;
+    color: var(--color-gray-600);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Feather icons with orange accent */
+.feather-icon, .feather-icon-sm, .feather-icon-lg, i[data-feather] {
+    color: var(--color-orange-500);
+}
+
+/* Water bottle - simplified design */
+.water-bottle {
+    background-color: var(--color-gray-100);
+    border: 2px solid var(--color-gray-300);
+    border-radius: var(--border-radius-lg);
+}
+
+.water-level {
+    background-color: var(--color-orange-400);
+    transition: height 0.3s ease;
+}
+
+/* Toast notifications - clean design */
+.toast {
+    background-color: var(--color-white);
+    border: var(--border-width) solid var(--color-gray-200);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.toast-header {
+    background-color: var(--color-gray-50);
+    border-bottom: var(--border-width) solid var(--color-gray-200);
+}
+
+/* Text color utilities */
+.text-muted {
+    color: var(--color-gray-600) !important;
+}
+
+/* Remove all unnecessary decorative elements */
+.card-body p, .card-body small {
+    color: var(--color-gray-700);
+}
+
+/* Ensure consistent spacing */
+.mb-1 { margin-bottom: var(--spacing-xs) !important; }
+.mb-2 { margin-bottom: var(--spacing-sm) !important; }
+.mb-3 { margin-bottom: var(--spacing-md) !important; }
+.mb-4 { margin-bottom: var(--spacing-lg) !important; }
+
+.mt-1 { margin-top: var(--spacing-xs) !important; }
+.mt-2 { margin-top: var(--spacing-sm) !important; }
+.mt-3 { margin-top: var(--spacing-md) !important; }
+.mt-4 { margin-top: var(--spacing-lg) !important; }
