@@ -49,7 +49,7 @@ with app.app_context():
     db.create_all()
 
 # Import AI calendar utilities
-from utils.ai_calendar import ai_calendar
+from utils import ai_calendar
 from utils.voice_processor import voice_processor
 
 # Routes
@@ -960,7 +960,7 @@ def get_ai_calendar_events():
         
         return jsonify({'success': True, 'events': events_data})
     except Exception as e:
-        logger.error(f"Error fetching events: {e}")
+        logging.error(f"Error fetching events: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/api/calendar/ai-chat', methods=['POST'])
@@ -1081,7 +1081,7 @@ def ai_calendar_chat():
         })
         
     except Exception as e:
-        logger.error(f"Error in AI calendar chat: {e}")
+        logging.error(f"Error in AI calendar chat: {e}")
         return jsonify({'success': False, 'error': 'Sorry, I had trouble processing that request. Could you try again?'})
 
 @app.route('/api/calendar/voice', methods=['POST'])
@@ -1108,7 +1108,7 @@ def process_voice_command():
         })
         
     except Exception as e:
-        logger.error(f"Error processing voice command: {e}")
+        logging.error(f"Error processing voice command: {e}")
         return jsonify({'success': False, 'error': 'Error processing voice command'})
 
 @app.route('/calendar')
