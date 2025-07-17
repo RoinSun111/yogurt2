@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.water-btn').forEach(button => {
         button.addEventListener('click', function() {
             const amount = parseInt(this.dataset.amount);
-            fetch('/api/water', {
+            fetch('/api/add_water', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -245,7 +245,12 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    updateWaterAmount(data.total_intake);
+                    // Get updated total intake
+                    fetch('/api/water_intake')
+                        .then(response => response.json())
+                        .then(intakeData => {
+                            updateWaterAmount(intakeData.total_intake || 0);
+                        });
                 }
             })
             .catch(error => console.error('Error adding water:', error));
@@ -262,6 +267,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Load initial water intake data
+    fetch('/api/water_intake')
+        .then(response => response.json())
+        .then(data => {
+            updateWaterAmount(data.total_intake || 0);
+        })
+        .catch(error => console.error('Error loading water intake:', error));
 
     // Existing monitoring functions integration
     if (window.startMonitoring) {
