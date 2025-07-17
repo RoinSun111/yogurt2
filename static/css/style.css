@@ -1374,7 +1374,7 @@ footer p {
 .current-time-large {
     font-size: 4rem;
     font-weight: var(--font-weight-light);
-    color: var(--color-gray-900);
+    color: #000000;
     line-height: var(--line-height-tight);
     letter-spacing: -0.03em;
     margin-bottom: var(--spacing-sm);
@@ -1437,14 +1437,14 @@ footer p {
 .metric-number {
     font-size: 3rem;
     font-weight: var(--font-weight-light);
-    color: var(--color-gray-900);
+    color: #000000;
     line-height: var(--line-height-tight);
 }
 
 .metric-unit {
     font-size: 1.5rem;
     font-weight: var(--font-weight-normal);
-    color: var(--color-gray-600);
+    color: #000000;
 }
 
 .metric-subtitle {
@@ -1477,7 +1477,7 @@ footer p {
 .activity-state {
     font-size: 1.25rem;
     font-weight: var(--font-weight-medium);
-    color: var(--color-gray-900);
+    color: #000000;
     margin-bottom: var(--spacing-xs);
 }
 
@@ -1498,7 +1498,7 @@ footer p {
 .posture-state {
     font-size: 1.25rem;
     font-weight: var(--font-weight-medium);
-    color: var(--color-gray-900);
+    color: #000000;
     margin-bottom: var(--spacing-xs);
 }
 
@@ -1524,7 +1524,7 @@ footer p {
 .angle-value {
     font-size: 1.5rem;
     font-weight: var(--font-weight-light);
-    color: var(--color-gray-900);
+    color: #000000;
     line-height: var(--line-height-tight);
 }
 
@@ -1590,7 +1590,7 @@ footer p {
 .water-amount {
     font-size: 1.125rem;
     font-weight: var(--font-weight-medium);
-    color: var(--color-gray-900);
+    color: #000000;
 }
 
 .water-level-container {
@@ -1646,14 +1646,14 @@ footer p {
 .health-score-number {
     font-size: 3rem;
     font-weight: var(--font-weight-light);
-    color: var(--color-gray-900);
+    color: #000000;
     line-height: var(--line-height-tight);
 }
 
 .health-score-unit {
     font-size: 1.5rem;
     font-weight: var(--font-weight-normal);
-    color: var(--color-gray-600);
+    color: #000000;
 }
 
 .health-breakdown {
@@ -1681,7 +1681,7 @@ footer p {
 .health-metric-value {
     font-size: 1.25rem;
     font-weight: var(--font-weight-light);
-    color: var(--color-gray-900);
+    color: #000000;
 }
 
 /* Responsive adjustments */
