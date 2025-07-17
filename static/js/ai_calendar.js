@@ -97,28 +97,13 @@ class AICalendar {
         // Clear previous calendar
         calendarGrid.innerHTML = '';
         
-        // Add day headers
-        const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const headerDiv = document.createElement('div');
-        headerDiv.className = 'calendar-header';
-        dayHeaders.forEach(day => {
-            const dayHeader = document.createElement('div');
-            dayHeader.className = 'calendar-header-day';
-            dayHeader.textContent = day;
-            headerDiv.appendChild(dayHeader);
-        });
-        calendarGrid.appendChild(headerDiv);
-        
         // Get first day of month and number of days
         const firstDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
         const lastDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0);
         const startDate = new Date(firstDay);
         startDate.setDate(startDate.getDate() - firstDay.getDay());
         
-        const gridDiv = document.createElement('div');
-        gridDiv.className = 'calendar-grid';
-        
-        // Generate calendar days
+        // Generate calendar days (6 weeks = 42 days)
         for (let i = 0; i < 42; i++) {
             const date = new Date(startDate);
             date.setDate(startDate.getDate() + i);
@@ -161,10 +146,8 @@ class AICalendar {
                 }
             });
             
-            gridDiv.appendChild(dayDiv);
+            calendarGrid.appendChild(dayDiv);
         }
-        
-        calendarGrid.appendChild(gridDiv);
     }
     
     isToday(date) {
