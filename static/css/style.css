@@ -1600,13 +1600,15 @@ footer p {
 }
 
 .water-bottle-simple {
-    width: 60px;
-    height: 80px;
-    background-color: var(--color-gray-100);
-    border: 2px solid var(--color-gray-300);
-    border-radius: var(--border-radius);
+    width: 80px;
+    height: 120px;
+    background: #FAFAFA;
+    border: 1px solid var(--color-gray-200);
+    border-radius: 0 0 8px 8px;
     position: relative;
     overflow: hidden;
+    margin: 0 auto;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .water-level {
@@ -1614,8 +1616,10 @@ footer p {
     bottom: 0;
     left: 0;
     right: 0;
-    background-color: var(--color-orange-400);
-    transition: height 0.3s ease;
+    background: linear-gradient(to top, #E3F2FD, #BBDEFB);
+    transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 0 0 8px 8px;
+    opacity: 0.9;
 }
 
 .water-controls {
