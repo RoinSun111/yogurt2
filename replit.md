@@ -122,6 +122,7 @@ The system leverages TinyML (TensorFlow Lite) for real-time pose detection and a
 - **Session Management**: Secure session handling with environment-based secrets
 
 ## Changelog
+- July 17, 2025: Redesigned moodboard UI following Dieter Rams design principles - clean, functional, minimal aesthetic with subtle colors, refined typography, and reduced visual noise
 - July 2, 2025: Enhanced posture detection accuracy with MediaPipe Face Mesh integration for precise neck angle calculation using 468 facial landmarks
 - June 28, 2025: Refined UI with WHOOP-inspired design - minimal, data-focused interface with darker backgrounds and cleaner metrics
 - June 22, 2025: Added comprehensive gamification system with achievements, streaks, and health score rewards
@@ -130,3 +131,4 @@ The system leverages TinyML (TensorFlow Lite) for real-time pose detection and a
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+UI Design preference: Dieter Rams inspired design - clean, functional, minimal with good typography and subtle visual hierarchy.
