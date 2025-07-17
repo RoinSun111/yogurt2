@@ -58,6 +58,12 @@ class SoundTherapyManager {
         try {
             // Initialize Web Audio API
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Check if audio context is suspended (common in modern browsers)
+            if (this.audioContext.state === 'suspended') {
+                console.log('Audio context suspended - will resume on user interaction');
+            }
+            
             await this.generateSounds();
             console.log('Sound therapy system initialized');
         } catch (error) {
@@ -271,10 +277,22 @@ class SoundTherapyManager {
         );
     }
     
-    enable() {
+    async enable() {
         this.isEnabled = true;
+        
+        // Resume audio context if suspended (required for user interaction)
+        if (this.audioContext && this.audioContext.state === 'suspended') {
+            try {
+                await this.audioContext.resume();
+                console.log('Audio context resumed');
+            } catch (error) {
+                console.warn('Failed to resume audio context:', error);
+                return;
+            }
+        }
+        
         const soundKey = this.selectSoundForState();
-        this.transitionToSound(soundKey);
+        await this.transitionToSound(soundKey);
         this.updateSoundTherapyUI();
     }
     
@@ -309,8 +327,25 @@ class SoundTherapyManager {
         const soundColorElement = document.getElementById('sound-color-indicator');
         
         if (statusElement) {
-            statusElement.textContent = this.isEnabled ? 'Active' : 'Inactive';
-            statusElement.className = `badge ${this.isEnabled ? 'bg-success' : 'bg-secondary'}`;
+            // Show more detailed status including audio context state
+            let statusText = 'Inactive';
+            let statusClass = 'bg-secondary';
+            
+            if (this.isEnabled) {
+                if (this.audioContext && this.audioContext.state === 'running') {
+                    statusText = 'Active';
+                    statusClass = 'bg-success';
+                } else if (this.audioContext && this.audioContext.state === 'suspended') {
+                    statusText = 'Ready (Click to start)';
+                    statusClass = 'bg-warning';
+                } else {
+                    statusText = 'Error';
+                    statusClass = 'bg-danger';
+                }
+            }
+            
+            statusElement.textContent = statusText;
+            statusElement.className = `badge ${statusClass}`;
         }
         
         if (this.isEnabled && this.currentTrack) {

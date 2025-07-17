@@ -114,9 +114,9 @@ function setupSoundControls() {
     const volumeSlider = document.getElementById('sound-volume');
     
     if (toggleSwitch) {
-        toggleSwitch.addEventListener('change', (e) => {
+        toggleSwitch.addEventListener('change', async (e) => {
             if (e.target.checked) {
-                window.soundTherapy.enable();
+                await window.soundTherapy.enable();
                 console.log('Sound therapy enabled');
             } else {
                 window.soundTherapy.disable();
