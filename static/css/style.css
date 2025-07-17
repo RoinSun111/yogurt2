@@ -1295,17 +1295,21 @@ footer p {
     transition: height 0.3s ease;
 }
 
-/* Toast notifications - clean design */
+/* Toast notifications - clean design with enhanced blur */
 .toast {
-    background-color: var(--color-white);
+    background-color: rgba(255, 255, 255, 0.85);
     border: var(--border-width) solid var(--color-gray-200);
     border-radius: var(--border-radius-lg);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
 }
 
 .toast-header {
-    background-color: var(--color-gray-50);
+    background-color: rgba(248, 249, 250, 0.8);
     border-bottom: var(--border-width) solid var(--color-gray-200);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
 }
 
 /* Text color utilities */
