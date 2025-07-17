@@ -1,7 +1,9 @@
 import os
 import logging
+import json
+import uuid
 from datetime import datetime, timedelta
-from flask import Flask, render_template, jsonify, request, Response
+from flask import Flask, render_template, jsonify, request, Response, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -45,6 +47,10 @@ with app.app_context():
     # Import models here
     import models
     db.create_all()
+
+# Import AI calendar utilities
+from utils.ai_calendar import ai_calendar
+from utils.voice_processor import voice_processor
 
 # Routes
 @app.route('/')
@@ -920,6 +926,195 @@ def update_widget_settings():
     
     db.session.commit()
     return jsonify({'success': True})
+
+# AI Calendar Routes
+@app.route('/api/calendar/events')
+def get_ai_calendar_events():
+    """Get calendar events for AI calendar interface"""
+    start_date = request.args.get('start', datetime.now().strftime('%Y-%m-%d'))
+    end_date = request.args.get('end', (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d'))
+    
+    try:
+        start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+        end_dt = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1)
+        
+        events = models.CalendarEvent.query.filter(
+            models.CalendarEvent.start_time >= start_dt,
+            models.CalendarEvent.start_time < end_dt
+        ).order_by(models.CalendarEvent.start_time).all()
+        
+        events_data = []
+        for event in events:
+            events_data.append({
+                'id': event.id,
+                'title': event.title,
+                'description': event.description,
+                'start': event.start_time.isoformat(),
+                'end': event.end_time.isoformat() if event.end_time else None,
+                'type': event.event_type,
+                'location': event.location,
+                'color': event.color,
+                'priority': event.priority,
+                'is_ai_created': event.is_ai_created
+            })
+        
+        return jsonify({'success': True, 'events': events_data})
+    except Exception as e:
+        logger.error(f"Error fetching events: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/calendar/ai-chat', methods=['POST'])
+def ai_calendar_chat():
+    """Handle AI calendar conversation"""
+    try:
+        data = request.get_json()
+        user_message = data.get('message', '')
+        session_id = session.get('calendar_session_id')
+        
+        if not session_id:
+            session_id = str(uuid.uuid4())
+            session['calendar_session_id'] = session_id
+        
+        # Parse the natural language input
+        event_request = ai_calendar.parse_natural_language(user_message)
+        
+        response_text = ""
+        created_event = None
+        
+        # Handle different actions
+        if event_request.action == 'create' and event_request.confidence > 0.5:
+            # Check for conflicts
+            existing_events = []
+            if event_request.start_time:
+                start_dt = datetime.fromisoformat(event_request.start_time)
+                day_start = start_dt.replace(hour=0, minute=0, second=0, microsecond=0)
+                day_end = day_start + timedelta(days=1)
+                
+                existing = models.CalendarEvent.query.filter(
+                    models.CalendarEvent.start_time >= day_start,
+                    models.CalendarEvent.start_time < day_end
+                ).all()
+                
+                existing_events = [{
+                    'title': e.title,
+                    'start_time': e.start_time.isoformat(),
+                    'end_time': e.end_time.isoformat() if e.end_time else None
+                } for e in existing]
+            
+            conflict_info = ai_calendar.detect_conflicts(event_request, existing_events)
+            
+            if conflict_info.has_conflict:
+                response_text = f"I found a scheduling conflict: {conflict_info.reasoning}\n\nWould you like me to suggest alternative times?"
+            else:
+                # Create the event
+                start_time = datetime.fromisoformat(event_request.start_time) if event_request.start_time else None
+                end_time = None
+                
+                if event_request.end_time:
+                    end_time = datetime.fromisoformat(event_request.end_time)
+                elif start_time and event_request.duration:
+                    end_time = start_time + timedelta(minutes=event_request.duration)
+                elif start_time:
+                    end_time = start_time + timedelta(hours=1)  # Default 1 hour
+                
+                if start_time:
+                    new_event = models.CalendarEvent(
+                        title=event_request.title,
+                        description=event_request.description,
+                        start_time=start_time,
+                        end_time=end_time,
+                        location=event_request.location,
+                        event_type=event_request.event_type,
+                        attendees=json.dumps(event_request.attendees) if event_request.attendees else None,
+                        is_ai_created=True,
+                        priority='medium'
+                    )
+                    
+                    db.session.add(new_event)
+                    db.session.commit()
+                    created_event = new_event
+                    
+                    response_text = f"Perfect! I've scheduled '{event_request.title}' for {start_time.strftime('%B %d at %I:%M %p')}."
+                else:
+                    response_text = "I'd be happy to schedule that for you! What time would you prefer?"
+        
+        elif event_request.action == 'list':
+            # List upcoming events
+            upcoming = models.CalendarEvent.query.filter(
+                models.CalendarEvent.start_time >= datetime.now()
+            ).order_by(models.CalendarEvent.start_time).limit(5).all()
+            
+            if upcoming:
+                event_list = []
+                for event in upcoming:
+                    event_list.append(f"• {event.title} - {event.start_time.strftime('%B %d at %I:%M %p')}")
+                response_text = "Here are your upcoming events:\n" + "\n".join(event_list)
+            else:
+                response_text = "You don't have any upcoming events scheduled."
+        
+        else:
+            # General conversation
+            context = {
+                'recent_events': [],
+                'current_time': datetime.now().isoformat()
+            }
+            response_text = ai_calendar.handle_conversation(user_message, context)
+        
+        # Save conversation
+        conversation = models.AIConversation(
+            session_id=session_id,
+            user_message=user_message,
+            ai_response=response_text,
+            intent=event_request.action,
+            confidence_score=event_request.confidence,
+            event_id=created_event.id if created_event else None
+        )
+        db.session.add(conversation)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'response': response_text,
+            'intent': event_request.action,
+            'confidence': event_request.confidence,
+            'event_created': created_event.id if created_event else None
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in AI calendar chat: {e}")
+        return jsonify({'success': False, 'error': 'Sorry, I had trouble processing that request. Could you try again?'})
+
+@app.route('/api/calendar/voice', methods=['POST'])
+def process_voice_command():
+    """Process voice commands for calendar"""
+    try:
+        # Get audio data from request
+        audio_data = request.files.get('audio')
+        if not audio_data:
+            return jsonify({'success': False, 'error': 'No audio data provided'})
+        
+        # Process audio (placeholder - in real implementation, use speech-to-text)
+        transcript = "Schedule a meeting with John tomorrow at 2 PM"  # Placeholder
+        
+        # Parse the voice command
+        event_request = ai_calendar.extract_voice_command(transcript)
+        
+        return jsonify({
+            'success': True,
+            'transcript': transcript,
+            'intent': event_request.action,
+            'confidence': event_request.confidence,
+            'event_data': event_request.dict()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error processing voice command: {e}")
+        return jsonify({'success': False, 'error': 'Error processing voice command'})
+
+@app.route('/calendar')
+def ai_calendar_view():
+    """Render the AI calendar page"""
+    return render_template('ai_calendar.html')
 
 # Error handlers
 @app.errorhandler(404)

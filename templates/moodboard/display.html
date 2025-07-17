@@ -824,7 +824,7 @@
                 <div class="widget calendar-widget" id="calendar-widget" data-position="{{ widget.position_y * 3 + widget.position_x }}">
                     <div class="widget-title">
                         <i data-feather="calendar"></i>
-                        Calendar
+                        AI Calendar
                     </div>
                     
                     <!-- Today's Info (Default View) -->
@@ -848,10 +848,26 @@
                             </div>
                         </div>
                         
-                        <button class="expand-calendar-btn" onclick="expandCalendar()">
-                            <i data-feather="maximize-2"></i>
-                            View Full Calendar
-                        </button>
+                        <!-- AI Quick Schedule -->
+                        <div class="ai-quick-schedule mb-3">
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" id="quick-schedule-input" 
+                                       placeholder="Schedule meeting tomorrow..." style="background: rgba(255,255,255,0.9); border: 1px solid #e8e8e8; color: #1a1a1a;">
+                                <button class="btn btn-outline-primary" type="button" id="quick-schedule-btn" style="border-color: #e8e8e8; background: rgba(255,255,255,0.9);">
+                                    <i data-feather="plus" width="14" height="14"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px;">
+                            <button class="expand-calendar-btn" onclick="expandCalendar()" style="flex: 1;">
+                                <i data-feather="maximize-2"></i>
+                                View Full Calendar
+                            </button>
+                            <a href="/calendar" class="btn btn-outline-primary btn-sm" style="border-color: #e8e8e8; background: rgba(255,255,255,0.9); color: #1a1a1a; padding: 8px 12px; text-decoration: none; display: flex; align-items: center;">
+                                <i data-feather="brain" width="14" height="14"></i>
+                            </a>
+                        </div>
                     </div>
                     
                     <!-- Full Calendar View (Hidden by default) -->
@@ -1540,6 +1556,9 @@ document.addEventListener('DOMContentLoaded', function() {
     updateDateTime();
     setInterval(updateDateTime, 60000); // Update every minute
     updateTodayInfo(); // This also loads calendar events
+    
+    // Add AI calendar quick schedule functionality
+    setupAIQuickSchedule();
     loadTodos(); // Load today's todos
     
     // Setup mood input character counter
@@ -1558,5 +1577,128 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize Feather icons
     feather.replace();
 });
+
+// AI Calendar Quick Schedule Setup
+function setupAIQuickSchedule() {
+    const quickScheduleInput = document.getElementById('quick-schedule-input');
+    const quickScheduleBtn = document.getElementById('quick-schedule-btn');
+    
+    if (!quickScheduleInput || !quickScheduleBtn) return;
+    
+    // Handle button click
+    quickScheduleBtn.addEventListener('click', () => {
+        processQuickSchedule();
+    });
+    
+    // Handle enter key
+    quickScheduleInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            processQuickSchedule();
+        }
+    });
+}
+
+// Process AI quick schedule request
+async function processQuickSchedule() {
+    const input = document.getElementById('quick-schedule-input');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    try {
+        // Show loading state
+        const btn = document.getElementById('quick-schedule-btn');
+        const originalIcon = btn.innerHTML;
+        btn.innerHTML = '<span style="font-size: 12px;">...</span>';
+        btn.disabled = true;
+        
+        // Send to AI calendar chat endpoint
+        const response = await fetch('/api/calendar/ai-chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Clear input
+            input.value = '';
+            
+            // Show success feedback
+            showQuickScheduleFeedback(data.response, 'success');
+            
+            // Refresh calendar events if event was created
+            if (data.event_created) {
+                loadTodayCalendarEvents();
+            }
+        } else {
+            showQuickScheduleFeedback(data.error || 'Failed to process request', 'error');
+        }
+        
+        // Restore button
+        btn.innerHTML = originalIcon;
+        btn.disabled = false;
+        
+    } catch (error) {
+        console.error('Error processing quick schedule:', error);
+        showQuickScheduleFeedback('Error processing request', 'error');
+        
+        // Restore button
+        const btn = document.getElementById('quick-schedule-btn');
+        btn.innerHTML = '<i data-feather="plus" width="14" height="14"></i>';
+        btn.disabled = false;
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    }
+}
+
+// Show feedback for quick schedule
+function showQuickScheduleFeedback(message, type) {
+    // Create or update feedback element
+    let feedback = document.getElementById('quick-schedule-feedback');
+    if (!feedback) {
+        feedback = document.createElement('div');
+        feedback.id = 'quick-schedule-feedback';
+        feedback.style.cssText = `
+            font-size: 0.75rem;
+            margin-top: 4px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        `;
+        document.querySelector('.ai-quick-schedule').appendChild(feedback);
+    }
+    
+    // Style based on type
+    if (type === 'success') {
+        feedback.style.background = 'rgba(46, 204, 113, 0.1)';
+        feedback.style.color = '#27ae60';
+        feedback.style.border = '1px solid rgba(46, 204, 113, 0.2)';
+    } else {
+        feedback.style.background = 'rgba(231, 76, 60, 0.1)';
+        feedback.style.color = '#e74c3c';
+        feedback.style.border = '1px solid rgba(231, 76, 60, 0.2)';
+    }
+    
+    feedback.textContent = message;
+    feedback.style.opacity = '1';
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        if (feedback) {
+            feedback.style.opacity = '0';
+            setTimeout(() => {
+                if (feedback && feedback.parentNode) {
+                    feedback.parentNode.removeChild(feedback);
+                }
+            }, 300);
+        }
+    }, 3000);
+}
+
 </script>
 {% endblock %}

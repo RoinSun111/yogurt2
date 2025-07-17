@@ -1,0 +1,97 @@
+
+Product Requirements Document (PRD)
+1. Title
+AI-Powered Calendar (KITEDESK Calendar)
+2. Document Revision History
+Version
+Date
+Author
+Changes
+1
+7/17/2025
+hsiaojuun
+Initial draft
+
+---
+3. Purpose
+Provide an AI-driven calendar app that unifies multiple calendar sources (Google, Lark, CalDAV/ICS, etc.), enabling users to manage, schedule, and optimize events through natural language interaction and intelligent suggestions.
+4. Problem Statement
+- Users have problems with organizing his/her calendar, often forget or miss calendar events.
+- Existing apps lack robust natural language(AI) scheduling and cross-platform integration. If you can speak directly to AI, and let it manage the calendar, things could be much easier. 
+5. Goals & Objectives
+- Unified View: Aggregate events from all connected calendars into a single interface.
+- Natural Language Scheduling: Enable users to create, modify, or delete events via conversational AI inputs.
+- Smart Recommendations: Suggest optimal times, detect conflicts, and offer automated rescheduling.
+- Personalisation: Backed by LLM, consistent memory and 
+
+---
+6. User Personas
+- Busy Professional (Alice): Manages work meetings (Google Workspace) and personal events (Apple/iCal). Needs quick rescheduling when conflicts arise.
+- Not Good at Organzing Stuff(Pete): Pete is not good at organzing stuff and often miss meetings. He wished he could have an assistant to help manage the calendar. 
+
+---
+7. User Stories & Use Cases
+This content is only supported in a Feishu Docs
+
+---
+8. Functional Requirements
+9.1 Authentication & Security
+- FR1: OAuth 2.0 support for Google Calendar
+- FR2: OAuth 2.0 support for Lark Calendar
+- FR3: Manual entry of CalDAV/ICS URLs with basic auth support
+- FR4: Secure token storage and auto-refresh
+9.2 Integration Connector
+- FR5: Fetch/read events from each source
+- FR6: Create/update/delete events via provider APIs
+- FR7: Sync interval configurable per account
+9.3 AI/NLP Scheduling
+- FR8: Natural language parsing via Google Gemeni API
+- FR9: Clarification flow for ambiguous inputs(system prompt)
+- FR10: Multi-turn conversational UI for scheduling
+- Consistent memory to call out conflicts
+9.4 Voice Command / Hardware Integration
+- FR11: Integration with KITE DESK push-to-talk button for voice-driven commands. Also add a virtual button in the Web app to initiate voice inputs
+- FR12: Button press triggers voice capture and routes audio to AI module
+- FR13: Support commands to add, update, delete tasks and meetings via voice
+- FR14: Handle edge cases like misrecognition, providing audio confirmation prompts
+9.5 UI/UX
+- FR15: Unified calendar view (day/week/month)
+- FR16: Chat or command bar for AI interactions
+- FR17: Visual/audio feedback when using the push-to-talk button
+- FR18: Conflict highlighting and suggestion panel
+9.6 Data & Analytics
+- FR19: Event cache in database to optimize performance
+- FR20: Logging of user interactions (including voice commands) for analytics
+- FR21: Dashboard for usage and error tracking
+
+---
+9. Non-Functional Requirements
+- NFR1: System must support up to 1k concurrent users
+- NFR2: API responses < 200ms for calendar fetch
+- NFR3: NLP latency < 1s for straightforward inputs
+- NFR4: GDPR and CCPA compliance
+- NFR5: 99.9% uptime SLA
+
+---
+10. UX & Design Considerations
+- Minimalist, responsive interface. Dieter Rams style 
+- Accessible (WCAG AA)
+- Mobile-first design
+- Onboarding flow for connecting accounts
+
+---
+11. Dependencies
+- Google Calendar API
+- Lark Developer APIs
+- GemeniAPI
+- CalDAV client library
+- Postgres DB and Redis for caching
+- KITE DESK SDK/driver for push-to-talk hardware integration
+
+
+---
+12. Future Enhancements
+- Outlook & Exchange integration
+- Team scheduling polls
+- Time-zone and travel-aware suggestions
+- Analytics for time usage and productivity

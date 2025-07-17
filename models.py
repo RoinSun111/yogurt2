@@ -90,7 +90,14 @@ class CalendarEvent(db.Model):
     end_time = db.Column(db.DateTime, nullable=True)
     event_type = db.Column(db.String(50), default='meeting')  # meeting, appointment, deadline, reminder
     location = db.Column(db.String(200), nullable=True)
+    attendees = db.Column(db.Text, nullable=True)  # JSON string of attendee emails
     is_all_day = db.Column(db.Boolean, default=False)
+    is_ai_created = db.Column(db.Boolean, default=False)  # Created via AI assistant
+    source = db.Column(db.String(50), default='manual')  # manual, google, lark, caldav
+    external_id = db.Column(db.String(200), nullable=True)  # ID from external calendar
+    priority = db.Column(db.String(20), default='medium')  # low, medium, high
+    reminder_minutes = db.Column(db.Integer, default=15)  # Minutes before event to remind
+    color = db.Column(db.String(7), default='#3498db')  # Hex color for calendar display
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
@@ -130,3 +137,31 @@ class DailyStreak(db.Model):
     last_update_date = db.Column(db.Date, default=datetime.now().date)
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+class CalendarIntegration(db.Model):
+    """Store calendar integration settings"""
+    id = db.Column(db.Integer, primary_key=True)
+    provider = db.Column(db.String(50), nullable=False)  # google, lark, caldav
+    account_name = db.Column(db.String(100), nullable=False)
+    access_token = db.Column(db.Text, nullable=True)  # Encrypted access token
+    refresh_token = db.Column(db.Text, nullable=True)  # Encrypted refresh token
+    calendar_url = db.Column(db.String(500), nullable=True)  # For CalDAV
+    sync_enabled = db.Column(db.Boolean, default=True)
+    sync_interval = db.Column(db.Integer, default=15)  # Minutes between syncs
+    last_sync = db.Column(db.DateTime, nullable=True)
+    settings = db.Column(db.Text, nullable=True)  # JSON settings for the integration
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+class AIConversation(db.Model):
+    """Store AI calendar conversation history"""
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.String(100), nullable=False)
+    user_message = db.Column(db.Text, nullable=False)
+    ai_response = db.Column(db.Text, nullable=False)
+    intent = db.Column(db.String(50), nullable=True)  # create, update, delete, list, find
+    confidence_score = db.Column(db.Float, default=0.0)
+    event_id = db.Column(db.Integer, db.ForeignKey('calendar_event.id'), nullable=True)
+    is_voice_input = db.Column(db.Boolean, default=False)
+    processing_time_ms = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.now)
