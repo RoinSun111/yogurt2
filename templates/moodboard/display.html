@@ -848,14 +848,11 @@
                             </div>
                         </div>
                         
-                        <!-- AI Quick Schedule with Voice Integration -->
+                        <!-- AI Quick Schedule -->
                         <div class="ai-quick-schedule mb-3">
                             <div class="input-group input-group-sm">
                                 <input type="text" class="form-control" id="quick-schedule-input" 
                                        placeholder="Schedule meeting tomorrow..." style="background: rgba(255,255,255,0.9); border: 1px solid #e8e8e8; color: #1a1a1a;">
-                                <button class="btn btn-outline-primary voice-calendar-btn" type="button" id="voice-calendar-btn" style="border-color: #e8e8e8; background: rgba(255,255,255,0.9); color: #1a1a1a;" title="Hold to speak or click for voice input">
-                                    <i data-feather="mic" width="14" height="14"></i>
-                                </button>
                                 <button class="btn btn-outline-primary" type="button" id="quick-schedule-btn" style="border-color: #e8e8e8; background: rgba(255,255,255,0.9);">
                                     <i data-feather="plus" width="14" height="14"></i>
                                 </button>
@@ -867,6 +864,9 @@
                                 <i data-feather="maximize-2"></i>
                                 View Full Calendar
                             </button>
+                            <a href="/calendar" class="btn btn-outline-primary btn-sm" style="border-color: #e8e8e8; background: rgba(255,255,255,0.9); color: #1a1a1a; padding: 8px 12px; text-decoration: none; display: flex; align-items: center;">
+                                <i data-feather="cpu" width="14" height="14"></i>
+                            </a>
                         </div>
                     </div>
                     
@@ -1699,207 +1699,6 @@ function showQuickScheduleFeedback(message, type) {
         }
     }, 3000);
 }
-
-// Voice recording functionality for calendar
-let isVoiceRecording = false;
-let mediaRecorder = null;
-let audioChunks = [];
-
-async function initializeVoiceCalendar() {
-    const voiceBtn = document.getElementById('voice-calendar-btn');
-    if (!voiceBtn) return;
-    
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        
-        mediaRecorder.ondataavailable = (event) => {
-            audioChunks.push(event.data);
-        };
-        
-        mediaRecorder.onstop = () => {
-            processVoiceRecording();
-        };
-        
-        // Add event listeners for voice button
-        voiceBtn.addEventListener('mousedown', startVoiceRecording);
-        voiceBtn.addEventListener('mouseup', stopVoiceRecording);
-        voiceBtn.addEventListener('mouseleave', stopVoiceRecording);
-        
-        // Touch events for mobile
-        voiceBtn.addEventListener('touchstart', startVoiceRecording);
-        voiceBtn.addEventListener('touchend', stopVoiceRecording);
-        
-    } catch (error) {
-        console.warn('Microphone access denied or not available:', error);
-        // Fallback to text input
-        voiceBtn.addEventListener('click', () => {
-            const command = prompt('Enter your calendar command:');
-            if (command) {
-                processCalendarCommand(command);
-            }
-        });
-    }
-}
-
-function startVoiceRecording() {
-    if (!mediaRecorder || isVoiceRecording) return;
-    
-    isVoiceRecording = true;
-    audioChunks = [];
-    
-    const voiceBtn = document.getElementById('voice-calendar-btn');
-    voiceBtn.style.background = '#ff6b35';
-    voiceBtn.style.color = 'white';
-    
-    // Change icon to indicate recording
-    const icon = voiceBtn.querySelector('i');
-    icon.setAttribute('data-feather', 'mic-off');
-    feather.replace();
-    
-    mediaRecorder.start();
-}
-
-function stopVoiceRecording() {
-    if (!isVoiceRecording) return;
-    
-    isVoiceRecording = false;
-    
-    const voiceBtn = document.getElementById('voice-calendar-btn');
-    voiceBtn.style.background = 'rgba(255,255,255,0.9)';
-    voiceBtn.style.color = '#1a1a1a';
-    
-    // Change icon back to mic
-    const icon = voiceBtn.querySelector('i');
-    icon.setAttribute('data-feather', 'mic');
-    feather.replace();
-    
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
-    }
-}
-
-async function processVoiceRecording() {
-    if (audioChunks.length === 0) return;
-    
-    try {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const formData = new FormData();
-        formData.append('audio', audioBlob, 'voice_command.wav');
-        
-        // Show processing feedback
-        showCalendarFeedback('🎤 Processing voice command...');
-        
-        const response = await fetch('/api/calendar/voice', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            // Process the transcript
-            processCalendarCommand(data.transcript);
-        } else {
-            showCalendarFeedback('Sorry, I couldn\'t understand that. Please try speaking clearly.');
-        }
-    } catch (error) {
-        console.error('Error processing voice recording:', error);
-        showCalendarFeedback('Error processing voice command. Please try again.');
-    }
-}
-
-async function processCalendarCommand(command) {
-    try {
-        showCalendarFeedback(`Processing: "${command}"`);
-        
-        const response = await fetch('/api/calendar/ai-chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ message: command })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showCalendarFeedback(data.response);
-            
-            // If an event was created, refresh the calendar
-            if (data.event_created) {
-                setTimeout(() => {
-                    loadTodayCalendarEvents();
-                }, 1000);
-            }
-        } else {
-            showCalendarFeedback('Sorry, I had trouble processing that request. Could you try again?');
-        }
-    } catch (error) {
-        console.error('Error processing calendar command:', error);
-        showCalendarFeedback('Sorry, I encountered an error. Please try again.');
-    }
-}
-
-function showCalendarFeedback(message) {
-    // Create a temporary feedback element
-    const feedback = document.createElement('div');
-    feedback.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #1a1a1a;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        font-size: 0.9rem;
-        z-index: 1000;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        max-width: 300px;
-        text-align: center;
-    `;
-    feedback.textContent = message;
-    
-    document.body.appendChild(feedback);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        if (feedback.parentNode) {
-            feedback.parentNode.removeChild(feedback);
-        }
-    }, 3000);
-}
-
-// Enhanced DOMContentLoaded to include voice calendar
-document.addEventListener('DOMContentLoaded', function() {
-    updateDateTime();
-    setInterval(updateDateTime, 60000); // Update every minute
-    updateTodayInfo(); // This also loads calendar events
-    
-    // Add AI calendar quick schedule functionality
-    setupAIQuickSchedule();
-    loadTodos(); // Load today's todos
-    
-    // Setup mood input character counter
-    const moodInput = document.getElementById('mood-input');
-    if (moodInput) {
-        moodInput.addEventListener('input', updateCharCount);
-        moodInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                saveMood();
-            }
-        });
-        updateCharCount(); // Initialize counter
-    }
-    
-    // Initialize voice calendar
-    initializeVoiceCalendar();
-    
-    // Initialize Feather icons
-    feather.replace();
-});
 
 </script>
 {% endblock %}
