@@ -848,11 +848,14 @@
                             </div>
                         </div>
                         
-                        <!-- AI Quick Schedule -->
+                        <!-- AI Quick Schedule with Voice Integration -->
                         <div class="ai-quick-schedule mb-3">
                             <div class="input-group input-group-sm">
                                 <input type="text" class="form-control" id="quick-schedule-input" 
                                        placeholder="Schedule meeting tomorrow..." style="background: rgba(255,255,255,0.9); border: 1px solid #e8e8e8; color: #1a1a1a;">
+                                <button class="btn btn-outline-primary voice-calendar-btn" type="button" id="voice-calendar-btn" style="border-color: #e8e8e8; background: rgba(255,255,255,0.9); color: #1a1a1a;" title="Hold to speak or click for voice input">
+                                    <i data-feather="mic" width="14" height="14"></i>
+                                </button>
                                 <button class="btn btn-outline-primary" type="button" id="quick-schedule-btn" style="border-color: #e8e8e8; background: rgba(255,255,255,0.9);">
                                     <i data-feather="plus" width="14" height="14"></i>
                                 </button>
@@ -863,9 +866,6 @@
                             <button class="expand-calendar-btn" onclick="expandCalendar()" style="flex: 1;">
                                 <i data-feather="maximize-2"></i>
                                 View Full Calendar
-                            </button>
-                            <button class="btn btn-outline-primary btn-sm voice-calendar-btn" id="voice-calendar-btn" style="border-color: #e8e8e8; background: rgba(255,255,255,0.9); color: #1a1a1a; padding: 8px 12px; border: none; display: flex; align-items: center; cursor: pointer;" title="Voice command for calendar">
-                                <i data-feather="mic" width="14" height="14"></i>
                             </button>
                         </div>
                     </div>
