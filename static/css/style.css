@@ -1148,7 +1148,7 @@ a:hover {
     border: 1px solid var(--whoop-gray-dark) !important;
     color: var(--whoop-white) !important;
     backdrop-filter: blur(10px) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+    box-shadow: 0 1.5px 1.5px rgb(235, 230, 230, 0.6) !important;
 }
 
 /* Custom overlay backgrounds */

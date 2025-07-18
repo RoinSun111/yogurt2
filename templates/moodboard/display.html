@@ -219,6 +219,118 @@
     max-height: none;
 }
 
+/* Calendar View Buttons */
+.calendar-view-btn {
+    transition: all 0.2s ease;
+}
+
+.calendar-view-btn:hover {
+    background: #e8e8e8 !important;
+}
+
+.calendar-view-btn.active {
+    background: #1a1a1a !important;
+    color: #ffffff !important;
+    border-color: #1a1a1a !important;
+}
+
+/* Week View Styles */
+.week-day-header {
+    padding: 8px 4px;
+    text-align: center;
+    border-bottom: 1px solid #e8e8e8;
+    background: #f8f8f8;
+    font-size: 0.75rem;
+}
+
+.week-day-header .day-name {
+    font-weight: 600;
+    color: #666666;
+    margin-bottom: 2px;
+}
+
+.week-day-header .day-number {
+    font-size: 1rem;
+    color: #1a1a1a;
+    font-weight: 500;
+}
+
+.week-day-header.today {
+    background: #1a1a1a;
+    color: #ffffff;
+}
+
+.week-day-header.today .day-name,
+.week-day-header.today .day-number {
+    color: #ffffff;
+}
+
+.week-time-slot {
+    border: 1px solid #f0f0f0;
+    padding: 4px;
+    font-size: 0.7rem;
+    position: relative;
+}
+
+.week-time-slot .hour-label {
+    color: #666666;
+    font-size: 0.65rem;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+}
+
+/* Day View Styles */
+.day-view-header {
+    padding: 16px;
+    text-align: center;
+    border-bottom: 2px solid #e8e8e8;
+    background: #f8f8f8;
+}
+
+.day-view-header .day-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+}
+
+.day-view-header .day-date {
+    font-size: 0.9rem;
+    color: #666666;
+}
+
+.day-view-header.today {
+    background: #1a1a1a;
+    color: #ffffff;
+}
+
+.day-view-header.today .day-title,
+.day-view-header.today .day-date {
+    color: #ffffff;
+}
+
+.day-time-slot {
+    display: flex;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 4px 0;
+}
+
+.day-time-slot .time-label {
+    width: 80px;
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    color: #666666;
+    text-align: right;
+    border-right: 1px solid #f0f0f0;
+    flex-shrink: 0;
+}
+
+.day-time-slot .time-content {
+    flex: 1;
+    padding: 4px 8px;
+}
+
 /* Today View Styling */
 .today-view {
     color: var(--flow-warm-800);
@@ -888,6 +1000,13 @@
                             </button>
                         </div>
                         
+                        <!-- Calendar View Buttons -->
+                        <div class="calendar-view-buttons" style="display: flex; gap: 4px; margin-bottom: 16px; justify-content: flex-end;">
+                            <button class="calendar-view-btn active" onclick="setCalendarView('month')" style="padding: 4px 12px; border: 1px solid #e8e8e8; background: #f8f8f8; color: #1a1a1a; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">Month</button>
+                            <button class="calendar-view-btn" onclick="setCalendarView('week')" style="padding: 4px 12px; border: 1px solid #e8e8e8; background: rgba(255,255,255,0.9); color: #1a1a1a; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">Week</button>
+                            <button class="calendar-view-btn" onclick="setCalendarView('day')" style="padding: 4px 12px; border: 1px solid #e8e8e8; background: rgba(255,255,255,0.9); color: #1a1a1a; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">Day</button>
+                        </div>
+                        
                         <div class="calendar-weekdays">
                             <div class="weekday">Sun</div>
                             <div class="weekday">Mon</div>
@@ -1097,6 +1216,7 @@ function updateDateTime() {
 
 // Calendar state
 let currentCalendarDate = new Date();
+let calendarViewMode = 'month'; // 'month', 'week', 'day'
 
 // Update today's info and load calendar events
 function updateTodayInfo() {
@@ -1160,8 +1280,45 @@ function loadTodayCalendarEvents() {
         });
 }
 
+// Calendar view switching functions
+function setCalendarView(viewMode) {
+    calendarViewMode = viewMode;
+    
+    // Update button states
+    document.querySelectorAll('.calendar-view-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[onclick="setCalendarView('${viewMode}')"]`).classList.add('active');
+    
+    // Regenerate calendar with new view
+    generateCalendar();
+}
+
 // Generate calendar for full view
 function generateCalendar() {
+    const calendarGrid = document.getElementById('calendar-grid');
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    const today = new Date();
+    
+    // Update month/year display
+    const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December'];
+    document.getElementById('calendar-month-year').textContent = `${months[month]} ${year}`;
+    
+    calendarGrid.innerHTML = '';
+    
+    if (calendarViewMode === 'month') {
+        generateMonthView();
+    } else if (calendarViewMode === 'week') {
+        generateWeekView();
+    } else if (calendarViewMode === 'day') {
+        generateDayView();
+    }
+}
+
+// Generate month view
+function generateMonthView() {
     const year = currentCalendarDate.getFullYear();
     const month = currentCalendarDate.getMonth();
     const today = new Date();
@@ -1172,12 +1329,10 @@ function generateCalendar() {
     startDate.setDate(startDate.getDate() - firstDay.getDay());
     
     const calendarGrid = document.getElementById('calendar-grid');
-    calendarGrid.innerHTML = '';
     
-    // Update month/year display
-    const months = ['January', 'February', 'March', 'April', 'May', 'June',
-                   'July', 'August', 'September', 'October', 'November', 'December'];
-    document.getElementById('calendar-month-year').textContent = `${months[month]} ${year}`;
+    // Reset grid layout for month view
+    calendarGrid.style.gridTemplateColumns = 'repeat(7, 1fr)';
+    calendarGrid.style.gridTemplateRows = 'repeat(6, 1fr)';
     
     for (let i = 0; i < 42; i++) {
         const date = new Date(startDate);
@@ -1196,6 +1351,104 @@ function generateCalendar() {
         }
         
         calendarGrid.appendChild(dayEl);
+    }
+}
+
+// Generate week view
+function generateWeekView() {
+    const calendarGrid = document.getElementById('calendar-grid');
+    const today = new Date();
+    
+    // Get the start of the week (Sunday)
+    const startOfWeek = new Date(currentCalendarDate);
+    startOfWeek.setDate(currentCalendarDate.getDate() - currentCalendarDate.getDay());
+    
+    // Create week view layout
+    calendarGrid.innerHTML = '';
+    calendarGrid.style.gridTemplateColumns = 'repeat(7, 1fr)';
+    calendarGrid.style.gridTemplateRows = 'auto repeat(12, 40px)'; // Header + 12 hour slots
+    
+    // Add day headers
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(startOfWeek);
+        date.setDate(startOfWeek.getDate() + i);
+        
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'week-day-header';
+        dayHeader.innerHTML = `
+            <div class="day-name">${dayNames[i]}</div>
+            <div class="day-number">${date.getDate()}</div>
+        `;
+        
+        if (date.toDateString() === today.toDateString()) {
+            dayHeader.classList.add('today');
+        }
+        
+        calendarGrid.appendChild(dayHeader);
+    }
+    
+    // Add time slots (simplified view with events)
+    for (let hour = 8; hour < 20; hour++) { // 8 AM to 8 PM
+        for (let day = 0; day < 7; day++) {
+            const timeSlot = document.createElement('div');
+            timeSlot.className = 'week-time-slot';
+            
+            if (day === 0) {
+                timeSlot.innerHTML = `<span class="hour-label">${hour}:00</span>`;
+            }
+            
+            calendarGrid.appendChild(timeSlot);
+        }
+    }
+}
+
+// Generate day view
+function generateDayView() {
+    const calendarGrid = document.getElementById('calendar-grid');
+    const today = new Date();
+    
+    // Format the selected date
+    const selectedDate = new Date(currentCalendarDate);
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    // Create day view layout
+    calendarGrid.innerHTML = '';
+    calendarGrid.style.gridTemplateColumns = '1fr';
+    calendarGrid.style.gridTemplateRows = 'auto repeat(24, 30px)'; // Header + 24 hours
+    
+    // Add day header
+    const dayHeader = document.createElement('div');
+    dayHeader.className = 'day-view-header';
+    dayHeader.innerHTML = `
+        <div class="day-title">${dayNames[selectedDate.getDay()]}</div>
+        <div class="day-date">${months[selectedDate.getMonth()]} ${selectedDate.getDate()}, ${selectedDate.getFullYear()}</div>
+    `;
+    
+    if (selectedDate.toDateString() === today.toDateString()) {
+        dayHeader.classList.add('today');
+    }
+    
+    calendarGrid.appendChild(dayHeader);
+    
+    // Add hourly time slots
+    for (let hour = 0; hour < 24; hour++) {
+        const timeSlot = document.createElement('div');
+        timeSlot.className = 'day-time-slot';
+        
+        const time = hour === 0 ? '12:00 AM' :
+                    hour < 12 ? `${hour}:00 AM` :
+                    hour === 12 ? '12:00 PM' :
+                    `${hour - 12}:00 PM`;
+        
+        timeSlot.innerHTML = `
+            <div class="time-label">${time}</div>
+            <div class="time-content"></div>
+        `;
+        
+        calendarGrid.appendChild(timeSlot);
     }
 }
 
