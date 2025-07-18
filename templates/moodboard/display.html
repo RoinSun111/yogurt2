@@ -80,6 +80,7 @@
     align-items: center;
     text-transform: uppercase;
     letter-spacing: 0.8px;
+    width: 100%;
 }
 
 .widget-title i {
@@ -825,6 +826,11 @@
                     <div class="widget-title">
                         <i data-feather="calendar"></i>
                         AI Calendar
+                        <div style="margin-left: auto;">
+                            <button onclick="expandCalendar()" style="background: none; border: none; color: #999999; padding: 0; cursor: pointer;">
+                                <i data-feather="maximize-2" width="16" height="16"></i>
+                            </button>
+                        </div>
                     </div>
                     
                     <!-- Today's Info (Default View) -->
@@ -856,16 +862,19 @@
                                 <button class="btn btn-outline-primary" type="button" id="quick-schedule-btn" style="border-color: #e8e8e8; background: rgba(255,255,255,0.9);">
                                     <i data-feather="plus" width="14" height="14"></i>
                                 </button>
+                                <button class="btn btn-outline-secondary" type="button" id="voice-schedule-btn" style="border-color: #e8e8e8; background: rgba(255,255,255,0.9);">
+                                    <i data-feather="mic" width="14" height="14"></i>
+                                </button>
                             </div>
                         </div>
                         
                         <div style="display: flex; gap: 8px;">
                             <button class="expand-calendar-btn" onclick="expandCalendar()" style="flex: 1;">
                                 <i data-feather="maximize-2"></i>
-                                View Full Calendar
                             </button>
-                            <a href="/calendar" class="btn btn-outline-primary btn-sm" style="border-color: #e8e8e8; background: rgba(255,255,255,0.9); color: #1a1a1a; padding: 8px 12px; text-decoration: none; display: flex; align-items: center;">
-                                <i data-feather="cpu" width="14" height="14"></i>
+                            <a href="/calendar" class="btn btn-outline-primary btn-sm" style="border-color: #e8e8e8; background: rgba(255,255,255,0.9); color: #1a1a1a; padding: 8px 12px; text-decoration: none; display: flex; align-items: center; font-size: 0.75rem;">
+                                <i data-feather="external-link" width="14" height="14" style="margin-right: 4px;"></i>
+                                View Full Calendar
                             </a>
                         </div>
                     </div>
@@ -1582,6 +1591,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function setupAIQuickSchedule() {
     const quickScheduleInput = document.getElementById('quick-schedule-input');
     const quickScheduleBtn = document.getElementById('quick-schedule-btn');
+    const voiceScheduleBtn = document.getElementById('voice-schedule-btn');
     
     if (!quickScheduleInput || !quickScheduleBtn) return;
     
@@ -1596,6 +1606,18 @@ function setupAIQuickSchedule() {
             processQuickSchedule();
         }
     });
+    
+    // Setup voice recording
+    if (voiceScheduleBtn) {
+        setupVoiceRecording();
+        
+        // Handle voice button click
+        voiceScheduleBtn.addEventListener('mousedown', startVoiceRecording);
+        voiceScheduleBtn.addEventListener('mouseup', stopVoiceRecording);
+        voiceScheduleBtn.addEventListener('mouseleave', stopVoiceRecording);
+        voiceScheduleBtn.addEventListener('touchstart', startVoiceRecording);
+        voiceScheduleBtn.addEventListener('touchend', stopVoiceRecording);
+    }
 }
 
 // Process AI quick schedule request
@@ -1698,6 +1720,112 @@ function showQuickScheduleFeedback(message, type) {
             }, 300);
         }
     }, 3000);
+}
+
+// Voice Recording for Calendar
+let mediaRecorder;
+let isRecording = false;
+let audioChunks = [];
+
+function setupVoiceRecording() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.warn('Voice recording not supported in this browser');
+        return;
+    }
+}
+
+async function startVoiceRecording() {
+    if (isRecording) return;
+    
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        isRecording = true;
+        
+        // Visual feedback
+        const voiceBtn = document.getElementById('voice-schedule-btn');
+        voiceBtn.style.background = 'rgba(231, 76, 60, 0.9)';
+        voiceBtn.style.color = 'white';
+        
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+        
+        mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            processVoiceInput(audioBlob);
+            
+            // Stop all tracks
+            stream.getTracks().forEach(track => track.stop());
+            
+            // Reset button appearance
+            voiceBtn.style.background = 'rgba(255,255,255,0.9)';
+            voiceBtn.style.color = '#1a1a1a';
+        };
+        
+        mediaRecorder.start();
+        
+    } catch (error) {
+        console.error('Error accessing microphone:', error);
+        showQuickScheduleFeedback('Microphone access denied', 'error');
+    }
+}
+
+function stopVoiceRecording() {
+    if (!isRecording || !mediaRecorder) return;
+    
+    isRecording = false;
+    mediaRecorder.stop();
+}
+
+async function processVoiceInput(audioBlob) {
+    try {
+        // Show loading state
+        const voiceBtn = document.getElementById('voice-schedule-btn');
+        const originalIcon = voiceBtn.innerHTML;
+        voiceBtn.innerHTML = '<span style="font-size: 12px;">...</span>';
+        voiceBtn.disabled = true;
+        
+        // Create FormData to send audio
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'voice_input.wav');
+        
+        // Send to voice processing endpoint
+        const response = await fetch('/api/calendar/voice-schedule', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.transcript) {
+            // Put transcript in input field
+            const input = document.getElementById('quick-schedule-input');
+            input.value = data.transcript;
+            
+            // Process the transcript as if it was typed
+            processQuickSchedule();
+        } else {
+            showQuickScheduleFeedback(data.error || 'Failed to process voice input', 'error');
+        }
+        
+        // Restore button
+        voiceBtn.innerHTML = originalIcon;
+        voiceBtn.disabled = false;
+        
+    } catch (error) {
+        console.error('Error processing voice input:', error);
+        showQuickScheduleFeedback('Error processing voice input', 'error');
+        
+        // Restore button
+        const voiceBtn = document.getElementById('voice-schedule-btn');
+        voiceBtn.innerHTML = '<i data-feather="mic" width="14" height="14"></i>';
+        voiceBtn.disabled = false;
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    }
 }
 
 </script>

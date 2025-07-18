@@ -1111,6 +1111,36 @@ def process_voice_command():
         logging.error(f"Error processing voice command: {e}")
         return jsonify({'success': False, 'error': 'Error processing voice command'})
 
+@app.route('/api/calendar/voice-schedule', methods=['POST'])
+def process_voice_schedule():
+    """Process voice commands for moodboard calendar quick schedule"""
+    try:
+        # Get audio data from request
+        audio_data = request.files.get('audio')
+        if not audio_data:
+            return jsonify({'success': False, 'error': 'No audio data provided'})
+        
+        # Read audio data
+        audio_bytes = audio_data.read()
+        
+        # Process audio using voice processor
+        transcript = voice_processor.process_audio_blob(audio_bytes)
+        
+        if transcript:
+            return jsonify({
+                'success': True,
+                'transcript': transcript
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Could not process audio'
+            })
+        
+    except Exception as e:
+        logging.error(f"Error processing voice schedule: {e}")
+        return jsonify({'success': False, 'error': 'Error processing voice input'})
+
 @app.route('/calendar')
 def ai_calendar_view():
     """Render the AI calendar page"""
