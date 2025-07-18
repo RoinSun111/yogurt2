@@ -1774,10 +1774,25 @@ async function startVoiceRecording() {
         audioChunks = [];
         isRecording = true;
         
-        // Visual feedback
+        // Visual feedback - show red recording dot
         const voiceBtn = document.getElementById('voice-schedule-btn');
         voiceBtn.style.background = 'rgba(231, 76, 60, 0.9)';
         voiceBtn.style.color = 'white';
+        voiceBtn.innerHTML = '<div style="width: 12px; height: 12px; background: #ff0000; border-radius: 50%; animation: pulse 1s infinite;"></div>';
+        
+        // Add pulse animation style if not already present
+        if (!document.getElementById('pulse-animation')) {
+            const style = document.createElement('style');
+            style.id = 'pulse-animation';
+            style.textContent = `
+                @keyframes pulse {
+                    0% { opacity: 1; }
+                    50% { opacity: 0.5; }
+                    100% { opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
         
         mediaRecorder.ondataavailable = (event) => {
             audioChunks.push(event.data);
@@ -1790,9 +1805,13 @@ async function startVoiceRecording() {
             // Stop all tracks
             stream.getTracks().forEach(track => track.stop());
             
-            // Reset button appearance
+            // Reset button appearance back to mic icon
             voiceBtn.style.background = 'rgba(255,255,255,0.9)';
             voiceBtn.style.color = '#1a1a1a';
+            voiceBtn.innerHTML = '<i data-feather="mic" width="14" height="14"></i>';
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
         };
         
         mediaRecorder.start();
@@ -1808,6 +1827,15 @@ function stopVoiceRecording() {
     
     isRecording = false;
     mediaRecorder.stop();
+    
+    // Immediately reset button appearance when user releases
+    const voiceBtn = document.getElementById('voice-schedule-btn');
+    voiceBtn.style.background = 'rgba(255,255,255,0.9)';
+    voiceBtn.style.color = '#1a1a1a';
+    voiceBtn.innerHTML = '<i data-feather="mic" width="14" height="14"></i>';
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
 }
 
 async function processVoiceInput(audioBlob) {
@@ -1841,9 +1869,12 @@ async function processVoiceInput(audioBlob) {
             showQuickScheduleFeedback(data.error || 'Failed to process voice input', 'error');
         }
         
-        // Restore button
-        voiceBtn.innerHTML = originalIcon;
+        // Restore button to mic icon
+        voiceBtn.innerHTML = '<i data-feather="mic" width="14" height="14"></i>';
         voiceBtn.disabled = false;
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
         
     } catch (error) {
         console.error('Error processing voice input:', error);
