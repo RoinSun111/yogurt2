@@ -13,8 +13,18 @@ from dataclasses import dataclass
 from google import genai
 from google.genai import types
 
-# Initialize Gemini client
-client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+# Initialize Gemini client (only if API key is available)
+client = None
+gemini_api_key = os.environ.get("GEMINI_API_KEY")
+if gemini_api_key:
+    try:
+        client = genai.Client(api_key=gemini_api_key)
+        logging.info("Gemini AI client initialized successfully")
+    except Exception as e:
+        logging.error(f"Failed to initialize Gemini client: {e}")
+        client = None
+else:
+    logging.warning("GEMINI_API_KEY not found. AI calendar features will be disabled until key is provided.")
 
 @dataclass
 class EventRequest:
@@ -50,6 +60,29 @@ def parse_natural_language(user_input: str) -> EventRequest:
     """
     Parse natural language input into structured event request
     """
+    if not client:
+        logging.warning("Gemini client not available. Using fallback parsing.")
+        # Simple fallback parsing for basic commands
+        user_input_lower = user_input.lower()
+        if any(word in user_input_lower for word in ['schedule', 'create', 'add', 'book']):
+            return EventRequest(
+                action='create',
+                title=user_input,
+                confidence=0.3
+            )
+        elif any(word in user_input_lower for word in ['list', 'show', 'what', 'display']):
+            return EventRequest(
+                action='list',
+                title=user_input,
+                confidence=0.3
+            )
+        else:
+            return EventRequest(
+                action='query',
+                title=user_input,
+                confidence=0.3
+            )
+    
     try:
         # Create system prompt for event parsing
         system_prompt = """
@@ -204,6 +237,9 @@ def handle_conversation(user_input: str, context: Dict) -> str:
     """
     Handle general conversation about calendar and scheduling
     """
+    if not client:
+        return "I'm here to help with your calendar! Try asking me to schedule something or check your upcoming events. Note: Advanced AI features are currently unavailable - please provide your Gemini API key to enable full functionality."
+    
     try:
         system_prompt = """
         You are KITEDESK Calendar, a helpful AI assistant for calendar management.
@@ -259,6 +295,10 @@ def test_gemini_api() -> bool:
     """
     Test if Gemini API is working correctly
     """
+    if not client:
+        logging.warning("Gemini client not initialized. API key may be missing.")
+        return False
+    
     try:
         response = client.models.generate_content(
             model="gemini-2.5-flash",
