@@ -9,6 +9,12 @@ import random
 import json
 from typing import Dict, List, Tuple, Optional
 
+# Optional YOLOv7 detector for object recognition
+try:
+    from .yolo_detector import YoloV7Detector
+except Exception:
+    YoloV7Detector = None
+
 # Activity state and working substate mappings
 ACTIVITY_STATES = {
     0: "working",
@@ -69,6 +75,12 @@ class ActivityAnalyzer:
         self.not_working_to_idle_threshold = 120  # Inactivity for 2 minutes
         self.on_break_threshold = 60  # Person absent for 1 minute
         self.distraction_threshold = 5  # Head turned for 5 seconds
+
+        # Initialize YOLOv7 detector for phone detection if available
+        if YoloV7Detector:
+            self.yolo_detector = YoloV7Detector()
+        else:
+            self.yolo_detector = None
         
         # Initialize TinyML model for activity recognition
         self._initialize_ml_model()
@@ -275,7 +287,7 @@ class ActivityAnalyzer:
             result['people_detected'] = len(face_detections)
         
         # Check for phone use (another distraction type)
-        is_phone_use = self._detect_phone_use(pose_landmarks)
+        is_phone_use = self._detect_phone_use(image, pose_landmarks)
         
         # Use TensorFlow model if available
         if self.model_loaded and self.use_tf:
@@ -408,7 +420,7 @@ class ActivityAnalyzer:
         
         return is_focused
         
-    def _detect_phone_use(self, pose_landmarks):
+    def _detect_phone_use(self, image, pose_landmarks):
         """
         Detect if the user is holding a phone
         Part of the 'Distraction Event Detection' requirement
@@ -416,6 +428,13 @@ class ActivityAnalyzer:
         Uses a combination of ML model inference and heuristic detection based on pose landmarks
         """
         try:
+            # Run YOLOv7 detection if available
+            if self.yolo_detector:
+                yolo_dets = self.yolo_detector.detect(image)
+                for label, conf, _ in yolo_dets:
+                    if label in {"67", "cell phone", "phone"} and conf > 0.5:
+                        return True
+
             # Return early if no landmarks available
             if not pose_landmarks or len(pose_landmarks) < 20:
                 return False
